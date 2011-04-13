@@ -66,7 +66,7 @@ port (
 end component;
 
 -- FIFO for SubEventHeader information
-component fifo_2048x8 is
+component fifo_16kx8 is
 port (
 	Data    : in    std_logic_vector(7 downto 0); 
 	WrClock : in    std_logic; 
@@ -150,6 +150,11 @@ signal load_eod_q           : std_logic;
 
 -- gk 07.10.10
 signal df_eod               : std_logic;
+
+-- gk 04.12.10
+signal first_sub_in_multi   : std_logic;
+signal from_divide_state    : std_logic;
+signal disable_prep         : std_logic;
 
 begin
 
@@ -242,12 +247,15 @@ begin
 	end if;
 end process constructMachineProc;
 
-constructMachine : process(constructCurrentState, PC_WR_EN_IN, PC_END_OF_DATA_IN, loadCurrentState, saveSubCurrentState, sub_int_ctr)
+constructMachine : process(constructCurrentState, PC_START_OF_SUB_IN, PC_WR_EN_IN, PC_END_OF_DATA_IN, loadCurrentState, saveSubCurrentState, sub_int_ctr)
 begin
 	case constructCurrentState is
 		when CIDLE =>
 			constr_state <= x"0";
-			if( PC_WR_EN_IN = '1' ) then
+			--if( PC_WR_EN_IN = '1' ) then
+			-- gk 04.12.10
+			if (PC_START_OF_SUB_IN = '1') then
+
 				constructNextState <= SAVE_DATA;
 			else
 				constructNextState <= CIDLE;
@@ -286,7 +294,8 @@ sub_size_to_save <= (x"10" + pc_sub_size) when (PC_PADDING_IN = '0')
 queueSizeProc : process(CLK)
 begin
 	if rising_edge(CLK) then
-		if (RESET = '1') or (loadCurrentState = PUT_Q_DEC) then -- gk 07.10.10 -- (loadCurrentState = CLEANUP) then
+		--if (RESET = '1') or (loadCurrentState = PUT_Q_DEC) then -- gk 07.10.10 -- (loadCurrentState = CLEANUP) then
+		if (RESET = '1') or (loadCurrentState = CLEANUP) then
 			queue_size <= x"00000028";  -- + 8B for queue headers and 32B for termination
 		elsif (saveSubCurrentState = SAVE_SIZE) and (sub_int_ctr = 3) then
 			queue_size <= queue_size + pc_sub_size + x"10"; -- + 16B for each subevent headers
@@ -358,23 +367,39 @@ begin
 			loadNextState <= LOAD_DATA;
 		when LOAD_DATA =>
 			load_state <= x"6";
+-- 			if (bytes_loaded = max_frame_size - 1) then
+-- 				loadNextState <= DIVIDE;
+-- 			-- gk 07.10.10
+-- 			elsif (MULT_EVT_ENABLE_IN = '1') then
+-- 				if (size_left = x"0000_0023") then
+-- 					loadNextState <= LOAD_TERM;
+-- 				elsif (load_eod_q = '1') then
+-- 					loadNextState <= LOAD_SUB;
+-- 				else
+-- 					loadNextState <= LOAD_DATA;
+-- 				end if;
+-- 			else
+-- 				if (load_eod_q = '1') then
+-- 					loadNextState <= LOAD_TERM;
+-- 				else
+-- 					loadNextState <= LOAD_DATA;
+-- 				end if;
+-- 			end if;
 			if (bytes_loaded = max_frame_size - 1) then
 				loadNextState <= DIVIDE;
 			-- gk 07.10.10
-			elsif (MULT_EVT_ENABLE_IN = '1') then
-				if (size_left = x"0000_0023") then
-					loadNextState <= LOAD_TERM;
-				elsif (load_eod_q = '1') then
-					loadNextState <= LOAD_SUB;
+			elsif (load_eod_q = '1') then
+				if (MULT_EVT_ENABLE_IN = '1') then
+					if (size_left < x"0000_0030") then
+						loadNextState <= LOAD_TERM;
+					else
+						loadNextState <= LOAD_SUB;
+					end if;
 				else
-					loadNextState <= LOAD_DATA;
+					loadNextState <= LOAD_TERM;
 				end if;
 			else
-				if (load_eod_q = '1') then
-					loadNextState <= LOAD_TERM;
-				else
-					loadNextState <= LOAD_DATA;
-				end if;
+				loadNextState <= LOAD_DATA;
 			end if;
 		when DIVIDE =>
 			load_state <= x"7";
@@ -420,37 +445,102 @@ begin
 	end case;
 end process loadMachine;
 
+-- gk 04.12.10
+firstSubInMultiProc : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') or (loadCurrentState = LOAD_TERM) then
+			first_sub_in_multi <= '1';
+		elsif (loadCurrentState = LOAD_DATA) then
+			first_sub_in_multi <= '0';
+		end if;
+	end if;
+end process;
+
+-- gk 04.12.10
+fromDivideStateProc : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			from_divide_state <= '0';
+		elsif (loadCurrentState = DIVIDE) then
+			from_divide_state <= '1';
+		elsif (loadCurrentState = PREP_DATA) then
+			from_divide_state <= '0';
+		end if;
+	end if;
+end process fromDivideStateProc;
+
+
 dividePositionProc : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			divide_position <= "00";
+-- 		elsif (bytes_loaded = max_frame_size - 1) then
+-- 			if (loadCurrentState = LIDLE) then
+-- 				divide_position <= "00";
+-- 			elsif (loadCurrentState = LOAD_DATA) then
+-- 				-- gk 07.10.10
+-- 				if (MULT_EVT_ENABLE_IN = '1') and (size_left = x"0000_003a") then
+-- 					divide_position <= "11";
+-- 				-- gk 07.10.10
+-- 				elsif (MULT_EVT_ENABLE_IN = '1') and (load_eod_q = '1') then
+-- 					divide_position <= "01";
+-- 				-- gk 26.07.10
+-- 				elsif (MULT_EVT_ENABLE_IN = '0') and (load_eod_q = '1') then -- if termination is about to be loaded divide on term
+-- 					divide_position <= "11";
+-- 				else
+-- 					divide_position <= "00"; -- still data loaded divide on data
+-- 				end if;
+-- 			elsif (loadCurrentState = LOAD_SUB) then
+-- 				if (all_int_ctr = 15) then
+-- 					divide_position <= "00";
+-- 				else
+-- 					divide_position <= "01";
+-- 				end if;
+-- 			elsif (loadCurrentState = LOAD_TERM) then
+-- 				divide_position <= "11";
+-- 			end if;
+-- 		end if;
 		elsif (bytes_loaded = max_frame_size - 1) then
 			if (loadCurrentState = LIDLE) then
 				divide_position <= "00";
+				disable_prep    <= '0';  -- gk 05.12.10
 			elsif (loadCurrentState = LOAD_DATA) then
-				-- gk 07.10.10
-				if (MULT_EVT_ENABLE_IN = '1') and (size_left = x"0000_003a") then
-					divide_position <= "11";
-				-- gk 07.10.10
-				elsif (MULT_EVT_ENABLE_IN = '1') and (load_eod_q = '1') then
-					divide_position <= "01";
+				-- gk 05.12.10
 				-- gk 26.07.10
-				elsif (MULT_EVT_ENABLE_IN = '0') and (load_eod_q = '1') then -- if termination is about to be loaded divide on term
+				if (MULT_EVT_ENABLE_IN = '0') and (load_eod_q = '1') then -- if termination is about to be loaded divide on term
 					divide_position <= "11";
+					disable_prep    <= '0';  -- gk 05.12.10
+				elsif (MULT_EVT_ENABLE_IN = '1') and (load_eod_q = '1') then
+					if (size_left > x"0000_0028") then
+						divide_position <= "01";
+						disable_prep    <= '0';  -- gk 05.12.10
+					else
+						divide_position <= "11";
+						disable_prep    <= '0';  -- gk 05.12.10
+					end if;
 				else
 					divide_position <= "00"; -- still data loaded divide on data
+					disable_prep    <= '1';  -- gk 05.12.10
 				end if;
 			elsif (loadCurrentState = LOAD_SUB) then
 				if (all_int_ctr = 15) then
 					divide_position <= "00";
+					disable_prep    <= '1';  -- gk 05.12.10
 				else
 					divide_position <= "01";
+					disable_prep    <= '0';  -- gk 05.12.10
 				end if;
 			elsif (loadCurrentState = LOAD_TERM) then
 				divide_position <= "11";
+				disable_prep    <= '0';  -- gk 05.12.10
 			end if;
+		elsif (loadCurrentState = PREP_DATA) then  -- gk 06.12.10 reset disable_prep
+			disable_prep <= '0';
 		end if;
+
 	end if;
 end process dividePositionProc;
 
@@ -514,17 +604,29 @@ begin
 	if (RESET = '1') then
 		df_rd_en <= '0';
 	elsif (loadCurrentState = LOAD_DATA) then
+-- 		if (bytes_loaded = max_frame_size - x"1") then
+-- 			df_rd_en <= '0';
+-- 		-- gk 07.10.10
+-- 		elsif (MULT_EVT_ENABLE_IN = '0') and (load_eod_q = '1') then
+-- 			df_rd_en <= '0';
+-- 		-- gk 07.10.10
+-- 		elsif (MULT_EVT_ENABLE_IN = '1') and (size_left = x"0000_003a") then
+-- 			df_rd_en <= '0';
+-- 		else
+-- 			df_rd_en <= '1';
+-- 		end if;
 		if (bytes_loaded = max_frame_size - x"1") then
 			df_rd_en <= '0';
-		-- gk 07.10.10
-		elsif (MULT_EVT_ENABLE_IN = '0') and (load_eod_q = '1') then
+		-- gk 26.07.10
+		--elsif (load_eod = '1') or (load_eod_q = '1') then
+		elsif (load_eod_q = '1') then
 			df_rd_en <= '0';
-		-- gk 07.10.10
-		elsif (MULT_EVT_ENABLE_IN = '1') and (size_left = x"0000_003a") then
-			df_rd_en <= '0';
+--		elsif (sub_bytes_loaded = sub_size_loaded) then
+--			df_rd_en <= '0';
 		else
 			df_rd_en <= '1';
 		end if;
+
 	elsif (loadCurrentState = LOAD_SUB) and (all_int_ctr = 15) and (bytes_loaded /= max_frame_size - x"1") then
 		df_rd_en <= '1';
 	elsif (loadCurrentState = PREP_DATA) then
@@ -550,7 +652,19 @@ begin
 end process shfRdEnProc;
 
 
-fcWrEnProc : process(loadCurrentState, RESET)
+-- fcWrEnProc : process(loadCurrentState, RESET)
+-- begin
+-- 	if (RESET = '1') then  -- gk 31.05.10
+-- 		fc_wr_en <= '0';
+-- 	elsif (loadCurrentState = PUT_Q_LEN) or (loadCurrentState = PUT_Q_DEC) then
+-- 		fc_wr_en <= '1';
+-- 	elsif (loadCurrentState = LOAD_SUB) or (loadCurrentState = LOAD_DATA) or (loadCurrentState = LOAD_TERM) then
+-- 		fc_wr_en <= '1';
+-- 	else
+-- 		fc_wr_en <= '0';
+-- 	end if;
+-- end process fcWrEnProc;
+fcWrEnProc : process(loadCurrentState, RESET, first_sub_in_multi, from_divide_state, MULT_EVT_ENABLE_IN, divide_position, disable_prep)
 begin
 	if (RESET = '1') then  -- gk 31.05.10
 		fc_wr_en <= '0';
@@ -558,10 +672,16 @@ begin
 		fc_wr_en <= '1';
 	elsif (loadCurrentState = LOAD_SUB) or (loadCurrentState = LOAD_DATA) or (loadCurrentState = LOAD_TERM) then
 		fc_wr_en <= '1';
+	-- gk 04.12.10
+	elsif (MULT_EVT_ENABLE_IN = '1') and (loadCurrentState = PREP_DATA) and (first_sub_in_multi = '0') and (from_divide_state = '0') and (disable_prep = '0') then
+		fc_wr_en <= '1';
+	elsif (MULT_EVT_ENABLE_IN = '1') and (loadCurrentState = PREP_DATA)  and (from_divide_state = '1') and ((divide_position = "00") or (divide_position = "01")) and (disable_prep = '0') then
+		fc_wr_en <= '1';
 	else
 		fc_wr_en <= '0';
 	end if;
 end process fcWrEnProc;
+
 
 -- was all_int_ctr
 fcDataProc : process(loadCurrentState, queue_size_temp, PC_QUEUE_DEC_IN, shf_q, df_q_reg, load_int_ctr)
@@ -639,6 +759,15 @@ begin
 			bytes_loaded <= x"0000";
 		elsif (loadCurrentState = PUT_Q_LEN) or (loadCurrentState = PUT_Q_DEC) or (loadCurrentState = LOAD_DATA) or (loadCurrentState = LOAD_SUB) or (loadCurrentState = LOAD_TERM) then
 			bytes_loaded <= bytes_loaded + x"1";
+		-- gk 05.12.10
+-- 		elsif (MULT_EVT_ENABLE_IN = '1') and (loadCurrentState = PREP_DATA) and (first_sub_in_multi = '0') and (from_divide_state = '0') then
+-- 			bytes_loaded <= bytes_loaded + x"1";
+		elsif (MULT_EVT_ENABLE_IN = '1') and (loadCurrentState = PREP_DATA) and (first_sub_in_multi = '0') and (from_divide_state = '0') and (disable_prep = '0') then
+			bytes_loaded <= bytes_loaded + x"1";
+		elsif (MULT_EVT_ENABLE_IN = '1') and (loadCurrentState = PREP_DATA)  and (from_divide_state = '1') and ((divide_position = "00") or (divide_position = "01")) and (disable_prep = '0') then
+			bytes_loaded <= bytes_loaded + x"1";
+		end if;
+
 		end if;
 	end if;
 end process bytesLoadedProc;
@@ -813,7 +942,7 @@ end process fcUDPSizeProc;
 --      SUBEVENT HEADERS WRITE AND READ
 --***********************
 
-SUBEVENT_HEADERS_FIFO : fifo_2048x8
+SUBEVENT_HEADERS_FIFO : fifo_16kx8
 port map(
 	Data        =>  shf_data,
 	WrClock     =>  CLK,

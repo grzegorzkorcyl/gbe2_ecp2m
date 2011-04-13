@@ -466,6 +466,9 @@ signal monitor_empty                 : std_logic_vector(31 downto 0);
 -- gk 07.10.10
 signal pc_eos                        : std_logic;
 
+-- gk 09.12.10
+signal frame_delay                   : std_logic_vector(31 downto 0);
+
 -- gk 13.02.11
 signal pcs_rxd                       : std_logic_vector(7 downto 0);
 signal pcs_rx_en                     : std_logic;
@@ -746,6 +749,7 @@ port map(
 	GBE_DELAY_OUT             => pc_delay,
 	GBE_ALLOW_LARGE_OUT       => allow_large,  -- gk 21.07.10
 	GBE_ALLOW_RX_OUT          => allow_rx,
+	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
 	MONITOR_SENT_IN           => monitor_sent,
@@ -826,6 +830,7 @@ port map(
 	GBE_DELAY_OUT             => pc_delay,
 	GBE_ALLOW_LARGE_OUT       => open,
 	GBE_ALLOW_RX_OUT          => open,
+	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
 	MONITOR_SENT_IN           => monitor_sent,
@@ -1059,6 +1064,7 @@ port map(
 	FLAGS_OFFSET_IN			=> fc_flags_offset,
 	TTL_IN				=> fc_ttl,
 	PROTOCOL_IN			=> fc_protocol,
+	FRAME_DELAY_IN			=> frame_delay, -- gk 09.12.10
 	-- ports for packetTransmitter
 	RD_CLK				=> serdes_clk_125,
 	FT_DATA_OUT 			=> ft_data,

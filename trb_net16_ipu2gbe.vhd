@@ -254,6 +254,10 @@ signal found_empty_evt_ctr  : std_logic_vector(31 downto 0);
 -- gk 06.10.10
 signal message_size         : std_logic_vector(31 downto 0);
 
+-- gk 07.12.10
+signal prev_bank_select     : std_logic_vector(3 downto 0);
+signal first_event          : std_logic;
+
 begin
 
 BANK_SELECT_OUT <= bank_select; -- gk 27.03.10
@@ -751,7 +755,14 @@ begin
 				-- gk 06.10.10
 				if (MULT_EVT_ENABLE_IN = '1') then
 					if (message_size + pc_sub_size < MAX_MESSAGE_SIZE_IN) then
-						loadNextState <= WAIT_TO_REMOVE;
+						--loadNextState <= WAIT_TO_REMOVE;
+						-- gk 07.12.10
+						if (first_event = '0') and (prev_bank_select /= bank_select) then  -- check if event builder address changed, if so close the current packet
+							loadNextState <= WAIT_PC;
+						else
+							loadNextState <= WAIT_TO_REMOVE;
+						end if;
+
 					else
 						loadNextState <= WAIT_PC;
 					end if;
@@ -973,13 +984,36 @@ begin
 	end if;
 end process bank_select_proc;
 
+-- gk 07.12.10
+first_event_proc : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') or (loadCurrentState = WAIT_PC) then
+			first_event <= '1';
+		elsif (remove_done = '1') then
+			first_event <= '0';
+		end if;
+	end if;
+end process first_event_proc;
+
+-- gk 07.12.10
+prev_bank_proc : process(CLK)
+begin
+	if (RESET = '1') or (loadCurrentState = WAIT_PC) then
+		prev_bank_select <= "0000";
+	elsif ((sf_rd_en = '1') and (rem_ctr = x"3") and (first_event = '1')) then
+		prev_bank_select <= bank_select;
+	end if;
+end process prev_bank_proc;
+
+
 -- gk 29.03.10
 start_config_proc : process( CLK )
 begin
 	if rising_edge( CLK ) then
 		if( (RESET = '1') or (config_done = '1') or (rst_regs = '1') ) then
 			start_config <= '0';
-		elsif( (sf_rd_en = '1') and (rem_ctr = x"2") ) then  -- gk 01.06.10
+		elsif( (sf_rd_en = '1') and (rem_ctr = x"2") and (first_event = '1') ) then  -- gk 01.06.10
 			start_config <= '1';
 		end if;
 	end if;
@@ -1105,12 +1139,21 @@ end process THE_SUB_SIZE_PROC;
 MESSAGE_SIZE_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
+-- 		if (RESET = '1') then
+-- 			message_size <= (others => '0');
+-- 		elsif ((MULT_EVT_ENABLE_IN = '1') and (message_size + pc_sub_size >= MAX_MESSAGE_SIZE_IN) and (remove_done = '1')) then
+-- 			message_size <= (others => '0');
+-- 		elsif (pc_sos = '1') then
+-- 			message_size <= message_size + pc_sub_size;
+-- 		end if;
 		if (RESET = '1') then
-			message_size <= (others => '0');
+			message_size <= x"0000_0028";
 		elsif ((MULT_EVT_ENABLE_IN = '1') and (message_size + pc_sub_size >= MAX_MESSAGE_SIZE_IN) and (remove_done = '1')) then
-			message_size <= (others => '0');
+			message_size <= x"0000_0028";
+		elsif ((MULT_EVT_ENABLE_IN = '1') and (prev_bank_select /= bank_select) and (remove_done = '1')) then
+			message_size <= x"0000_0028";
 		elsif (pc_sos = '1') then
-			message_size <= message_size + pc_sub_size;
+			message_size <= message_size + pc_sub_size + x"10";  -- gk 06.12.10 add 16B for subevent headers
 		end if;
 	end if;
 end process MESSAGE_SIZE_PROC;
@@ -1215,7 +1258,7 @@ debug(11 downto 8)    <= state;
 dbg_bs_proc : process(CLK)
 begin
 	if rising_edge(CLK) then
-		if RESET = '1' then
+		if (RESET = '1') then
 			debug(15 downto 12) <= (others => '0');
 		elsif ( (sf_rd_en = '1') and (rem_ctr = x"3") ) then
 			debug(15 downto 12) <= bank_select;
@@ -1224,7 +1267,7 @@ begin
 end process dbg_bs_proc;
 
 debug(16)             <= config_done;
-debug(17)             <= remove_done;
+debug(17)             <= '0'; --remove_done;
 debug(18)             <= read_done;
 debug(19)             <= padding_needed;
 
@@ -1344,6 +1387,8 @@ CTS_LENGTH_OUT           <= cts_length;
 PC_SOS_OUT               <= pc_sos;
 PC_EOD_OUT               <= '1' when ((MULT_EVT_ENABLE_IN = '0') and (pc_eod = '1'))
 				or ((MULT_EVT_ENABLE_IN = '1') and (message_size + pc_sub_size >= MAX_MESSAGE_SIZE_IN) and (remove_done = '1'))
+				-- gk 07.12.10
+				or ((MULT_EVT_ENABLE_IN = '1') and (prev_bank_select /= bank_select) and (remove_done = '1'))
 				else '0'; -- gk 07.10.10
 PC_DATA_OUT              <= pc_data_q;
 PC_WR_EN_OUT             <= pc_wr_en_qq;

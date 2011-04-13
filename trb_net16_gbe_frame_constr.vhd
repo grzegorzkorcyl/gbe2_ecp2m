@@ -36,6 +36,7 @@ port(
 	FLAGS_OFFSET_IN         : in    std_logic_vector(15 downto 0);
 	TTL_IN                  : in    std_logic_vector(7 downto 0);
 	PROTOCOL_IN             : in    std_logic_vector(7 downto 0);
+	FRAME_DELAY_IN          : in    std_logic_vector(31 downto 0);  -- gk 09.12.10
 	-- ports for packetTransmitter
 	RD_CLK                  : in    std_logic; -- 125MHz clock!!!
 	FT_DATA_OUT             : out   std_logic_vector(8 downto 0);
@@ -76,7 +77,7 @@ attribute sys_encoding      : string;
 type constructStates    is  (IDLE, DEST_MAC_ADDR, SRC_MAC_ADDR, FRAME_TYPE_S, VERSION,
 							 TOS_S, IP_LENGTH, IDENT, FLAGS, TTL_S, PROTO, HEADER_CS,
 							 SRC_IP_ADDR, DEST_IP_ADDR, SRC_PORT, DEST_PORT, UDP_LENGTH,
-							 UDP_CS, SAVE_DATA, CLEANUP);
+							 UDP_CS, SAVE_DATA, CLEANUP, DELAY);
 signal constructCurrentState, constructNextState : constructStates;
 signal bsm_constr           : std_logic_vector(7 downto 0);
 attribute sys_encoding of constructCurrentState: signal is "safe,gray";
@@ -110,6 +111,10 @@ signal ready_frames_ctr_q   : std_logic_vector(15 downto 0);
 signal ip_cs_temp_right     : std_logic_vector(15 downto 0); -- gk 29.03.10
 
 signal fpf_reset            : std_logic;  -- gk 01.01.01
+
+-- gk 09.12.10
+signal delay_ctr            : std_logic_vector(31 downto 0);
+signal frame_delay_reg      : std_logic_vector(31 downto 0);
 
 begin
 
@@ -226,7 +231,7 @@ begin
 end process constructMachineProc;
 
 --find next state of construct machine
-constructMachine: process( constructCurrentState, START_OF_DATA_IN, END_OF_DATA_IN, headers_int_counter, put_udp_headers, CUR_MAX )
+constructMachine: process( constructCurrentState, delay_ctr, FRAME_DELAY_IN, START_OF_DATA_IN, END_OF_DATA_IN, headers_int_counter, put_udp_headers, CUR_MAX )
 begin
 	constructNextState <= constructCurrentState;
 	if( headers_int_counter = cur_max ) then    --can be checked everytime - if not in use, counter and cur_max are 0
@@ -278,12 +283,35 @@ begin
 					constructNextState <= CLEANUP;
 				end if;
 			when CLEANUP =>
-				constructNextState <= IDLE;
+				--constructNextState <= IDLE;
+				constructNextState <= DELAY; -- gk 10.12.10 IDLE;
+			-- gk 09.12.10
+			when DELAY =>
+				if (delay_ctr = FRAME_DELAY_IN) then
+					constructNextState <= IDLE;
+				else
+					constructNextState <= DELAY;
+				end if;
+
 			when others =>
 				constructNextState <= IDLE;
 		end case;
 	end if;
 end process constructMachine;
+
+-- gk 09.12.10
+delayCtrProc : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') or (constructCurrentState = IDLE) or (constructCurrentState = CLEANUP) then
+			delay_ctr <= (others => '0');
+		elsif (constructCurrentState = DELAY) then
+			delay_ctr <= delay_ctr + x"1";
+		end if;
+
+		frame_delay_reg <= FRAME_DELAY_IN;
+	end if;
+end process delayCtrProc;
 
 
 bsmConstrProc : process(constructCurrentState)
@@ -310,6 +338,7 @@ begin
 		when UDP_CS =>          cur_max    <= 1;     bsm_constr <= x"12";
 		when SAVE_DATA =>       cur_max    <= 0;     bsm_constr <= x"13";
 		when CLEANUP =>         cur_max    <= 0;     bsm_constr <= x"14";
+		when DELAY =>           cur_max    <= 0;     bsm_constr <= x"15";
 		when others =>          cur_max    <= 0;     bsm_constr <= x"1f";
 	end case;
 end process;
@@ -348,7 +377,7 @@ fpfWrEnProc : process(constructCurrentState, WR_EN_IN, RESET, LINK_OK_IN)
 begin
 	if (RESET = '1') or (LINK_OK_IN = '0') then  -- gk 01.10.10
 		fpf_wr_en <= '0';
-	elsif (constructCurrentState /= IDLE) and (constructCurrentState /= CLEANUP) and (constructCurrentState /= SAVE_DATA) then
+	elsif (constructCurrentState /= IDLE) and (constructCurrentState /= CLEANUP) and (constructCurrentState /= SAVE_DATA)  and (constructCurrentState /= DELAY) then
 		fpf_wr_en <= '1';
 	elsif (constructCurrentState = SAVE_DATA) and (WR_EN_IN = '1') then
 		fpf_wr_en <= '1';
@@ -383,6 +412,7 @@ begin
 		when UDP_CS         =>  fpf_data <= udp_checksum(15 - headers_int_counter * 8 downto 8 - headers_int_counter * 8);
 		when SAVE_DATA      =>  fpf_data <= DATA_IN;
 		when CLEANUP        =>  fpf_data <= x"ab";
+		when DELAY          =>  fpf_data <= x"ac";
 		when others         =>  fpf_data <= x"00";
 	end case;
 end process fpfDataProc;

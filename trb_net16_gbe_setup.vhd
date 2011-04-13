@@ -42,6 +42,7 @@ port(
 	GBE_DELAY_OUT             : out std_logic_vector(31 downto 0);
 	GBE_ALLOW_LARGE_OUT       : out std_logic;
 	GBE_ALLOW_RX_OUT          : out std_logic;
+	GBE_FRAME_DELAY_OUT       : out std_logic_vector(31 downto 0); -- gk 09.12.10
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);
 	MONITOR_SENT_IN           : in std_logic_vector(31 downto 0);
@@ -110,6 +111,7 @@ signal delay             : std_logic_vector(31 downto 0);  -- gk 28.04.10
 signal allow_large       : std_logic;  -- gk 21.07.10
 signal reset_fifo        : std_logic;  -- gk 28.09.10
 signal allow_rx          : std_logic;
+signal frame_delay       : std_logic_vector(31 downto 0); -- gk 09.12.10
 
 begin
 
@@ -134,6 +136,7 @@ begin
 		GBE_ALLOW_LARGE_OUT       <= allow_large;  -- gk 21.07.10
 		GBE_ALLOW_RX_OUT          <= allow_rx;
 		--DBG_RESET_FIFO_OUT        <= reset_fifo;  -- gk 28.09.10
+		GBE_FRAME_DELAY_OUT       <= frame_delay; -- gk 09.12.10
 	end if;
 end process OUT_PROC;
 
@@ -174,6 +177,7 @@ begin
 			allow_large       <= '0';  -- gk 21.07.10
 			reset_fifo        <= '0';  -- gk 28.09.10
 			allow_rx          <= '0';
+			frame_delay       <= x"0000_0000"; -- gk 09.12.10
 
 		elsif (BUS_WRITE_EN_IN = '1') then
 			case BUS_ADDR_IN is
@@ -238,7 +242,11 @@ begin
 						allow_large <= '1';
 					end if;
 
+				-- gk 09.12.10
 				when x"0d" =>
+					frame_delay <= BUS_DATA_IN;
+
+				when x"0e" =>
 					if (BUS_DATA_IN = x"0000_0000") then
 						allow_rx <= '0';
 					else
@@ -278,6 +286,8 @@ begin
 					allow_large        <= allow_large;
 					reset_fifo         <= reset_fifo; -- gk 28.09.10
 					allow_rx           <= allow_rx;
+					frame_delay        <= frame_delay;
+
 			end case;
 		else
 			reset_values      <= '0';
@@ -350,7 +360,12 @@ begin
 						data_out <= x"0000_0001";
 					end if;
 
+				-- gk 09.12.10
 				when x"0d" =>
+					data_out <= frame_delay;
+
+
+				when x"0e" =>
 					if (allow_rx = '0') then
 						data_out <= x"0000_0000";
 					else
