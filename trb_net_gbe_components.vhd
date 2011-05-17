@@ -156,6 +156,7 @@ port (
 	FR_FRAME_VALID_IN	: in	std_logic;
 	FR_GET_FRAME_OUT	: out	std_logic;
 	FR_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
+	FR_FRAME_PROTO_IN	: in	std_logic_vector(15 downto 0);
 
 -- signals to the rest of the logic
 	RC_RD_EN_IN		: in	std_logic;
@@ -196,6 +197,7 @@ port (
 	FR_FRAME_VALID_OUT	: out	std_logic;
 	FR_GET_FRAME_IN		: in	std_logic;
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );

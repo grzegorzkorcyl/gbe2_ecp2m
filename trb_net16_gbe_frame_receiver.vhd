@@ -41,6 +41,7 @@ port (
 	FR_FRAME_VALID_OUT	: out	std_logic;
 	FR_GET_FRAME_IN		: in	std_logic;
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);  -- high level protocol name, see description for full list
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -51,9 +52,6 @@ architecture trb_net16_gbe_frame_receiver of trb_net16_gbe_frame_receiver is
 
 -- attribute HGROUP : string;
 -- attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_frame_rec";
-
---attribute syn_encoding	: string;
---attribute syn_encoding of macInitState: signal is "safe,gray";
 
 component fifo_4096x9 is
 port( 
@@ -86,6 +84,11 @@ port(
 );
 end component;
 
+attribute syn_encoding	: string;
+type filter_states is (IDLE, REMOVE_PRE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, CLEAUP);
+signal filter_current_state, filter_next_state : filter_states;
+attribute syn_encoding of filter_currebt_state : signal is "safe,gray";
+
 signal fifo_wr_en                           : std_logic;
 signal rx_bytes_ctr                         : std_logic_vector(15 downto 0);
 signal frame_valid_q                        : std_logic;
@@ -98,6 +101,10 @@ signal rec_fifo_full                        : std_logic;
 signal sizes_fifo_full                      : std_logic;
 signal sizes_fifo_empty                     : std_logic;
 
+signal remove_ctr                           : std_logic_vector(7 downto 0);
+signal new_frame                            : std_logic;
+signal new_frame_lock                       : std_logic;
+
 begin
 
 DEBUG_OUT(0)            <= rec_fifo_empty;
@@ -106,6 +113,109 @@ DEBUG_OUT(2)            <= sizes_fifo_empty;
 DEBUG_OUT(3)            <= sizes_fifo_full;
 DEBUG_OUT(31 downto 4)  <= (others => '0');
 
+-- new_frame is asserted when first byte of the frame arrives
+NEW_FRAME_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (MAC_RX_EOF_IN = '1') then
+			new_frame <= '0';
+			new_frame_lock <= '0';
+		elsif (new_frame_lock = '0') and (MAC_RX_EN_IN = '1') then
+			new_frame <= '1';
+			new_frame_lock <= '1';
+		else
+			new_frame <= '0';
+		end if;
+	end if;
+end process NEW_FRAME_PROC;
+
+
+FILTER_MACHINE_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			filter_current_state <= IDLE;
+		else
+			filter_current_state <= filter_next_state;
+		end if;
+	end if;
+end process FILTER_MACHINE_PROC;
+
+FILTER_MACHINE : process(filter_current_state, remove_ctr, new_frame, MAC_RX_EOF_IN)
+begin
+
+	case filter_current_state is
+		
+		when IDLE =>
+			if (new_frame = '1') then
+				filter_next_state <= REMOVE_PRE;
+			else
+				filter_next_state <= IDLE;
+			end if;
+		
+		when REMOVE_PRE =>
+			if (remove_ctr = x"05") then
+				filter_next_state <= REMOVE_DEST;
+			else
+				filter_next_state <= REMOVE_PRE;
+			end if;
+		
+		when REMOVE_DEST =>
+			if (remove_ctr = x"0b") then
+				filter_next_state <= REMOVE_SRC;
+			else
+				filter_next_state <= REMOVE_DEST;
+			end if;
+		
+		when REMOVE_SRC =>
+			if (remove_ctr = x"13") then
+				filter_next_state <= REMOVE_TYPE;
+			else
+				filter_next_state <= REMOVE_SRC;
+			end if;
+		
+		when REMOVE_TYPE =>
+			if (remove_ctr = x"15") then
+				-- TODO: decision should be taken here about the future of the frame
+				filter_next_state <= SAVE_FRAME;
+				filter_next_state <= DROP_FRAME;
+				
+			else
+				filter_next_state <= REMOVE_TYPE;
+			end if;
+			
+		when SAVE_FRAME =>
+			-- TODO: high level protocol recognition should be done here
+			if (MAC_RX_EOF_IN = '1') then
+				filter_next_state <= CLEANUP;
+			else
+				filter_next_state <= SAVE_FRAME;
+			end if;
+			
+		when DROP_FRAME =>
+			if (MAC_RX_EOF_IN = '1') then
+				filter_next_state <= CLEANUP;
+			else
+				filter_next_state <= DROP_FRAME;
+			end if;
+		
+		when CLEANUP =>
+			filter_next_state <= IDLE;
+	
+	end case;
+end process;
+
+-- counts the bytes to be removed from the ethernet headers fields
+REMOVE_CTR_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = IDLE) then
+			remove_ctr <= (others => '0');
+		elsif (fifo_wr_en = '1') and (filter_current_state /= IDLE) and (filter_current_state /= CLEANUP) then
+			remove_ctr <= remove_ctr + x"1";
+		end if;
+	end if;
+end process REMOVE_CTR_PROC;
 
 --TODO put here a larger fifo maybe
 receive_fifo : fifo_4096x9
@@ -122,7 +232,7 @@ port map(
 	Empty               => rec_fifo_empty,
 	Full                => rec_fifo_full
 );
-fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1' and ALLOW_RX_IN = '1')
+fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and (ALLOW_RX_IN = '1') and (filter_current_state = SAVE_FRAME)
 	      else '0';
 
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;

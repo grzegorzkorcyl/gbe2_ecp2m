@@ -1094,6 +1094,7 @@ port map(
 	FR_FRAME_VALID_IN	=> fr_frame_valid,
 	FR_GET_FRAME_OUT	=> fr_get_frame,
 	FR_FRAME_SIZE_IN	=> fr_frame_size,
+	FR_FRAME_PROTO_IN	=> fr_frame_proto,
 
 -- signals to/from main controller
 	RC_RD_EN_IN		=> rc_rd_en,
@@ -1121,14 +1122,7 @@ port map(
 	TX_EMPTY_IN			=> ft_tx_empty,
 	START_OF_PACKET_IN		=> ft_start_of_packet,
 	DATA_ENDFLAG_IN			=> ft_data(8),  -- ft_eod -- gk 04.05.10
-	-- MAC interface
--- 	HADDR_OUT			=> mac_haddr,
--- 	HDATA_OUT			=> mac_hdataout,
--- 	HCS_OUT				=> mac_hcs,
--- 	HWRITE_OUT			=> mac_hwrite,
--- 	HREAD_OUT			=> mac_hread,
--- 	HREADY_IN			=> mac_hready,
--- 	HDATA_EN_IN			=> mac_hdata_en,
+	
 	TX_FIFOAVAIL_OUT		=> mac_fifoavail,
 	TX_FIFOEOF_OUT			=> mac_fifoeof,
 	TX_FIFOEMPTY_OUT		=> mac_fifoempty,
@@ -1171,6 +1165,7 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  FR_FRAME_VALID_OUT	=> fr_frame_valid,
 	  FR_GET_FRAME_IN	=> fr_get_frame,
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
+	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 
 	  DEBUG_OUT(31 downto 0) => dbg_fr
   );
@@ -1194,12 +1189,14 @@ frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
 	  MAC_RX_FIFO_FULL_OUT	=> mac_rx_fifo_full,
 	  MAC_RX_STAT_EN_IN	=> mac_rx_stat_en,
 	  MAC_RX_STAT_VEC_IN	=> mac_rx_stat_vec,
+	  
   -- output signal to control logic
 	  FR_Q_OUT		=> fr_q,
 	  FR_RD_EN_IN		=> fr_rd_en,
 	  FR_FRAME_VALID_OUT	=> fr_frame_valid,
 	  FR_GET_FRAME_IN	=> fr_get_frame,
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
+	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 
 	  DEBUG_OUT		=> open
   );

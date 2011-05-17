@@ -17,14 +17,7 @@ port (
 	TX_EMPTY_IN			: in	std_logic;
 	START_OF_PACKET_IN	: in	std_logic;
 	DATA_ENDFLAG_IN		: in	std_logic; -- (8) is end flag, rest is only for TSMAC
-	-- NEW PORTS
--- 	HADDR_OUT			: out	std_logic_vector(7 downto 0);
--- 	HDATA_OUT			: out	std_logic_vector(7 downto 0);
--- 	HCS_OUT				: out	std_logic;
--- 	HWRITE_OUT			: out	std_logic;
--- 	HREAD_OUT			: out	std_logic;
--- 	HREADY_IN			: in	std_logic;
--- 	HDATA_EN_IN			: in	std_logic;
+
 	TX_FIFOAVAIL_OUT	: out	std_logic;
 	TX_FIFOEOF_OUT		: out	std_logic;
 	TX_FIFOEMPTY_OUT	: out	std_logic;

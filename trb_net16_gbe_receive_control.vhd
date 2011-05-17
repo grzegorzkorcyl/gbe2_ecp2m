@@ -25,6 +25,7 @@ port (
 	FR_FRAME_VALID_IN	: in	std_logic;
 	FR_GET_FRAME_OUT	: out	std_logic;
 	FR_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
+	FR_FRAME_PROTO_IN	: in	std_logic_vector(15 downto 0);
 
 -- signals to/from main controller
 	RC_RD_EN_IN		: in	std_logic;
