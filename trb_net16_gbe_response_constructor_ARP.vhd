@@ -25,10 +25,12 @@ port (
 	PS_ACTIVATE_IN		: in	std_logic;
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
+	PS_SELECTED_IN		: in	std_logic;
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_BUSY_IN		: in	std_logic;
 -- END OF INTERFACE
 
 -- debug
@@ -41,11 +43,12 @@ architecture trb_net16_gbe_response_constructor_ARP of trb_net16_gbe_response_co
 
 attribute syn_encoding	: string;
 
-type dissect_states is (IDLE, SAVE, LOAD, CLEANUP);
+type dissect_states is (IDLE, SAVE, WAIT_FOR_LOAD, LOAD, CLEANUP);
 signal dissect_current_state, dissect_next_state : dissect_states;
 attribute syn_encoding of dissect_current_state: signal is "safe,gray";
 
 signal ff_wr_en                 : std_logic;
+signal ff_rd_en                 : std_logic;
 signal resp_bytes_ctr           : std_logic_vector(15 downto 0);
 signal ff_empty                 : std_logic;
 signal reset_ctr                : std_logic;
@@ -66,7 +69,7 @@ begin
 	end if;
 end process DISSECT_MACHINE_PROC;
 
-DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, ff_q)
+DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, ff_q, TC_BUSY_IN)
 begin
 	case dissect_current_state is
 	
@@ -79,9 +82,16 @@ begin
 		
 		when SAVE =>
 			if (PS_DATA_IN(8) = '1') then
-				dissect_next_state <= LOAD;
+				dissect_next_state <= WAIT_FOR_LOAD;
 			else
 				dissect_next_state <= SAVE;
+			end if;
+			
+		when WAIT_FOR_LOAD =>
+			if (TC_BUSY_IN = '0') then
+				dissect_next_state <= LOAD;
+			else
+				dissect_next_state <= WAIT_FOR_LOAD;
 			end if;
 		
 		when LOAD =>
@@ -97,7 +107,8 @@ begin
 	end case;
 end process DISSECT_MACHINE;
 
-PS_BUSY_OUT <= '1' when ff_wr_en = '1' else '0';
+--PS_BUSY_OUT <= '1' when ff_wr_en = '1' else '0';
+PS_BUSY_OUT <= '0' when dissect_current_state = IDLE else '1';
 
 ff_wr_en <= '1' when (PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') else '0';
 
@@ -124,13 +135,15 @@ port map(
 	WrClock             => CLK,
 	RdClock             => CLK,
 	WrEn                => ff_wr_en,
-	RdEn                => TC_RD_EN_IN,
+	RdEn                => ff_rd_en,
 	Reset               => RESET,
 	RPReset             => RESET,
 	Q                   => ff_q,
 	Empty               => ff_empty,
 	Full                => open
 );
+
+ff_rd_en <= '1' when (TC_RD_EN_IN = '1' and PS_SELECTED_IN = '1') else '0';
 
 TC_DATA_OUT <= ff_q;
 

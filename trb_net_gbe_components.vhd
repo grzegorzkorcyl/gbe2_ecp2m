@@ -46,6 +46,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_BUSY_IN		: in	std_logic;
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -361,6 +362,7 @@ port(
 	FLAGS_OFFSET_IN         : in    std_logic_vector(15 downto 0);
 	TTL_IN                  : in    std_logic_vector(7 downto 0);
 	PROTOCOL_IN             : in    std_logic_vector(7 downto 0);
+	FRAME_DELAY_IN		: in	std_logic_vector(31 downto 0);
 	-- ports for packetTransmitter
 	RD_CLK                  : in    std_logic; -- 125MHz clock!!!
 	FT_DATA_OUT             : out   std_logic_vector(8 downto 0);
@@ -487,6 +489,7 @@ port(
 	GBE_DELAY_OUT             : out std_logic_vector(31 downto 0);
 	GBE_ALLOW_LARGE_OUT       : out std_logic;
 	GBE_ALLOW_RX_OUT          : out std_logic;
+	GBE_FRAME_DELAY_OUT	  : out std_logic_vector(31 downto 0);
 	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);

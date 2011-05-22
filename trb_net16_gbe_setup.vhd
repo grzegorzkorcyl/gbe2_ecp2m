@@ -169,7 +169,7 @@ begin
 			max_packet        <= x"0000_0fd0"; --x"0000_fde8"; -- 65k --x"0000_fde8"; -- tester
 			min_packet        <= x"0000_0007"; -- gk 20.07.10
 			max_frame         <= x"0578";
-			use_gbe           <= '1'; --'1';  -- gk 27.08.10  -- blocks the transmission until gbe gets configured
+			use_gbe           <= '0'; --'1';  -- gk 27.08.10  -- blocks the transmission until gbe gets configured
 			use_trbnet        <= '0';
 			use_multievents   <= '0';
 			reset_values      <= '0';

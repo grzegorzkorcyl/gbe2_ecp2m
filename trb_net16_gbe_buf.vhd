@@ -8,7 +8,9 @@ library work;
 use work.trb_net_std.all;
 use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
+
 use work.trb_net_gbe_components.all;
+use work.trb_net_gbe_protocols.all;
 --use work.version.all;
 
 entity trb_net16_gbe_buf is
@@ -531,6 +533,9 @@ signal dbg_tc                        : std_logic_vector(63 downto 0);
 
 signal fr_allowed_types              : std_logic_vector(31 downto 0);
 
+signal fr_frame_proto                : std_logic_vector(c_MAX_PROTOCOLS -1 downto 0);
+signal rc_frame_proto                : std_logic_vector(c_MAX_PROTOCOLS -1 downto 0);
+
 begin
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
@@ -563,7 +568,7 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  RC_DATA_IN		=> rc_q,
 	  RC_RD_EN_OUT		=> rc_rd_en,
 	  RC_FRAME_SIZE_IN	=> rc_frame_size,
-
+	  RC_FRAME_PROTO_IN	=> rc_frame_proto,
 
   -- signals to/from transmit controller
 	  TC_TRANSMIT_CTRL_OUT	=> mc_transmit_ctrl,
@@ -618,7 +623,7 @@ MC_SIM_GEN : if (DO_SIMULATION = 1) generate
 	  RC_DATA_IN		=> rc_q,
 	  RC_RD_EN_OUT		=> rc_rd_en,
 	  RC_FRAME_SIZE_IN	=> rc_frame_size,
-
+	  RC_FRAME_PROTO_IN	=> rc_frame_proto,
 
   -- signals to/from transmit controller
 	  TC_TRANSMIT_CTRL_OUT	=> mc_transmit_ctrl,

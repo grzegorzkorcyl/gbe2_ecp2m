@@ -55,8 +55,6 @@ architecture trb_net16_gbe_receive_control of trb_net16_gbe_receive_control is
 type load_states is (IDLE, PREPARE, READY);
 signal load_current_state, load_next_state : load_states;
 
-signal local_data                : std_logic_vector(8 downto 0);
-signal local_rd_en               : std_logic;
 signal frames_received_ctr       : std_logic_vector(31 downto 0);
 signal frames_readout_ctr        : std_logic_vector(31 downto 0);
 signal bytes_rec_ctr             : std_logic_vector(31 downto 0);

@@ -108,8 +108,9 @@ signal first_byte                   : std_logic;
 signal first_byte_q                 : std_logic;
 signal first_byte_qq                : std_logic;
 signal proto_select                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
 
-type redirect_states is (IDLE, LOAD, BUSY, CLEANUP);
+type redirect_states is (IDLE, LOAD, BUSY, FINISH, CLEANUP);
 signal redirect_current_state, redirect_next_state : redirect_states;
 
 begin
@@ -133,14 +134,13 @@ port map(
 	TC_DATA_OUT		=> TC_DATA_OUT,
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
+	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	DEBUG_OUT		=> open
 );
 
-proto_select <= RC_FRAME_PROTO_IN when (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '1') or 
-					(redirect_current_state = LOAD) or 
-					(redirect_current_state = BUSY) 
-		else (others => '0');
+proto_select <= (others => '0') when (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '0')
+		else RC_FRAME_PROTO_IN;
 
 
 REDIRECT_MACHINE_PROC : process(CLK)
@@ -154,7 +154,7 @@ begin
 	end if;
 end process REDIRECT_MACHINE_PROC;
 
-REDIRECT_MACHINE : process(redirect_current_state, RC_FRAME_WAITING_IN, RC_DATA_IN, ps_busy, RC_FRAME_PROTO_IN, ps_wr_en)
+REDIRECT_MACHINE : process(redirect_current_state, RC_FRAME_WAITING_IN, RC_DATA_IN, ps_busy, RC_FRAME_PROTO_IN, ps_wr_en, loaded_bytes_ctr, RC_FRAME_SIZE_IN)
 begin
 	case redirect_current_state is
 	
@@ -170,8 +170,9 @@ begin
 			end if;
 		
 		when LOAD =>
-			if (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') then
-				redirect_next_state <= CLEANUP;
+			--if (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') then
+			if (loaded_bytes_ctr = RC_FRAME_SIZE_IN - x"1") then
+				redirect_next_state <= FINISH;
 			else
 				redirect_next_state <= LOAD;
 			end if;
@@ -181,7 +182,10 @@ begin
 				redirect_next_state <= LOAD;
 			else
 				redirect_next_state <= BUSY;
-			end if; 
+			end if;
+		
+		when FINISH =>
+			redirect_next_state <= CLEANUP;
 		
 		when CLEANUP =>
 			redirect_next_state <= IDLE;
@@ -205,21 +209,25 @@ begin
 	end if;
 end process;
 
-RC_LOADING_DONE_OUT <= '1' when (RC_DATA_IN(8) = '1') and (redirect_current_state = LOAD) and (ps_wr_en = '1') else '0';
+RC_LOADING_DONE_OUT <= '1' when (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') else '0';
 
 PS_WR_EN_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
-		
-		if (RESET = '1') then
-			ps_wr_en <= '0';
-		elsif (rc_rd_en = '1' and (RC_DATA_IN(8) = '0' or first_byte_qq = '1')) then
-			ps_wr_en <= '1';
-		else
-			ps_wr_en <= '0';
-		end if;
+		ps_wr_en <= rc_rd_en;
 	end if;
 end process PS_WR_EN_PROC;
+
+LOADED_BYTES_CTR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') or (redirect_current_state = IDLE) then
+			loaded_bytes_ctr <= (others => '0');
+		elsif (redirect_current_state = LOAD) and (rc_rd_en = '1') then
+			loaded_bytes_ctr <= loaded_bytes_ctr + x"1";
+		end if;
+	end if;
+end process LOADED_BYTES_CTR_PROC;
 
 FIRST_BYTE_PROC : process(CLK)
 begin

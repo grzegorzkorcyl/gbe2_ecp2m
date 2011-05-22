@@ -20,10 +20,12 @@ port (
 	PS_ACTIVATE_IN		: in	std_logic;
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
+	PS_SELECTED_IN		: in	std_logic;
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_BUSY_IN		: in	std_logic;
 -- END OF INTERFACE
 
 -- debug
@@ -42,10 +44,12 @@ port (
 	PS_ACTIVATE_IN		: in	std_logic;
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
+	PS_SELECTED_IN		: in	std_logic;
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_BUSY_IN		: in	std_logic;
 -- END OF INTERFACE
 
 -- debug

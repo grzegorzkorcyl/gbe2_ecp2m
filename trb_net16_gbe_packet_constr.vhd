@@ -767,8 +767,6 @@ begin
 		elsif (MULT_EVT_ENABLE_IN = '1') and (loadCurrentState = PREP_DATA)  and (from_divide_state = '1') and ((divide_position = "00") or (divide_position = "01")) and (disable_prep = '0') then
 			bytes_loaded <= bytes_loaded + x"1";
 		end if;
-
-		end if;
 	end if;
 end process bytesLoadedProc;
 
