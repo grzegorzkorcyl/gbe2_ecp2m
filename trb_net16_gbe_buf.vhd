@@ -529,6 +529,8 @@ signal dbg_rc                        : std_logic_vector(63 downto 0);
 signal dbg_mc                        : std_logic_vector(31 downto 0);
 signal dbg_tc                        : std_logic_vector(63 downto 0);
 
+signal fr_allowed_types              : std_logic_vector(31 downto 0);
+
 begin
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
@@ -750,6 +752,7 @@ port map(
 	GBE_ALLOW_LARGE_OUT       => allow_large,  -- gk 21.07.10
 	GBE_ALLOW_RX_OUT          => allow_rx,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
+	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
 	MONITOR_SENT_IN           => monitor_sent,
@@ -831,6 +834,7 @@ port map(
 	GBE_ALLOW_LARGE_OUT       => open,
 	GBE_ALLOW_RX_OUT          => open,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
+	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
 	MONITOR_SENT_IN           => monitor_sent,
@@ -1166,6 +1170,7 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  FR_GET_FRAME_IN	=> fr_get_frame,
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
+	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
 
 	  DEBUG_OUT(31 downto 0) => dbg_fr
   );
@@ -1197,6 +1202,7 @@ frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
 	  FR_GET_FRAME_IN	=> fr_get_frame,
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
+	  FR_ALLOWED_TYPES_IN   => x"0000_0003",
 
 	  DEBUG_OUT		=> open
   );

@@ -7,7 +7,9 @@ library work;
 use work.trb_net_std.all;
 use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
+
 use work.trb_net_gbe_components.all;
+use work.trb_net_gbe_protocols.all;
 
 --********
 -- controls the work of the whole gbe in both directions
@@ -31,7 +33,7 @@ port (
 	RC_DATA_IN		: in	std_logic_vector(8 downto 0);
 	RC_RD_EN_OUT		: out	std_logic;
 	RC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
-
+	RC_FRAME_PROTO_IN	: in	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
 -- signals to/from transmit controller
 	TC_TRANSMIT_CTRL_OUT	: out	std_logic;  -- slow control frame is waiting to be built and sent
@@ -60,7 +62,6 @@ port (
 	TSM_HREAD_N_OUT		: out	std_logic;
 	TSM_HREADY_N_IN		: in	std_logic;
 	TSM_HDATA_EN_N_IN	: in	std_logic;
-
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -99,21 +100,142 @@ signal flow_current_state, flow_next_state : flow_states;
 
 signal state                        : std_logic_vector(3 downto 0);
 
-begin
+signal ps_wr_en                     : std_logic;
+signal ps_response_ready            : std_logic;
+signal ps_busy                      : std_logic_vector(c_MAX_PROTOCOLS -1 downto 0);
+signal rc_rd_en                     : std_logic;
+signal first_byte                   : std_logic;
+signal first_byte_q                 : std_logic;
+signal first_byte_qq                : std_logic;
+signal proto_select                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
---TC_CTRL_FRAME_REQ_OUT <= RC_FRAME_READY_IN;
+type redirect_states is (IDLE, LOAD, BUSY, CLEANUP);
+signal redirect_current_state, redirect_next_state : redirect_states;
+
+begin
 
 DEBUG_OUT(3 downto 0)  <= state;
 DEBUG_OUT(31 downto 4) <= (others => '0');
 
 
-TC_DATA_OUT  <= RC_DATA_IN;
+protocol_selector : trb_net16_gbe_protocol_selector
+port map(
+	CLK			=> CLK,
+	RESET			=> RESET,
+	
+	PS_DATA_IN		=> RC_DATA_IN,
+	PS_WR_EN_IN		=> ps_wr_en,
+	PS_PROTO_SELECT_IN	=> proto_select,
+	PS_BUSY_OUT		=> ps_busy,
+	PS_FRAME_SIZE_IN	=> RC_FRAME_SIZE_IN,
+	PS_RESPONSE_READY_OUT	=> ps_response_ready,
+	
+	TC_DATA_OUT		=> TC_DATA_OUT,
+	TC_RD_EN_IN		=> TC_RD_EN_IN,
+	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
+	
+	DEBUG_OUT		=> open
+);
 
-TC_FRAME_SIZE_OUT <= RC_FRAME_SIZE_IN;
+proto_select <= RC_FRAME_PROTO_IN when (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '1') or 
+					(redirect_current_state = LOAD) or 
+					(redirect_current_state = BUSY) 
+		else (others => '0');
 
-RC_RD_EN_OUT <= TC_RD_EN_IN;
 
+REDIRECT_MACHINE_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			redirect_current_state <= IDLE;
+		else
+			redirect_current_state <= redirect_next_state;
+		end if;
+	end if;
+end process REDIRECT_MACHINE_PROC;
 
+REDIRECT_MACHINE : process(redirect_current_state, RC_FRAME_WAITING_IN, RC_DATA_IN, ps_busy, RC_FRAME_PROTO_IN, ps_wr_en)
+begin
+	case redirect_current_state is
+	
+		when IDLE =>
+			if (RC_FRAME_WAITING_IN = '1') then
+				if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
+					redirect_next_state <= LOAD;
+				else
+					redirect_next_state <= BUSY;
+				end if;
+			else
+				redirect_next_state <= IDLE;
+			end if;
+		
+		when LOAD =>
+			if (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') then
+				redirect_next_state <= CLEANUP;
+			else
+				redirect_next_state <= LOAD;
+			end if;
+		
+		when BUSY =>
+			if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
+				redirect_next_state <= LOAD;
+			else
+				redirect_next_state <= BUSY;
+			end if; 
+		
+		when CLEANUP =>
+			redirect_next_state <= IDLE;
+	
+	end case;
+end process REDIRECT_MACHINE;
+
+--RC_RD_EN_OUT <= '1' when redirect_current_state = LOAD else '0';
+RC_RD_EN_OUT <= rc_rd_en;
+
+RC_RD_EN_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			rc_rd_en <= '0';
+		elsif (redirect_current_state = LOAD) then
+			rc_rd_en <= '1';
+		else
+			rc_rd_en <= '0';
+		end if;
+	end if;
+end process;
+
+RC_LOADING_DONE_OUT <= '1' when (RC_DATA_IN(8) = '1') and (redirect_current_state = LOAD) and (ps_wr_en = '1') else '0';
+
+PS_WR_EN_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		
+		if (RESET = '1') then
+			ps_wr_en <= '0';
+		elsif (rc_rd_en = '1' and (RC_DATA_IN(8) = '0' or first_byte_qq = '1')) then
+			ps_wr_en <= '1';
+		else
+			ps_wr_en <= '0';
+		end if;
+	end if;
+end process PS_WR_EN_PROC;
+
+FIRST_BYTE_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		first_byte_q  <= first_byte;
+		first_byte_qq <= first_byte_q;
+		
+		if (RESET = '1') then
+			first_byte <= '0';
+		elsif (redirect_current_state = IDLE) then
+			first_byte <= '1';
+		else
+			first_byte <= '0';
+		end if;
+	end if;
+end process FIRST_BYTE_PROC;
 
 --*********************
 --	DATA FLOW CONTROL
@@ -129,13 +251,14 @@ begin
   end if;
 end process FLOW_MACHINE_PROC;
 
-FLOW_MACHINE : process(flow_current_state, RC_FRAME_WAITING_IN, PC_TRANSMIT_ON_IN, PC_SOD_IN, TC_TRANSMIT_DONE_IN)
+FLOW_MACHINE : process(flow_current_state, PC_TRANSMIT_ON_IN, PC_SOD_IN, TC_TRANSMIT_DONE_IN, ps_response_ready)
 begin
   case flow_current_state is
 
     when IDLE =>
       state <= x"1";
-      if (RC_FRAME_WAITING_IN = '1') and (PC_TRANSMIT_ON_IN = '0') then
+      --if (RC_FRAME_WAITING_IN = '1') and (PC_TRANSMIT_ON_IN = '0') then
+      if (ps_response_ready = '1') and (PC_TRANSMIT_ON_IN = '0') then
 	flow_next_state <= TRANSMIT_CTRL;
       elsif (PC_SOD_IN = '1') then  -- pottential loss of frames
 	flow_next_state <= TRANSMIT_DATA;
@@ -169,30 +292,9 @@ end process FLOW_MACHINE;
 TC_TRANSMIT_DATA_OUT <= '1' when (flow_current_state = TRANSMIT_DATA) else '0';
 TC_TRANSMIT_CTRL_OUT <= '1' when (flow_current_state = TRANSMIT_CTRL) else '0';
 
-RC_LOADING_DONE_OUT  <= '1' when (flow_current_state = TRANSMIT_CTRL) and (TC_TRANSMIT_DONE_IN = '1') else '0';
-
--- -- hold incoming frame until transmit controller is able to handle it
--- TC_CTRL_FRAME_REQ_OUT <= saved_frame_req_t;
--- 
--- saved_frame_req_t <= '1' when ((RC_FRAME_READY_IN = '1') and (TC_BUSY_IN = '0'))
--- 			or ((saved_frame_req_q = '1') and (TC_BUSY_IN = '0'))
--- 			else '0';
--- 
--- SAVED_FRAME_REQ_PROC : process(CLK)
--- begin
---   if rising_edge(CLK) then
--- 
---     saved_frame_req_q <= saved_frame_req;
--- 
---     if (RESET = '1') or (saved_frame_req_t = '1') then
---       saved_frame_req <= '0';
---     elsif (TC_BUSY_IN = '1') and (RC_FRAME_READY_IN = '1') then
---       saved_frame_req <= '1';
---     end if;
---   end if;
--- end process SAVED_FRAME_REQ_PROC;
 
 
+--RC_LOADING_DONE_OUT  <= '1' when (flow_current_state = TRANSMIT_CTRL) and (TC_TRANSMIT_DONE_IN = '1') else '0';
 
 --***********************
 --	LINK STATE CONTROL

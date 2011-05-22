@@ -11,10 +11,10 @@ use work.trb_net16_hub_func.all;
 use work.trb_net_gbe_components.all;
 
 --********
--- dissects the incoming packet of the specified protocol
--- and constructs the responses if needed
+-- Response Constructor which forwards received frame back ceating a loopback 
+--
 
-entity trb_net16_gbe_response_constructor_ARP is
+entity trb_net16_gbe_response_constructor_Forward is
 port (
 	CLK			: in	std_logic;  -- system clock
 	RESET			: in	std_logic;
@@ -25,7 +25,7 @@ port (
 	PS_ACTIVATE_IN		: in	std_logic;
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
-		
+	
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
@@ -34,10 +34,10 @@ port (
 -- debug
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
-end trb_net16_gbe_response_constructor_ARP;
+end trb_net16_gbe_response_constructor_Forward;
 
 
-architecture trb_net16_gbe_response_constructor_ARP of trb_net16_gbe_response_constructor_ARP is
+architecture trb_net16_gbe_response_constructor_Forward of trb_net16_gbe_response_constructor_Forward is
 
 attribute syn_encoding	: string;
 
@@ -149,6 +149,6 @@ begin
 	end if;
 end process RESP_BYTES_CTR_PROC;
 
-end trb_net16_gbe_response_constructor_ARP;
+end trb_net16_gbe_response_constructor_Forward;
 
 

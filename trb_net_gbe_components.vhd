@@ -5,9 +5,51 @@ USE IEEE.std_logic_UNSIGNED.ALL;
 library work;
 use work.trb_net_std.all;
 
+use work.trb_net_gbe_protocols.all;
+
 package trb_net_gbe_components is
 
 
+component trb_net16_gbe_protocol_prioritizer is
+port (
+	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
+	PROTOCOL_CODE_IN	: in	std_logic_vector(15 downto 0);  -- higher level protocols
+	HAS_HIGHER_LEVEL_IN	: in	std_logic;
+	
+	CODE_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0)
+);
+end component;
+
+component trb_net16_gbe_type_validator is
+port (
+	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
+	ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);  -- signal from gbe_setup
+	
+	VALID_OUT		: out	std_logic
+);
+end component;
+
+component trb_net16_gbe_protocol_selector is
+port (
+	CLK			: in	std_logic;  -- system clock
+	RESET			: in	std_logic;
+
+-- signals to/from main controller
+	PS_DATA_IN		: in	std_logic_vector(8 downto 0); 
+	PS_WR_EN_IN		: in	std_logic;
+	PS_PROTO_SELECT_IN	: in	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+	PS_BUSY_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+	PS_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
+	PS_RESPONSE_READY_OUT	: out	std_logic;
+	
+-- singals to/from transmi controller with constructed response
+	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
+	TC_RD_EN_IN		: in	std_logic;
+	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+
+	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
+);
+end component;
 
 component trb_net16_gbe_mac_control is
 port (
@@ -50,7 +92,7 @@ port (
 	RC_DATA_IN		: in	std_logic_vector(8 downto 0);
 	RC_RD_EN_OUT		: out	std_logic;
 	RC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
-
+	RC_FRAME_PROTO_IN	: in	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
 -- signals to/from transmit controller
 	TC_TRANSMIT_CTRL_OUT	: out	std_logic;  -- slow control frame is waiting to be built and sent
@@ -164,6 +206,7 @@ port (
 	RC_FRAME_WAITING_OUT	: out	std_logic;
 	RC_LOADING_DONE_IN	: in	std_logic;
 	RC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	RC_FRAME_PROTO_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
 -- statistics
 	FRAMES_RECEIVED_OUT	: out	std_logic_vector(31 downto 0);
@@ -198,6 +241,7 @@ port (
 	FR_GET_FRAME_IN		: in	std_logic;
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);
+	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -443,6 +487,7 @@ port(
 	GBE_DELAY_OUT             : out std_logic_vector(31 downto 0);
 	GBE_ALLOW_LARGE_OUT       : out std_logic;
 	GBE_ALLOW_RX_OUT          : out std_logic;
+	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);
 	MONITOR_SENT_IN           : in std_logic_vector(31 downto 0);
@@ -508,6 +553,36 @@ port(
 	MTU_OUT						: out	std_logic_vector(15 downto 0); -- MTU size (max frame size)
 	-- Debug
 	DEBUG_OUT					: out	std_logic_vector(31 downto 0)
+);
+end component;
+
+component fifo_4096x9 is
+port( 
+	Data    : in    std_logic_vector(8 downto 0);
+	WrClock : in    std_logic;
+	RdClock : in    std_logic;
+	WrEn    : in    std_logic;
+	RdEn    : in    std_logic;
+	Reset   : in    std_logic;
+	RPReset : in    std_logic;
+	Q       : out   std_logic_vector(8 downto 0);
+	Empty   : out   std_logic;
+	Full    : out   std_logic
+);
+end component;
+
+component fifo_4096x32 is
+port( 
+	Data    : in    std_logic_vector(31 downto 0);
+	WrClock : in    std_logic;
+	RdClock : in    std_logic;
+	WrEn    : in    std_logic;
+	RdEn    : in    std_logic;
+	Reset   : in    std_logic;
+	RPReset : in    std_logic;
+	Q       : out   std_logic_vector(31 downto 0);
+	Empty   : out   std_logic;
+	Full    : out   std_logic
 );
 end component;
 

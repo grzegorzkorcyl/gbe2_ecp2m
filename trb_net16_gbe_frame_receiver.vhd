@@ -7,15 +7,13 @@ library work;
 use work.trb_net_std.all;
 use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
+use work.trb_net_gbe_components.all;
 
 --********
 -- here all frame checking has to be done, if the frame fits into protocol standards
 -- if so FR_FRAME_VALID_OUT is asserted after having received all bytes of a frame
 -- otherwise, after receiving all bytes, FR_FRAME_VALID_OUT keeps low and the fifo is cleared
 -- also a part of addresses assignemt has to be done here
--- should also have some outputs indicating the type of received message
--- require a state machine that will recognize messages and control the receiving process
-
 
 entity trb_net16_gbe_frame_receiver is
 port (
@@ -42,6 +40,7 @@ port (
 	FR_GET_FRAME_IN		: in	std_logic;
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);  -- high level protocol name, see description for full list
+	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -52,42 +51,10 @@ architecture trb_net16_gbe_frame_receiver of trb_net16_gbe_frame_receiver is
 
 -- attribute HGROUP : string;
 -- attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_frame_rec";
-
-component fifo_4096x9 is
-port( 
-	Data    : in    std_logic_vector(8 downto 0);
-	WrClock : in    std_logic;
-	RdClock : in    std_logic;
-	WrEn    : in    std_logic;
-	RdEn    : in    std_logic;
-	Reset   : in    std_logic;
-	RPReset : in    std_logic;
-	Q       : out   std_logic_vector(8 downto 0);
-	Empty   : out   std_logic;
-	Full    : out   std_logic
-);
-end component;
-
--- used to save sizes of received frames in frame_receiver
-component debug_fifo_2kx16 is
-port( 
-	Data    : in    std_logic_vector(15 downto 0);
-	WrClock : in    std_logic;
-	RdClock : in    std_logic;
-	WrEn    : in    std_logic;
-	RdEn    : in    std_logic;
-	Reset   : in    std_logic;
-	RPReset : in    std_logic;
-	Q       : out   std_logic_vector(15 downto 0);
-	Empty   : out   std_logic;
-	Full    : out   std_logic
-);
-end component;
-
 attribute syn_encoding	: string;
-type filter_states is (IDLE, REMOVE_PRE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, CLEAUP);
+type filter_states is (IDLE, REMOVE_PRE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, CLEANUP);
 signal filter_current_state, filter_next_state : filter_states;
-attribute syn_encoding of filter_currebt_state : signal is "safe,gray";
+attribute syn_encoding of filter_current_state : signal is "safe,gray";
 
 signal fifo_wr_en                           : std_logic;
 signal rx_bytes_ctr                         : std_logic_vector(15 downto 0);
@@ -95,7 +62,6 @@ signal frame_valid_q                        : std_logic;
 signal delayed_frame_valid                  : std_logic;
 signal delayed_frame_valid_q                : std_logic;
 
-signal size_fifo_wr_en                      : std_logic;
 signal rec_fifo_empty                       : std_logic;
 signal rec_fifo_full                        : std_logic;
 signal sizes_fifo_full                      : std_logic;
@@ -104,6 +70,9 @@ signal sizes_fifo_empty                     : std_logic;
 signal remove_ctr                           : std_logic_vector(7 downto 0);
 signal new_frame                            : std_logic;
 signal new_frame_lock                       : std_logic;
+signal data_valid                           : std_logic;
+signal saved_frame_type                     : std_logic_vector(15 downto 0);
+signal frame_type_valid                     : std_logic;
 
 begin
 
@@ -141,7 +110,7 @@ begin
 	end if;
 end process FILTER_MACHINE_PROC;
 
-FILTER_MACHINE : process(filter_current_state, remove_ctr, new_frame, MAC_RX_EOF_IN)
+FILTER_MACHINE : process(filter_current_state, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid)
 begin
 
 	case filter_current_state is
@@ -176,16 +145,18 @@ begin
 		
 		when REMOVE_TYPE =>
 			if (remove_ctr = x"15") then
-				-- TODO: decision should be taken here about the future of the frame
-				filter_next_state <= SAVE_FRAME;
-				filter_next_state <= DROP_FRAME;
-				
+				if (frame_type_valid = '1') then
+					filter_next_state <= SAVE_FRAME;
+				else
+					filter_next_state <= DROP_FRAME;
+				end if;				
 			else
 				filter_next_state <= REMOVE_TYPE;
 			end if;
 			
 		when SAVE_FRAME =>
 			-- TODO: high level protocol recognition should be done here
+			-- TODO: mabye checksum checking at the end
 			if (MAC_RX_EOF_IN = '1') then
 				filter_next_state <= CLEANUP;
 			else
@@ -211,13 +182,38 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = IDLE) then
 			remove_ctr <= (others => '0');
-		elsif (fifo_wr_en = '1') and (filter_current_state /= IDLE) and (filter_current_state /= CLEANUP) then
+		elsif (data_valid = '1') and (filter_current_state /= IDLE) and (filter_current_state /= CLEANUP) then
 			remove_ctr <= remove_ctr + x"1";
 		end if;
 	end if;
 end process REMOVE_CTR_PROC;
 
---TODO put here a larger fifo maybe
+data_valid <= '1' when (MAC_RX_EN_IN = '1') and (ALLOW_RX_IN = '1') 
+	      else '0';
+
+-- saves the frame type of the incoming frame for futher check
+SAVED_FRAME_TYPE_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_frame_type <= (others => '0');
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"13") then
+			saved_frame_type(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_TYPE) and (remove_ctr = x"14") then
+			saved_frame_type(7 downto 0) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_FRAME_TYPE_PROC;
+
+type_validator : trb_net16_gbe_type_validator
+port map(
+	FRAME_TYPE_IN		=> saved_frame_type,	
+	ALLOWED_TYPES_IN	=> FR_ALLOWED_TYPES_IN,
+	
+	VALID_OUT		=> frame_type_valid
+);
+
+--TODO put here a larger fifo maybe (for sure!)
 receive_fifo : fifo_4096x9
 port map( 
 	Data(7 downto 0)    => MAC_RXD_IN,
@@ -232,38 +228,29 @@ port map(
 	Empty               => rec_fifo_empty,
 	Full                => rec_fifo_full
 );
-fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and (ALLOW_RX_IN = '1') and (filter_current_state = SAVE_FRAME)
+fifo_wr_en <= '1' when (data_valid = '1') and ((filter_current_state = SAVE_FRAME) or (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1'))
 	      else '0';
 
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;
 
-sizes_fifo : debug_fifo_2kx16
+-- TODO: and maybe smaller here
+sizes_fifo : fifo_4096x32
 port map( 
-	Data                => rx_bytes_ctr,
+	Data(15 downto 0)   => rx_bytes_ctr,
+	Data(31 downto 16)  => saved_frame_type,
 	WrClock             => RX_MAC_CLK,
 	RdClock             => CLK,
-	WrEn                => frame_valid_q, --size_fifo_wr_en,
+	WrEn                => frame_valid_q,
 	RdEn                => FR_GET_FRAME_IN,
 	Reset               => RESET,
 	RPReset             => RESET,
-	Q                   => FR_FRAME_SIZE_OUT,
+	Q(15 downto 0)      => FR_FRAME_SIZE_OUT,
+	Q(31 downto 16)     => FR_FRAME_PROTO_OUT,
 	Empty               => sizes_fifo_empty,
 	Full                => sizes_fifo_full
 );
 
--- SIZE_FIFO_WR_EN_PROC : process(RX_MAC_CLK)
--- begin
---   if rising_edge(RX_MAC_CLK) then 
---     if (frame_valid_q = '1') and (ALLOW_RX_IN = '1') then
---       size_fifo_wr_en <= '1';
---     else
---       size_fifo_wr_en <= '0';
---     end if;
---   end if;
--- end process SIZE_FIFO_WR_EN_PROC;
-
-
-frame_valid_q <= '1' when (MAC_RX_EOF_IN = '1' and ALLOW_RX_IN = '1')
+frame_valid_q <= '1' when (MAC_RX_EOF_IN = '1' and ALLOW_RX_IN = '1') and (frame_type_valid = '1')
 		    else '0';
 
 -- received bytes counter is valid only after FR_FRAME_VALID_OUT is asserted for few clock cycles

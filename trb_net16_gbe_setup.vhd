@@ -43,6 +43,7 @@ port(
 	GBE_ALLOW_LARGE_OUT       : out std_logic;
 	GBE_ALLOW_RX_OUT          : out std_logic;
 	GBE_FRAME_DELAY_OUT       : out std_logic_vector(31 downto 0); -- gk 09.12.10
+	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);
 	MONITOR_SENT_IN           : in std_logic_vector(31 downto 0);
@@ -112,6 +113,7 @@ signal allow_large       : std_logic;  -- gk 21.07.10
 signal reset_fifo        : std_logic;  -- gk 28.09.10
 signal allow_rx          : std_logic;
 signal frame_delay       : std_logic_vector(31 downto 0); -- gk 09.12.10
+signal allowed_types     : std_logic_vector(31 downto 0);
 
 begin
 
@@ -137,6 +139,7 @@ begin
 		GBE_ALLOW_RX_OUT          <= allow_rx;
 		--DBG_RESET_FIFO_OUT        <= reset_fifo;  -- gk 28.09.10
 		GBE_FRAME_DELAY_OUT       <= frame_delay; -- gk 09.12.10
+		GBE_ALLOWED_TYPES_OUT     <= allowed_types;
 	end if;
 end process OUT_PROC;
 
@@ -178,6 +181,7 @@ begin
 			reset_fifo        <= '0';  -- gk 28.09.10
 			allow_rx          <= '0';
 			frame_delay       <= x"0000_0000"; -- gk 09.12.10
+			allowed_types     <= x"0000_0003";  -- default ipv4 and arp
 
 		elsif (BUS_WRITE_EN_IN = '1') then
 			case BUS_ADDR_IN is
@@ -252,6 +256,9 @@ begin
 					else
 						allow_rx <= '1';
 					end if;
+					
+				when x"0f" =>
+					allowed_types <= BUS_DATA_IN;
 
 				-- gk 28.09.10
 				when x"fe" =>
@@ -287,6 +294,7 @@ begin
 					reset_fifo         <= reset_fifo; -- gk 28.09.10
 					allow_rx           <= allow_rx;
 					frame_delay        <= frame_delay;
+					allowed_types      <= allowed_types;
 
 			end case;
 		else
@@ -371,6 +379,9 @@ begin
 					else
 						data_out <= x"0000_0001";
 					end if;
+					
+				when x"0f" =>
+					data_out <= allowed_types;
 
 				-- gk 01.06.10
 				when x"e0" =>

@@ -8,6 +8,9 @@ use work.trb_net_std.all;
 use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
 
+use work.trb_net_gbe_components.all;
+use work.trb_net_gbe_protocols.all;
+
 --********
 -- controller has to control the rest of the logic (TX part, TS_MAC, HUB) accordingly to 
 -- the message received from receiver, frame checking is already done
@@ -33,6 +36,7 @@ port (
 	RC_FRAME_WAITING_OUT	: out	std_logic;
 	RC_LOADING_DONE_IN	: in	std_logic;
 	RC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	RC_FRAME_PROTO_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
 -- statistics
 	FRAMES_RECEIVED_OUT	: out	std_logic_vector(31 downto 0);
@@ -53,19 +57,29 @@ signal load_current_state, load_next_state : load_states;
 
 signal local_data                : std_logic_vector(8 downto 0);
 signal local_rd_en               : std_logic;
-signal local_frame_size          : std_logic_vector(15 downto 0);
 signal frames_received_ctr       : std_logic_vector(31 downto 0);
 signal frames_readout_ctr        : std_logic_vector(31 downto 0);
 signal bytes_rec_ctr             : std_logic_vector(31 downto 0);
-signal bytes_readout_ctr         : std_logic_vector(31 downto 0);
 
 signal state                     : std_logic_vector(3 downto 0);
+signal proto_code                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
 begin
 
--- for debug
 FR_RD_EN_OUT <= RC_RD_EN_IN;
 RC_Q_OUT <= RC_DATA_IN;
+RC_FRAME_SIZE_OUT <= FR_FRAME_SIZE_IN;
+
+protocol_prioritizer : trb_net16_gbe_protocol_prioritizer
+port map(
+	FRAME_TYPE_IN		=> FR_FRAME_PROTO_IN,	
+	PROTOCOL_CODE_IN	=> x"0000", -- TODO: recover the higer level protocol
+	HAS_HIGHER_LEVEL_IN	=> '0',  -- dummy
+	
+	CODE_OUT		=> proto_code
+);
+
+RC_FRAME_PROTO_OUT <= proto_code when (and_all(proto_code) = '0') else (others => '0');
 
 DEBUG_OUT(3 downto 0)   <= state;
 DEBUG_OUT(11 downto 4)  <= frames_received_ctr(7 downto 0);
@@ -120,26 +134,9 @@ SYNC_PROC : process(CLK)
 begin
   if rising_edge(CLK) then
     FRAMES_RECEIVED_OUT              <= frames_received_ctr;
-    BYTES_RECEIVED_OUT(15 downto 0)  <= local_frame_size;
-    BYTES_RECEIVED_OUT(31 downto 16) <= bytes_rec_ctr(15 downto 0);
-    --DEBUG_OUT(31 downto 0)           <= bytes_readout_ctr;
+    BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
   end if;
 end process SYNC_PROC;
-
--- the frame size is valid until the next frame is received
-FRAME_SIZE_PROC : process(CLK)
-begin
-  if rising_edge(CLK) then
-    if (RESET = '1') then
-      local_frame_size <= (others => '0');
-    elsif (FR_FRAME_VALID_IN = '1') then
-      local_frame_size <= FR_FRAME_SIZE_IN;
-    end if;
-  end if;
-end process FRAME_SIZE_PROC;
-
-RC_FRAME_SIZE_OUT <= FR_FRAME_SIZE_IN; --RC_FRAME_SIZE_OUT <= local_frame_size;
-
 
 FRAMES_REC_CTR_PROC : process(CLK)
 begin
@@ -173,17 +170,6 @@ begin
     end if;
   end if;
 end process BYTES_REC_CTR_PROC;
-
-BYTES_READ_OUT_PROC : process(CLK)
-begin
-  if rising_edge(CLK) then
-    if (RESET = '1') then
-      bytes_readout_ctr <= (others => '0');
-    elsif (RC_RD_EN_IN = '1') then
-      bytes_readout_ctr <= bytes_readout_ctr + x"1";
-    end if;
-  end if;
-end process BYTES_READ_OUT_PROC;
 
 
 end trb_net16_gbe_receive_control;

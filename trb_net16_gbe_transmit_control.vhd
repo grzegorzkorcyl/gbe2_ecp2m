@@ -88,7 +88,6 @@ type ctrl_construct_states is (IDLE, WAIT_FOR_FC, LOAD_DATA, CLOSE, CLEANUP);
 signal ctrl_construct_current_state, ctrl_construct_next_state : ctrl_construct_states;
 attribute syn_encoding of ctrl_construct_current_state: signal is "safe,gray";
 
-signal saved_ctrl_frame_size                    : std_logic_vector(15 downto 0);
 signal ctrl_sod                                 : std_logic;
 signal delayed_wr_en                            : std_logic;
 signal delayed_wr_en_q                          : std_logic;
@@ -202,8 +201,8 @@ begin
 	end if;
 
 	
-	FC_IP_SIZE_OUT      <= MC_FRAME_SIZE_IN;-- saved_ctrl_frame_size;
-	FC_UDP_SIZE_OUT     <= MC_FRAME_SIZE_IN;-- saved_ctrl_frame_size;
+	FC_IP_SIZE_OUT      <= MC_FRAME_SIZE_IN;
+	FC_UDP_SIZE_OUT     <= MC_FRAME_SIZE_IN;
 	FC_FLAGS_OFFSET_OUT <= (others => '0'); -- fixed to one-frame packets
 
 	if (ctrl_construct_current_state = WAIT_FOR_FC) and (FC_H_READY_IN = '1') then
@@ -288,7 +287,6 @@ begin
 
     when LOAD_DATA =>
       state2 <= x"3";
-      --if (sent_bytes_ctr = saved_ctrl_frame_size) then
       if (sent_bytes_ctr = MC_FRAME_SIZE_IN) then
 	ctrl_construct_next_state <= CLOSE;
       else
@@ -306,17 +304,6 @@ begin
   end case;
 
 end process CTRL_CONSTRUCT_MACHINE;
-
--- SAVE_CTRL_FRAME_SIZE_PROC : process(CLK)
--- begin
---   if rising_edge(CLK) then
---     if (RESET = '1') then
---       saved_ctrl_frame_size <= (others => '0');
---     elsif (MC_CTRL_FRAME_REQ_IN = '1') then
---       saved_ctrl_frame_size <= MC_FRAME_SIZE_IN;
---     end if;
---   end if;
--- end process SAVE_CTRL_FRAME_SIZE_PROC;
 
 SENT_BYTES_CTR_PROC : process(CLK)
 begin
