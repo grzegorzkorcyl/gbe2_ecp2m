@@ -52,7 +52,7 @@ architecture trb_net16_gbe_frame_receiver of trb_net16_gbe_frame_receiver is
 -- attribute HGROUP : string;
 -- attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_frame_rec";
 attribute syn_encoding	: string;
-type filter_states is (IDLE, REMOVE_PRE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, CLEANUP);
+type filter_states is (IDLE, REMOVE_PRE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, DECIDE, CLEANUP);
 signal filter_current_state, filter_next_state : filter_states;
 attribute syn_encoding of filter_current_state : signal is "safe,gray";
 
@@ -78,6 +78,7 @@ signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
 signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
 signal dbg_drp_frames                       : std_logic_vector(15 downto 0);
 signal state                                : std_logic_vector(3 downto 0);
+signal dbg_frame_type                       : std_logic_vector(15 downto 0);
 
 begin
 
@@ -87,7 +88,7 @@ DEBUG_OUT(2)            <= sizes_fifo_empty;
 DEBUG_OUT(3)            <= sizes_fifo_full;
 DEBUG_OUT(7 downto 4)   <= state;
 DEBUG_OUT(15 downto 8)  <= (others => '1');
-DEBUG_OUT(31 downto 16) <= dbg_rec_frames;
+DEBUG_OUT(31 downto 16) <= dbg_frame_type; --dbg_rec_frames;
 DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
 DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
 
@@ -160,17 +161,21 @@ begin
 		when REMOVE_TYPE =>
 			state <= x"5";
 			if (remove_ctr = x"15") then
-				if (frame_type_valid = '1') then
-					filter_next_state <= SAVE_FRAME;
-				else
-					filter_next_state <= DROP_FRAME;
-				end if;				
+				filter_next_state <= DECIDE;			
 			else
 				filter_next_state <= REMOVE_TYPE;
 			end if;
 			
-		when SAVE_FRAME =>
+		when DECIDE =>
 			state <= x"6";
+			if (frame_type_valid = '1') then
+				filter_next_state <= SAVE_FRAME;
+			else
+				filter_next_state <= DROP_FRAME;
+			end if;	
+			
+		when SAVE_FRAME =>
+			state <= x"7";
 			-- TODO: high level protocol recognition should be done here
 			-- TODO: mabye checksum checking at the end
 			if (MAC_RX_EOF_IN = '1') then
@@ -180,7 +185,7 @@ begin
 			end if;
 			
 		when DROP_FRAME =>
-			state <= x"7";
+			state <= x"8";
 			if (MAC_RX_EOF_IN = '1') then
 				filter_next_state <= CLEANUP;
 			else
@@ -188,7 +193,7 @@ begin
 			end if;
 		
 		when CLEANUP =>
-			state <= x"8";
+			state <= x"9";
 			filter_next_state <= IDLE;
 	
 	end case;
@@ -212,9 +217,9 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_frame_type <= (others => '0');
-		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"13") then
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"14") then
 			saved_frame_type(15 downto 8) <= MAC_RXD_IN;
-		elsif (filter_current_state = REMOVE_TYPE) and (remove_ctr = x"14") then
+		elsif (filter_current_state = REMOVE_TYPE) and (remove_ctr = x"15") then
 			saved_frame_type(7 downto 0) <= MAC_RXD_IN;
 		end if;
 	end if;
@@ -335,7 +340,7 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			dbg_ack_frames <= (others => '0');
-		elsif (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
+		elsif (filter_current_state = DECIDE and frame_type_valid = '1') then
 			dbg_ack_frames <= dbg_ack_frames + x"1";
 		end if;
 	end if;
@@ -346,12 +351,20 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			dbg_drp_frames <= (others => '0');
-		elsif (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
+		elsif (filter_current_state = DECIDE and frame_type_valid = '0') then
 			dbg_drp_frames <= dbg_drp_frames + x"1";
 		end if;
 	end if;
 end process DROPPED_FRAMES_CTR;
 
+FRAME_TYPE_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (filter_current_state = DECIDE) then
+			dbg_frame_type <= saved_frame_type;
+		end if;
+	end if;
+end process FRAME_TYPE_PROC;
 
 
 -- end of debug counters
