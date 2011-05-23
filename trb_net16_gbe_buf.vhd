@@ -1138,7 +1138,7 @@ port map(
 	BYTES_RECEIVED_OUT      => rc_bytes_rec,
 
 
-	DEBUG_OUT		=> rc_debug(31 downto 0)
+	DEBUG_OUT		=> rc_debug
 );
 dbg_q(15 downto 9) <= (others  => '0');
 
