@@ -7,7 +7,7 @@ use work.trb_net_std.all;
 
 package trb_net_gbe_protocols is
 
-signal c_MAX_PROTOCOLS      : integer range 1 to 16 := 2;
+constant c_MAX_PROTOCOLS      : integer range 1 to 16 := 2;
 
 component trb_net16_gbe_response_constructor_Forward is
 port (
