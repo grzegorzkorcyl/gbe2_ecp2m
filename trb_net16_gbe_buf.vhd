@@ -533,7 +533,7 @@ signal dbg_tc                        : std_logic_vector(63 downto 0);
 
 signal fr_allowed_types              : std_logic_vector(31 downto 0);
 
-signal fr_frame_proto                : std_logic_vector(c_MAX_PROTOCOLS -1 downto 0);
+signal fr_frame_proto                : std_logic_vector(15 downto 0);
 signal rc_frame_proto                : std_logic_vector(c_MAX_PROTOCOLS -1 downto 0);
 
 begin
