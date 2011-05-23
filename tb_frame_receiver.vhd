@@ -250,24 +250,6 @@ begin
 -- FIRST FRAME (invalid frame type)	
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <= '1';
--- preamble
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"55";
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"55";
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"55";
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"55";
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"55";
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"55";
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"55";
---	wait until rising_edge(RX_MAC_CLK);
---	MAC_RXD_IN		<= x"b5";
---	wait until rising_edge(RX_MAC_CLK);
 -- dest mac
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
@@ -328,24 +310,6 @@ begin
 -- SECOND FRAME	
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <= '1';
--- preamble
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"b5";
-	wait until rising_edge(RX_MAC_CLK);
 -- dest mac
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
@@ -542,24 +506,6 @@ begin
 -- THIRD FRAME	
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <= '1';
--- preamble
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"b5";
-	wait until rising_edge(RX_MAC_CLK);
 -- dest mac
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);

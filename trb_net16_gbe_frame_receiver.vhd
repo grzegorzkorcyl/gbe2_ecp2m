@@ -52,7 +52,7 @@ architecture trb_net16_gbe_frame_receiver of trb_net16_gbe_frame_receiver is
 -- attribute HGROUP : string;
 -- attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_frame_rec";
 attribute syn_encoding	: string;
-type filter_states is (IDLE, REMOVE_PRE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, DECIDE, CLEANUP);
+type filter_states is (IDLE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, DECIDE, CLEANUP);
 signal filter_current_state, filter_next_state : filter_states;
 attribute syn_encoding of filter_current_state : signal is "safe,gray";
 
@@ -78,7 +78,6 @@ signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
 signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
 signal dbg_drp_frames                       : std_logic_vector(15 downto 0);
 signal state                                : std_logic_vector(3 downto 0);
-signal dbg_frame_type                       : std_logic_vector(15 downto 0);
 
 begin
 
@@ -88,7 +87,7 @@ DEBUG_OUT(2)            <= sizes_fifo_empty;
 DEBUG_OUT(3)            <= sizes_fifo_full;
 DEBUG_OUT(7 downto 4)   <= state;
 DEBUG_OUT(15 downto 8)  <= (others => '1');
-DEBUG_OUT(31 downto 16) <= dbg_frame_type; --dbg_rec_frames;
+DEBUG_OUT(31 downto 16) <= dbg_rec_frames;
 DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
 DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
 
@@ -129,19 +128,12 @@ begin
 		when IDLE =>
 			state <= x"1";
 			if (new_frame = '1') and (ALLOW_RX_IN = '1') then
-				filter_next_state <= REMOVE_DEST; --REMOVE_PRE;
+				filter_next_state <= REMOVE_DEST;
 			else
 				filter_next_state <= IDLE;
 			end if;
 		
-		--when REMOVE_PRE =>
-		--	state <= x"2";
-		--	if (remove_ctr = x"05") then
-		--		filter_next_state <= REMOVE_DEST;
-		--	else
-		--		filter_next_state <= REMOVE_PRE;
-		--	end if;
-		
+		-- frames arrive without preamble!
 		when REMOVE_DEST =>
 			state <= x"3";
 			if (remove_ctr = x"03") then  -- counter starts with a delay that's why only 3
@@ -337,47 +329,27 @@ begin
 	end if;
 end process RECEIVED_FRAMES_CTR;
 
---ACK_FRAMES_CTR : process(RX_MAC_CLK)
---begin
---	if rising_edge(RX_MAC_CLK) then
---		if (RESET = '1') then
---			dbg_ack_frames <= (others => '0');
---		elsif (filter_current_state = DECIDE and frame_type_valid = '1') then
---			dbg_ack_frames <= dbg_ack_frames + x"1";
---		end if;
---	end if;
---end process ACK_FRAMES_CTR;
-
---DROPPED_FRAMES_CTR : process(RX_MAC_CLK)
---begin
---	if rising_edge(RX_MAC_CLK) then
---		if (RESET = '1') then
---			dbg_drp_frames <= (others => '0');
---		elsif (filter_current_state = DECIDE and frame_type_valid = '0') then
---			dbg_drp_frames <= dbg_drp_frames + x"1";
---		end if;
---	end if;
---end process DROPPED_FRAMES_CTR;
-
-FRAME_TYPE_PROC : process(RX_MAC_CLK)
+ACK_FRAMES_CTR : process(RX_MAC_CLK)
 begin
 	if rising_edge(RX_MAC_CLK) then
-		if (filter_current_state = DECIDE) then
-			dbg_frame_type <= saved_frame_type;
-		end if;
-		-- to remove
-		if (remove_ctr = x"1") then
-			dbg_drp_frames(15 downto 8) <= MAC_RXD_IN;
-		elsif (remove_ctr = x"2") then
-			dbg_drp_frames(7 downto 0) <= MAC_RXD_IN;
-		elsif (remove_ctr = x"3") then
-			dbg_ack_frames(15 downto 8) <= MAC_RXD_IN;
-		elsif (remove_ctr = x"4") then
-			dbg_ack_frames(7 downto 0) <= MAC_RXD_IN;
+		if (RESET = '1') then
+			dbg_ack_frames <= (others => '0');
+		elsif (filter_current_state = DECIDE and frame_type_valid = '1') then
+			dbg_ack_frames <= dbg_ack_frames + x"1";
+	end if;
+	end if;
+end process ACK_FRAMES_CTR;
+
+DROPPED_FRAMES_CTR : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			dbg_drp_frames <= (others => '0');
+		elsif (filter_current_state = DECIDE and frame_type_valid = '0') then
+			dbg_drp_frames <= dbg_drp_frames + x"1";
 		end if;
 	end if;
-end process FRAME_TYPE_PROC;
-
+end process DROPPED_FRAMES_CTR;
 
 -- end of debug counters
 -- ****
