@@ -70,7 +70,6 @@ signal sizes_fifo_empty                     : std_logic;
 signal remove_ctr                           : std_logic_vector(7 downto 0);
 signal new_frame                            : std_logic;
 signal new_frame_lock                       : std_logic;
-signal data_valid                           : std_logic;
 signal saved_frame_type                     : std_logic_vector(15 downto 0);
 signal frame_type_valid                     : std_logic;
 
@@ -121,14 +120,14 @@ begin
 	end if;
 end process FILTER_MACHINE_PROC;
 
-FILTER_MACHINE : process(filter_current_state, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid)
+FILTER_MACHINE : process(filter_current_state, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid, ALLOW_RX_IN)
 begin
 
 	case filter_current_state is
 		
 		when IDLE =>
 			state <= x"1";
-			if (new_frame = '1') then
+			if (new_frame = '1') and (ALLOW_RX_IN = '1') then
 				filter_next_state <= REMOVE_PRE;
 			else
 				filter_next_state <= IDLE;
@@ -201,14 +200,11 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = IDLE) then
 			remove_ctr <= (others => '0');
-		elsif (data_valid = '1') and (filter_current_state /= IDLE) and (filter_current_state /= CLEANUP) then
+		elsif (MAC_RX_EN_IN = '1') and (filter_current_state /= IDLE) and (filter_current_state /= CLEANUP) then
 			remove_ctr <= remove_ctr + x"1";
 		end if;
 	end if;
 end process REMOVE_CTR_PROC;
-
-data_valid <= '1' when (MAC_RX_EN_IN = '1') and (ALLOW_RX_IN = '1') 
-	      else '0';
 
 -- saves the frame type of the incoming frame for futher check
 SAVED_FRAME_TYPE_PROC : process(RX_MAC_CLK)
@@ -247,7 +243,7 @@ port map(
 	Empty               => rec_fifo_empty,
 	Full                => rec_fifo_full
 );
-fifo_wr_en <= '1' when (data_valid = '1') and ((filter_current_state = SAVE_FRAME) or (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1'))
+fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1'))
 	      else '0';
 
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;

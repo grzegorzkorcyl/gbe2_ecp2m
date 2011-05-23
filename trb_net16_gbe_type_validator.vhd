@@ -48,7 +48,11 @@ end generate SET_GEN;
 -- DO NOT TOUCH
 RESULT_GEN : for i in 0 to 31 generate
 
-	result(i) <= '1' when (FRAME_TYPES(i) = FRAME_TYPE_IN and ALLOWED_TYPES_IN(i) = '1') else '0';
+	result(i) <= '1' when (
+				FRAME_TYPES(i)(31 downto 16) = FRAME_TYPE_IN(15 downto 0) and 
+				FRAME_TYPES(i)(15 downto 0) = FRAME_TYPE_IN(31 downto 16) and
+				ALLOWED_TYPES_IN(i) = '1'
+			) else '0';
 
 end generate RESULT_GEN;
 
