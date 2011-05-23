@@ -328,7 +328,7 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			dbg_rec_frames <= (others => '0');
-		if (MAC_RX_EOF_IN = '1') then
+		elsif (MAC_RX_EOF_IN = '1') then
 			dbg_rec_frames <= dbg_rec_frames + x"1";
 		end if;
 	end if;
@@ -339,7 +339,7 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			dbg_ack_frames <= (others => '0');
-		if (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
+		elsif (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
 			dbg_ack_frames <= dbg_ack_frames + x"1";
 		end if;
 	end if;
@@ -350,7 +350,7 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			dbg_drp_frames <= (others => '0');
-		if (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
+		elsif (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
 			dbg_drp_frames <= dbg_drp_frames + x"1";
 		end if;
 	end if;
