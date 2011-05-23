@@ -76,8 +76,8 @@ port map (
 	TC_FRAME_SIZE_OUT	=> tc_size(1 * 16 - 1 downto 0 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
-	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(1 * 15 - 1 downto 0 * 9),
-	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(1 * 15 - 1 downto 0 * 9),
+	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(1 * 16 - 1 downto 0 * 16),
+	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(1 * 16 - 1 downto 0 * 16),
 -- END OF INTERFACE
 
 -- debug
@@ -103,8 +103,8 @@ port map (
 	TC_FRAME_SIZE_OUT	=> tc_size(2 * 16 - 1 downto 1 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
-	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(2 * 15 - 1 downto 1 * 9),
-	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(2 * 15 - 1 downto 1 * 9),
+	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
+	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
 -- END OF INTERFACE
 
 -- debug

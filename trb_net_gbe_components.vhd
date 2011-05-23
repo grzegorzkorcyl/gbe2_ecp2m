@@ -50,7 +50,7 @@ port (
 	
 	-- counters from response constructors
 	RECEIVED_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
-	SENT_FRAMES_OUT		: out	std_logic_vector(c_MAX_PROTOCO
+	SENT_FRAMES_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );

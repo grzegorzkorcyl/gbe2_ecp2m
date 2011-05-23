@@ -175,30 +175,30 @@ begin
 	end if;
 end process RESP_BYTES_CTR_PROC;
 
-REC_FRAMES_PROC : process(CTR)
+REC_FRAMES_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			rec_frames <= (others => '0');
 		elsif (dissect_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
-			rec_frames <= rec_frame + x"1";
+			rec_frames <= rec_frames + x"1";
 		end if;
 	end if;
 end process REC_FRAMES_PROC;
 
-SENT_FRAMES_PROC : process(CTR)
+SENT_FRAMES_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			sent_frames <= (others => '0');
 		elsif (dissect_current_state = WAIT_FOR_LOAD and TC_BUSY_IN = '0') then
-			sent_frames <= sent_frame + x"1";
+			sent_frames <= sent_frames + x"1";
 		end if;
 	end if;
 end process SENT_FRAMES_PROC;
 
 RECEIVED_FRAMES_OUT <= rec_frames;
-SENT_FRAME_OUT      <= sent_frames;
+SENT_FRAMES_OUT     <= sent_frames;
 
 -- **** debug
 DEBUG_OUT(3 downto 0)   <= state;
