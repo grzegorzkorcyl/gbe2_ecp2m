@@ -78,7 +78,7 @@ port(
 	DBG_FT1_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT2_IN               : in std_logic_vector(31 downto 0);
 	DBG_FR_IN                : in std_logic_vector(31 downto 0);
-	DBG_RC_IN                : in std_logic_vector(31 downto 0);
+	DBG_RC_IN                : in std_logic_vector(63 downto 0);
 	DBG_MC_IN                : in std_logic_vector(31 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);
 	DBG_FIFO_RD_EN_OUT        : out std_logic;
@@ -484,14 +484,24 @@ begin
 				when x"d1" =>
 					data_out <= DBG_FR_IN;
 
-				when x"d2" =>
-					data_out <= DBG_RC_IN;
+				--when x"d2" =>
+				--	data_out <= DBG_RC_IN;
 
 				when x"d3" =>
 					data_out <= DBG_MC_IN;
 
 				when x"d4" =>
 					data_out <= DBG_TC_IN;
+					
+				-- **** receive debug section
+				
+				when x"a0" =>
+					data_out <= DBG_RC_IN(31 downto 0);  -- received frames from tsmac | state machine | fifos status
+					
+				when x"a1" =>
+					data_out <= DBG_RC_IN(63 downto 32); -- dropped | accepted frames
+					
+				-- **** end of received debug section
 
 				when others =>
 					data_out <= (others => '0');

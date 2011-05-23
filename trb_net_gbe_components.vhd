@@ -525,7 +525,7 @@ port(
 	DBG_FT1_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT2_IN               : in std_logic_vector(31 downto 0);
 	DBG_FR_IN                : in std_logic_vector(31 downto 0);
-	DBG_RC_IN                : in std_logic_vector(31 downto 0);
+	DBG_RC_IN                : in std_logic_vector(63 downto 0);
 	DBG_MC_IN                : in std_logic_vector(31 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);
 	DBG_FIFO_RD_EN_OUT        : out std_logic;

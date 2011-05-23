@@ -74,13 +74,24 @@ signal data_valid                           : std_logic;
 signal saved_frame_type                     : std_logic_vector(15 downto 0);
 signal frame_type_valid                     : std_logic;
 
+-- debug signals
+signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
+signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
+signal dbg_drp_frames                       : std_logic_vector(15 downto 0);
+signal state                                : std_logic_vector(3 downto 0);
+
 begin
 
 DEBUG_OUT(0)            <= rec_fifo_empty;
 DEBUG_OUT(1)            <= rec_fifo_full;
 DEBUG_OUT(2)            <= sizes_fifo_empty;
 DEBUG_OUT(3)            <= sizes_fifo_full;
-DEBUG_OUT(31 downto 4)  <= (others => '0');
+DEBUG_OUT(7 downto 4)   <= state;
+DEBUG_OUT(15 downto 8)  <= (others => '0');
+DEBUG_OUT(31 downto 16) <= dbg_rec_frames;
+DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
+DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
+
 
 -- new_frame is asserted when first byte of the frame arrives
 NEW_FRAME_PROC : process(RX_MAC_CLK)
@@ -116,6 +127,7 @@ begin
 	case filter_current_state is
 		
 		when IDLE =>
+			state <= x"1";
 			if (new_frame = '1') then
 				filter_next_state <= REMOVE_PRE;
 			else
@@ -123,6 +135,7 @@ begin
 			end if;
 		
 		when REMOVE_PRE =>
+			state <= x"2";
 			if (remove_ctr = x"05") then
 				filter_next_state <= REMOVE_DEST;
 			else
@@ -130,6 +143,7 @@ begin
 			end if;
 		
 		when REMOVE_DEST =>
+			state <= "3";
 			if (remove_ctr = x"0b") then
 				filter_next_state <= REMOVE_SRC;
 			else
@@ -137,6 +151,7 @@ begin
 			end if;
 		
 		when REMOVE_SRC =>
+			state <= x"4";
 			if (remove_ctr = x"13") then
 				filter_next_state <= REMOVE_TYPE;
 			else
@@ -144,6 +159,7 @@ begin
 			end if;
 		
 		when REMOVE_TYPE =>
+			state <= x"5";
 			if (remove_ctr = x"15") then
 				if (frame_type_valid = '1') then
 					filter_next_state <= SAVE_FRAME;
@@ -155,6 +171,7 @@ begin
 			end if;
 			
 		when SAVE_FRAME =>
+			state <= x"6";
 			-- TODO: high level protocol recognition should be done here
 			-- TODO: mabye checksum checking at the end
 			if (MAC_RX_EOF_IN = '1') then
@@ -164,6 +181,7 @@ begin
 			end if;
 			
 		when DROP_FRAME =>
+			state <= x"7";
 			if (MAC_RX_EOF_IN = '1') then
 				filter_next_state <= CLEANUP;
 			else
@@ -171,6 +189,7 @@ begin
 			end if;
 		
 		when CLEANUP =>
+			state <= x"8";
 			filter_next_state <= IDLE;
 	
 	end case;
@@ -301,6 +320,46 @@ FRAME_VALID_SYNC : signal_sync
 --     D_OUT    => FR_FRAME_SIZE_OUT
 -- );
 
+
+-- ****
+-- debug counters, to be removed later
+RECEIVED_FRAMES_CTR : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			dbg_rec_frames <= (others => '0');
+		if (MAC_RX_EOF_IN = '1') then
+			dbg_rec_frames <= dbg_rec_frames + x"1";
+		end if;
+	end if;
+end process RECEIVED_FRAMES_CTR;
+
+ACK_FRAMES_CTR : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			dbg_ack_frames <= (others => '0');
+		if (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
+			dbg_ack_frames <= dbg_ack_frames + x"1";
+		end if;
+	end if;
+end process ACK_FRAMES_CTR;
+
+DROPPED_FRAMES_CTR : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			dbg_drp_frames <= (others => '0');
+		if (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1') then
+			dbg_drp_frames <= dbg_drp_frames + x"1";
+		end if;
+	end if;
+end process DROPPED_FRAMES_CTR;
+
+
+
+-- end of debug counters
+-- ****
 
 end trb_net16_gbe_frame_receiver;
 
