@@ -801,6 +801,7 @@ port map(
 	DBG_TC_IN                 => dbg_tc(31 downto 0),
 	DBG_FIFO_RD_EN_OUT        => dbg_rd_en,
 	DBG_FIFO_Q_IN             => dbg_q
+	
 	--DBG_FIFO_RESET_OUT        => dbg_reset_fifo  -- gk 28.09.10
 );
 end generate;
