@@ -600,7 +600,7 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  TSM_HDATA_EN_N_IN	=> mac_hdata_en,
 
 
-	  DEBUG_OUT(31 downto 0)	=> dbg_mc
+	  DEBUG_OUT		=> dbg_mc
   );
 
   dbg_ft2(10) <= tsmac_gbit_en;

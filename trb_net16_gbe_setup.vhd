@@ -79,7 +79,7 @@ port(
 	DBG_FT2_IN               : in std_logic_vector(31 downto 0);
 	DBG_FR_IN                : in std_logic_vector(31 downto 0);
 	DBG_RC_IN                : in std_logic_vector(63 downto 0);
-	DBG_MC_IN                : in std_logic_vector(31 downto 0);
+	DBG_MC_IN                : in std_logic_vector(63 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);
 	DBG_FIFO_RD_EN_OUT        : out std_logic;
 	DBG_FIFO_Q_IN             : in std_logic_vector(15 downto 0)
@@ -478,9 +478,6 @@ begin
 				--when x"d2" =>
 				--	data_out <= DBG_RC_IN;
 
-				when x"d3" =>
-					data_out <= DBG_MC_IN;
-
 				when x"d4" =>
 					data_out <= DBG_TC_IN;
 					
@@ -500,6 +497,9 @@ begin
 
 				when x"a4" =>
 					data_out <= MONITOR_RX_BYTES_R_IN;
+					
+				when x"a5" =>
+					data_out <= DBG_MC_IN(31 downto 0);
 					
 				-- **** end of received debug section
 

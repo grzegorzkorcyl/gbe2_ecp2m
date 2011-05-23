@@ -99,6 +99,8 @@ type flow_states is (IDLE, TRANSMIT_DATA, TRANSMIT_CTRL, CLEANUP);
 signal flow_current_state, flow_next_state : flow_states;
 
 signal state                        : std_logic_vector(3 downto 0);
+signal link_state                   : std_logic_vector(3 downto 0);
+signal redirect_state               : std_logic_vector(3 downto 0);
 
 signal ps_wr_en                     : std_logic;
 signal ps_response_ready            : std_logic;
@@ -159,6 +161,7 @@ begin
 	case redirect_current_state is
 	
 		when IDLE =>
+			redirect_state <= x"1";
 			if (RC_FRAME_WAITING_IN = '1') then
 				if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
 					redirect_next_state <= LOAD;
@@ -170,6 +173,7 @@ begin
 			end if;
 		
 		when LOAD =>
+			redirect_state <= x"2";
 			--if (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') then
 			if (loaded_bytes_ctr = RC_FRAME_SIZE_IN - x"1") then
 				redirect_next_state <= FINISH;
@@ -178,6 +182,7 @@ begin
 			end if;
 		
 		when BUSY =>
+			redirect_state <= x"3";
 			if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
 				redirect_next_state <= LOAD;
 			else
@@ -185,9 +190,11 @@ begin
 			end if;
 		
 		when FINISH =>
+			redirect_state <= x"4";
 			redirect_next_state <= CLEANUP;
 		
 		when CLEANUP =>
+			redirect_state <= x"5";
 			redirect_next_state <= IDLE;
 	
 	end case;
@@ -323,6 +330,7 @@ begin
 	case link_current_state is
 
 		when ACTIVE =>
+			link_state <= x"1";
 			if (PCS_AN_COMPLETE_IN = '0') then
 				link_next_state <= INACTIVE; --ENABLE_MAC;
 			else
@@ -330,6 +338,7 @@ begin
 			end if;
 
 		when INACTIVE =>
+			link_state <= x"2";
 			if (PCS_AN_COMPLETE_IN = '1') then
 				link_next_state <= TIMEOUT;
 			else
@@ -337,6 +346,7 @@ begin
 			end if;
 
 		when TIMEOUT =>
+			link_state <= x"3";
 			if (PCS_AN_COMPLETE_IN = '0') then
 				link_next_state <= INACTIVE;
 			else
@@ -348,6 +358,7 @@ begin
 			end if;
 
 		when ENABLE_MAC =>
+			link_state <= x"4";
 			if (PCS_AN_COMPLETE_IN = '0') then
 			  link_next_state <= INACTIVE;
 			elsif (tsm_ready = '1') then
@@ -357,6 +368,7 @@ begin
 			end if;
 
 		when FINALIZE =>
+			link_state <= x"5";
 			if (PCS_AN_COMPLETE_IN = '0') then
 				link_next_state <= INACTIVE;
 			else
@@ -445,6 +457,17 @@ TSM_HWRITE_N_OUT  <= tsm_hwrite_n;
 
 -- END OF TRI SPEED MAC CONTROLLER
 --***************
+
+
+-- **** debug
+DEBUG_OUT(3 downto 0)   <= mac_control_debug(3 downto 0);
+DEBUG_OUT(7 downto 4)   <= state;
+DEBUG_OUT(11 downto 8)  <= redirect_state;
+DEBUG_OUT(15 downto 12) <= link_state;
+DEBUG_OUT(63 downto 16) <= (others => '0');
+
+
+-- ****
 
 
 
