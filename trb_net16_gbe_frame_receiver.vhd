@@ -87,7 +87,7 @@ DEBUG_OUT(1)            <= rec_fifo_full;
 DEBUG_OUT(2)            <= sizes_fifo_empty;
 DEBUG_OUT(3)            <= sizes_fifo_full;
 DEBUG_OUT(7 downto 4)   <= state;
-DEBUG_OUT(15 downto 8)  <= (others => '0');
+DEBUG_OUT(15 downto 8)  <= (others => '1');
 DEBUG_OUT(31 downto 16) <= dbg_rec_frames;
 DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
 DEBUG_OUT(63 downto 48) <= dbg_drp_frames;

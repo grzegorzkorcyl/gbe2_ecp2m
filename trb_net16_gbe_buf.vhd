@@ -1690,7 +1690,7 @@ discfrm_sync : signal_sync
 --***************
 --	LOGIC ANALYZER SIGNALS
 --***************
-analyzer_debug <= pcs_stat_debug;
+--analyzer_debug <= pcs_stat_debug;
 
 -- Outputs
 FEE_READ_OUT             <= fee_read;

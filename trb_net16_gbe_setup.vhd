@@ -472,15 +472,6 @@ begin
 				when x"fc" =>
 					data_out <= MONITOR_EMPTY_IN;
 
-				when x"fd" =>
-					data_out <= MONITOR_RX_FRAMES_IN;
-
-				when x"fe" =>
-					data_out <= MONITOR_RX_BYTES_IN;
-
-				when x"d0" =>
-					data_out <= MONITOR_RX_BYTES_R_IN;
-
 				when x"d1" =>
 					data_out <= DBG_FR_IN;
 
@@ -500,6 +491,15 @@ begin
 					
 				when x"a1" =>
 					data_out <= DBG_RC_IN(63 downto 32); -- dropped | accepted frames
+					
+				when x"a2" =>
+					data_out <= MONITOR_RX_FRAMES_IN;
+
+				when x"a3" =>
+					data_out <= MONITOR_RX_BYTES_IN;
+
+				when x"a4" =>
+					data_out <= MONITOR_RX_BYTES_R_IN;
 					
 				-- **** end of received debug section
 
