@@ -223,7 +223,7 @@ end process CLOCK_GEN_PROC;
 -- 125 MHz MAC clock
 CLOCK2_GEN_PROC: process
 begin
-	RX_MAC_CLK <= '1'; wait for 4.0 ns;
+	RX_MAC_CLK <= '1'; wait for 3.0 ns;
 	RX_MAC_CLK <= '0'; wait for 4.0 ns;
 end process CLOCK2_GEN_PROC;
 
@@ -251,23 +251,23 @@ begin
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <= '1';
 -- preamble
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"55";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"b5";
-	wait until rising_edge(RX_MAC_CLK);
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"55";
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"55";
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"55";
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"55";
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"55";
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"55";
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"55";
+--	wait until rising_edge(RX_MAC_CLK);
+--	MAC_RXD_IN		<= x"b5";
+--	wait until rising_edge(RX_MAC_CLK);
 -- dest mac
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);

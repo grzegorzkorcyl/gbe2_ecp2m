@@ -129,22 +129,22 @@ begin
 		when IDLE =>
 			state <= x"1";
 			if (new_frame = '1') and (ALLOW_RX_IN = '1') then
-				filter_next_state <= REMOVE_PRE;
+				filter_next_state <= REMOVE_DEST; --REMOVE_PRE;
 			else
 				filter_next_state <= IDLE;
 			end if;
 		
-		when REMOVE_PRE =>
-			state <= x"2";
-			if (remove_ctr = x"05") then
-				filter_next_state <= REMOVE_DEST;
-			else
-				filter_next_state <= REMOVE_PRE;
-			end if;
+		--when REMOVE_PRE =>
+		--	state <= x"2";
+		--	if (remove_ctr = x"05") then
+		--		filter_next_state <= REMOVE_DEST;
+		--	else
+		--		filter_next_state <= REMOVE_PRE;
+		--	end if;
 		
 		when REMOVE_DEST =>
 			state <= x"3";
-			if (remove_ctr = x"0b") then
+			if (remove_ctr = x"03") then  -- counter starts with a delay that's why only 3
 				filter_next_state <= REMOVE_SRC;
 			else
 				filter_next_state <= REMOVE_DEST;
@@ -152,7 +152,7 @@ begin
 		
 		when REMOVE_SRC =>
 			state <= x"4";
-			if (remove_ctr = x"13") then
+			if (remove_ctr = x"9") then
 				filter_next_state <= REMOVE_TYPE;
 			else
 				filter_next_state <= REMOVE_SRC;
@@ -160,7 +160,7 @@ begin
 		
 		when REMOVE_TYPE =>
 			state <= x"5";
-			if (remove_ctr = x"15") then
+			if (remove_ctr = x"b") then
 				filter_next_state <= DECIDE;			
 			else
 				filter_next_state <= REMOVE_TYPE;
@@ -195,6 +195,8 @@ begin
 		when CLEANUP =>
 			state <= x"9";
 			filter_next_state <= IDLE;
+			
+		when others => null;
 	
 	end case;
 end process;
@@ -204,7 +206,7 @@ REMOVE_CTR_PROC : process(RX_MAC_CLK)
 begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = IDLE) then
-			remove_ctr <= (others => '0');
+			remove_ctr <= (others => '1');
 		elsif (MAC_RX_EN_IN = '1') and (filter_current_state /= IDLE) and (filter_current_state /= CLEANUP) then
 			remove_ctr <= remove_ctr + x"1";
 		end if;
@@ -217,9 +219,9 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_frame_type <= (others => '0');
-		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"14") then
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"9") then
 			saved_frame_type(15 downto 8) <= MAC_RXD_IN;
-		elsif (filter_current_state = REMOVE_TYPE) and (remove_ctr = x"15") then
+		elsif (filter_current_state = REMOVE_TYPE) and (remove_ctr = x"a") then
 			saved_frame_type(7 downto 0) <= MAC_RXD_IN;
 		end if;
 	end if;
@@ -335,33 +337,43 @@ begin
 	end if;
 end process RECEIVED_FRAMES_CTR;
 
-ACK_FRAMES_CTR : process(RX_MAC_CLK)
-begin
-	if rising_edge(RX_MAC_CLK) then
-		if (RESET = '1') then
-			dbg_ack_frames <= (others => '0');
-		elsif (filter_current_state = DECIDE and frame_type_valid = '1') then
-			dbg_ack_frames <= dbg_ack_frames + x"1";
-		end if;
-	end if;
-end process ACK_FRAMES_CTR;
+--ACK_FRAMES_CTR : process(RX_MAC_CLK)
+--begin
+--	if rising_edge(RX_MAC_CLK) then
+--		if (RESET = '1') then
+--			dbg_ack_frames <= (others => '0');
+--		elsif (filter_current_state = DECIDE and frame_type_valid = '1') then
+--			dbg_ack_frames <= dbg_ack_frames + x"1";
+--		end if;
+--	end if;
+--end process ACK_FRAMES_CTR;
 
-DROPPED_FRAMES_CTR : process(RX_MAC_CLK)
-begin
-	if rising_edge(RX_MAC_CLK) then
-		if (RESET = '1') then
-			dbg_drp_frames <= (others => '0');
-		elsif (filter_current_state = DECIDE and frame_type_valid = '0') then
-			dbg_drp_frames <= dbg_drp_frames + x"1";
-		end if;
-	end if;
-end process DROPPED_FRAMES_CTR;
+--DROPPED_FRAMES_CTR : process(RX_MAC_CLK)
+--begin
+--	if rising_edge(RX_MAC_CLK) then
+--		if (RESET = '1') then
+--			dbg_drp_frames <= (others => '0');
+--		elsif (filter_current_state = DECIDE and frame_type_valid = '0') then
+--			dbg_drp_frames <= dbg_drp_frames + x"1";
+--		end if;
+--	end if;
+--end process DROPPED_FRAMES_CTR;
 
 FRAME_TYPE_PROC : process(RX_MAC_CLK)
 begin
 	if rising_edge(RX_MAC_CLK) then
 		if (filter_current_state = DECIDE) then
 			dbg_frame_type <= saved_frame_type;
+		end if;
+		-- to remove
+		if (remove_ctr = x"1") then
+			dbg_drp_frames(15 downto 8) <= MAC_RXD_IN;
+		elsif (remove_ctr = x"2") then
+			dbg_drp_frames(7 downto 0) <= MAC_RXD_IN;
+		elsif (remove_ctr = x"3") then
+			dbg_ack_frames(15 downto 8) <= MAC_RXD_IN;
+		elsif (remove_ctr = x"4") then
+			dbg_ack_frames(7 downto 0) <= MAC_RXD_IN;
 		end if;
 	end if;
 end process FRAME_TYPE_PROC;
