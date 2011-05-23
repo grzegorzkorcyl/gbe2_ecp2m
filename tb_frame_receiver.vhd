@@ -535,7 +535,7 @@ begin
 -- frame type
 	MAC_RXD_IN		<= x"08";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
+	MAC_RXD_IN		<= x"06";
 	wait until rising_edge(RX_MAC_CLK);
 -- data
 	MAC_RXD_IN		<= x"aa";

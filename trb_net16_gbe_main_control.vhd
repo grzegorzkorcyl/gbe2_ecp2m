@@ -204,21 +204,21 @@ begin
 	end case;
 end process REDIRECT_MACHINE;
 
---RC_RD_EN_OUT <= '1' when redirect_current_state = LOAD else '0';
+rc_rd_en <= '1' when redirect_current_state = LOAD else '0';
 RC_RD_EN_OUT <= rc_rd_en;
 
-RC_RD_EN_PROC : process(CLK)
-begin
-	if rising_edge(CLK) then
-		if (RESET = '1') then
-			rc_rd_en <= '0';
-		elsif (redirect_current_state = LOAD) then
-			rc_rd_en <= '1';
-		else
-			rc_rd_en <= '0';
-		end if;
-	end if;
-end process;
+--RC_RD_EN_PROC : process(CLK)
+--begin
+--	if rising_edge(CLK) then
+--		if (RESET = '1') then
+--			rc_rd_en <= '0';
+--		elsif (redirect_current_state = LOAD) then
+--			rc_rd_en <= '1';
+--		else
+--			rc_rd_en <= '0';
+--		end if;
+--	end if;
+--end process;
 
 RC_LOADING_DONE_OUT <= '1' when (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') else '0';
 

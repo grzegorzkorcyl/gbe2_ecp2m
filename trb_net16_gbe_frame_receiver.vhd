@@ -242,7 +242,9 @@ port map(
 	Empty               => rec_fifo_empty,
 	Full                => rec_fifo_full
 );
-fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or (filter_current_state = REMOVE_TYPE and remove_ctr = x"15" and frame_type_valid = '1'))
+
+fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or 
+			( ((filter_current_state = REMOVE_TYPE and remove_ctr = x"b") or (filter_current_state = DECIDE)) and frame_type_valid = '1'))
 	      else '0';
 
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;
@@ -264,8 +266,18 @@ port map(
 	Full                => sizes_fifo_full
 );
 
-frame_valid_q <= '1' when (MAC_RX_EOF_IN = '1' and ALLOW_RX_IN = '1') and (frame_type_valid = '1')
-		    else '0';
+FRAME_VALID_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (MAC_RX_EOF_IN = '1' and ALLOW_RX_IN = '1' and frame_type_valid = '1') then
+			frame_valid_q <= '1';
+		else
+			frame_valid_q <= '0';
+		end if;
+	end if;
+end process FRAME_VALID_PROC;
+--frame_valid_q <= '1' when (MAC_RX_EOF_IN = '1' and ALLOW_RX_IN = '1') and (frame_type_valid = '1')
+--		    else '0';
 
 -- received bytes counter is valid only after FR_FRAME_VALID_OUT is asserted for few clock cycles
 RX_BYTES_CTR_PROC : process(RX_MAC_CLK)
@@ -297,7 +309,7 @@ FRAME_VALID_SYNC : signal_sync
     )
   port map(
     RESET    => RESET,
-    CLK0     => CLK,
+    CLK0     => RX_MAC_CLK,
     CLK1     => CLK,
     D_IN(0)  => frame_valid_q,
     D_OUT(0) => FR_FRAME_VALID_OUT
