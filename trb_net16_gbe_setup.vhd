@@ -9,6 +9,8 @@ use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
 --use work.version.all;
 
+use work.trb_net_gbe_components.all;
+use work.trb_net_gbe_protocols.all;
 
 entity gbe_setup is
 port(
@@ -82,6 +84,11 @@ port(
 	DBG_MC_IN                : in std_logic_vector(63 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);
 	DBG_FIFO_RD_EN_OUT        : out std_logic;
+	
+	DBG_SELECT_REC_IN	: in	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	DBG_SELECT_SENT_IN	: in	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	DBG_SELECT_PROTOS_IN	: in	std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+	
 	DBG_FIFO_Q_IN             : in std_logic_vector(15 downto 0)
 	--DBG_RESET_FIFO_OUT       : out std_logic  -- gk 28.09.10
 );
@@ -500,6 +507,23 @@ begin
 					
 				when x"a5" =>
 					data_out <= DBG_MC_IN(31 downto 0);
+					
+					
+					-- *** debug of response constructors
+					
+				-- Forward
+				when x"b0" =>
+					data_out(15 downto 0)  <= DBG_SELECT_REC_IN(1 * 16 - 1 downto 0 * 16);
+					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(1 * 16 - 1 downto 0 * 16);
+				when x"b1" =>
+					data_out <= DBG_SELECT_PROTOS_IN(1 * 32 - 1 downto 0 * 32);
+					
+				-- ARP
+				when x"b2" =>
+					data_out(15 downto 0)  <= DBG_SELECT_REC_IN(2 * 16 - 1 downto 1 * 16);
+					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(2 * 16 - 1 downto 1 * 16);
+				when x"b3" =>
+					data_out <= DBG_SELECT_PROTOS_IN(2 * 32 - 1 downto 1 * 32);
 					
 				-- **** end of received debug section
 

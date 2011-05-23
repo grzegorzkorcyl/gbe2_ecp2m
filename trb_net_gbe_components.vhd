@@ -51,7 +51,8 @@ port (
 	-- counters from response constructors
 	RECEIVED_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 	SENT_FRAMES_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
-
+	PROTOS_DEBUG_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+	
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
 end component;
@@ -127,6 +128,10 @@ port (
 	TSM_HREADY_N_IN		: in	std_logic;
 	TSM_HDATA_EN_N_IN	: in	std_logic;
 
+	
+	SELECT_REC_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	SELECT_SENT_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	SELECT_PROTOS_DEBUG_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -533,6 +538,11 @@ port(
 	DBG_MC_IN                : in std_logic_vector(63 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);
 	DBG_FIFO_RD_EN_OUT        : out std_logic;
+	
+	DBG_SELECT_REC_IN	: in	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	DBG_SELECT_SENT_IN	: in	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	DBG_SELECT_PROTOS_IN	: in	std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+	
 	DBG_FIFO_Q_IN             : in std_logic_vector(15 downto 0)
 	--DBG_FIFO_RESET_OUT       : out std_logic
 );

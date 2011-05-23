@@ -536,6 +536,10 @@ signal fr_allowed_types              : std_logic_vector(31 downto 0);
 signal fr_frame_proto                : std_logic_vector(15 downto 0);
 signal rc_frame_proto                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
+signal dbg_select_rec                : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+signal dbg_select_sent               : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+signal dbg_select_protos             : std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+	
 begin
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
@@ -598,7 +602,10 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  TSM_HREAD_N_OUT	=> mac_hread,
 	  TSM_HREADY_N_IN	=> mac_hready,
 	  TSM_HDATA_EN_N_IN	=> mac_hdata_en,
-
+	  
+	  SELECT_REC_FRAMES_OUT		=> dbg_select_rec,
+	  SELECT_SENT_FRAMES_OUT	=> dbg_select_sent,
+	  SELECT_PROTOS_DEBUG_OUT	=> dbg_select_protos,
 
 	  DEBUG_OUT		=> dbg_mc
   );
@@ -654,7 +661,10 @@ MC_SIM_GEN : if (DO_SIMULATION = 1) generate
 	  TSM_HREADY_N_IN	=> mac_hready,
 	  TSM_HDATA_EN_N_IN	=> mac_hdata_en,
 
-
+	  SELECT_REC_FRAMES_OUT		=> dbg_select_rec,
+	  SELECT_SENT_FRAMES_OUT	=> dbg_select_sent,
+	  SELECT_PROTOS_DEBUG_OUT	=> dbg_select_protos,
+	  
 	    DEBUG_OUT => open
   );
 
@@ -800,6 +810,11 @@ port map(
 	DBG_MC_IN                 => dbg_mc,
 	DBG_TC_IN                 => dbg_tc(31 downto 0),
 	DBG_FIFO_RD_EN_OUT        => dbg_rd_en,
+	
+	DBG_SELECT_REC_IN	=> dbg_select_rec,
+	DBG_SELECT_SENT_IN	=> dbg_select_sent,
+	DBG_SELECT_PROTOS_IN	=> dbg_select_protos,
+	
 	DBG_FIFO_Q_IN             => dbg_q
 	
 	--DBG_FIFO_RESET_OUT        => dbg_reset_fifo  -- gk 28.09.10
@@ -883,6 +898,11 @@ port map(
 	DBG_MC_IN                 => dbg_mc,
 	DBG_TC_IN                 => dbg_tc(31 downto 0),
 	DBG_FIFO_RD_EN_OUT        => dbg_rd_en,
+		
+	DBG_SELECT_REC_IN	=> dbg_select_rec,
+	DBG_SELECT_SENT_IN	=> dbg_select_sent,
+	DBG_SELECT_PROTOS_IN	=> dbg_select_protos,
+	
 	DBG_FIFO_Q_IN             => dbg_q
 	--DBG_FIFO_RESET_OUT        => dbg_reset_fifo  -- gk 28.09.10
 );

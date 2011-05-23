@@ -63,6 +63,10 @@ port (
 	TSM_HREADY_N_IN		: in	std_logic;
 	TSM_HDATA_EN_N_IN	: in	std_logic;
 
+	SELECT_REC_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	SELECT_SENT_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	SELECT_PROTOS_DEBUG_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+	
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
 end trb_net16_gbe_main_control;
@@ -112,9 +116,6 @@ signal first_byte_qq                : std_logic;
 signal proto_select                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
 
-signal select_rec_frames            : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
-signal select_sent_frames           : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
-
 type redirect_states is (IDLE, LOAD, BUSY, FINISH, CLEANUP);
 signal redirect_current_state, redirect_next_state : redirect_states;
 
@@ -137,8 +138,9 @@ port map(
 	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
-	RECEIVED_FRAMES_OUT	=> select_rec_frames,
-	SENT_FRAMES_OUT		=> select_sent_frames,
+	RECEIVED_FRAMES_OUT	=> SELECT_REC_FRAMES_OUT,
+	SENT_FRAMES_OUT		=> SELECT_SENT_FRAMES_OUT,
+	PROTOS_DEBUG_OUT	=> SELECT_PROTOS_DEBUG_OUT,
 	
 	DEBUG_OUT		=> open
 );

@@ -37,7 +37,7 @@ port (
 -- END OF INTERFACE
 
 -- debug
-	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
+	DEBUG_OUT		: out	std_logic_vector(31 downto 0)
 );
 end trb_net16_gbe_response_constructor_ARP;
 
@@ -206,7 +206,7 @@ DEBUG_OUT(4)            <= ff_empty;
 DEBUG_OUT(7 downto 5)   <= "000";
 DEBUG_OUT(8)            <= ff_full;
 DEBUG_OUT(11 downto 9)  <= "000";
-DEBUG_OUT(63 downto 12) <= (others => '0');
+DEBUG_OUT(31 downto 12) <= (others => '0');
 -- ****
 
 
