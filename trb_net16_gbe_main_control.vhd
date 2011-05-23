@@ -112,6 +112,9 @@ signal first_byte_qq                : std_logic;
 signal proto_select                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
 
+signal select_rec_frames            : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+signal select_sent_frames           : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+
 type redirect_states is (IDLE, LOAD, BUSY, FINISH, CLEANUP);
 signal redirect_current_state, redirect_next_state : redirect_states;
 
@@ -133,6 +136,9 @@ port map(
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
 	TC_BUSY_IN		=> TC_BUSY_IN,
+	
+	RECEIVED_FRAMES_OUT	=> select_rec_frames,
+	SENT_FRAMES_OUT		=> select_sent_frames,
 	
 	DEBUG_OUT		=> open
 );

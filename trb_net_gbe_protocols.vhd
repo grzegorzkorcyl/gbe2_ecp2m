@@ -26,6 +26,9 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
+			
+	RECEIVED_FRAMES_OUT	: out	std_logic_vector(15 downto 0);
+	SENT_FRAMES_OUT		: out	std_logic_vector(15 downto 0);
 -- END OF INTERFACE
 
 -- debug
@@ -50,6 +53,9 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
+			
+	RECEIVED_FRAMES_OUT	: out	std_logic_vector(15 downto 0);
+	SENT_FRAMES_OUT		: out	std_logic_vector(15 downto 0);
 -- END OF INTERFACE
 
 -- debug

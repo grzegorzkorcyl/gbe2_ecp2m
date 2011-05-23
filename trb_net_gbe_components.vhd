@@ -47,6 +47,10 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
+	
+	-- counters from response constructors
+	RECEIVED_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	SENT_FRAMES_OUT		: out	std_logic_vector(c_MAX_PROTOCO
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -524,7 +528,7 @@ port(
 	DBG_FC2_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT1_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT2_IN               : in std_logic_vector(31 downto 0);
-	DBG_FR_IN                : in std_logic_vector(31 downto 0);
+	DBG_FR_IN                : in std_logic_vector(63 downto 0);
 	DBG_RC_IN                : in std_logic_vector(63 downto 0);
 	DBG_MC_IN                : in std_logic_vector(63 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);

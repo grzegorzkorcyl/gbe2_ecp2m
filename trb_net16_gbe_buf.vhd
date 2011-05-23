@@ -526,7 +526,7 @@ signal rc_loading_done               : std_logic;
 signal fr_get_frame                  : std_logic;
 signal mc_transmit_done              : std_logic;
 
-signal dbg_fr                        : std_logic_vector(31 downto 0);
+signal dbg_fr                        : std_logic_vector(63 downto 0);
 signal dbg_rc                        : std_logic_vector(63 downto 0);
 signal dbg_mc                        : std_logic_vector(63 downto 0);
 signal dbg_tc                        : std_logic_vector(63 downto 0);
@@ -1178,7 +1178,7 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
 
-	  DEBUG_OUT(31 downto 0) => dbg_fr
+	  DEBUG_OUT		=> dbg_fr
   );
 end generate frame_rec_gen;
 

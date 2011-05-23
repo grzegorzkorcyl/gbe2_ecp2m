@@ -36,6 +36,10 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
+	
+	-- counters from response constructors
+	RECEIVED_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+	SENT_FRAMES_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -71,6 +75,9 @@ port map (
 	TC_DATA_OUT		=> tc_data(1 * 9 - 1 downto 0 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(1 * 16 - 1 downto 0 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
+	
+	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(1 * 15 - 1 downto 0 * 9),
+	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(1 * 15 - 1 downto 0 * 9),
 -- END OF INTERFACE
 
 -- debug
@@ -95,6 +102,9 @@ port map (
 	TC_DATA_OUT		=> tc_data(2 * 9 - 1 downto 1 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(2 * 16 - 1 downto 1 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
+	
+	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(2 * 15 - 1 downto 1 * 9),
+	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(2 * 15 - 1 downto 1 * 9),
 -- END OF INTERFACE
 
 -- debug
@@ -142,6 +152,7 @@ begin
 		end if;
 	end if;
 end process SELECTOR_PROC;
+-- ************
 
 end trb_net16_gbe_protocol_selector;
 

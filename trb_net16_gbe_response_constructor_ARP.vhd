@@ -31,6 +31,9 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
+	
+	RECEIVED_FRAMES_OUT	: out	std_logic_vector(15 downto 0);
+	SENT_FRAMES_OUT		: out	std_logic_vector(15 downto 0);
 -- END OF INTERFACE
 
 -- debug
@@ -51,10 +54,15 @@ signal ff_wr_en                 : std_logic;
 signal ff_rd_en                 : std_logic;
 signal resp_bytes_ctr           : std_logic_vector(15 downto 0);
 signal ff_empty                 : std_logic;
+signal ff_full                  : std_logic;
 signal reset_ctr                : std_logic;
 signal ff_q                     : std_logic_vector(8 downto 0);
 signal ff_wr_lock               : std_logic;
 signal ff_wr_lock_q             : std_logic;
+
+signal state                    : std_logic_vector(3 downto 0);
+signal rec_frames               : std_logic_vector(15 downto 0);
+signal sent_frames              : std_logic_vector(15 downto 0);
 
 begin
 
@@ -74,6 +82,7 @@ begin
 	case dissect_current_state is
 	
 		when IDLE =>
+			state <= x"1";
 			if (PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
 				dissect_next_state <= SAVE;
 			else
@@ -81,6 +90,7 @@ begin
 			end if;
 		
 		when SAVE =>
+			state <= x"2";
 			if (PS_DATA_IN(8) = '1') then
 				dissect_next_state <= WAIT_FOR_LOAD;
 			else
@@ -88,6 +98,7 @@ begin
 			end if;
 			
 		when WAIT_FOR_LOAD =>
+			state <= x"3";
 			if (TC_BUSY_IN = '0') then
 				dissect_next_state <= LOAD;
 			else
@@ -95,6 +106,7 @@ begin
 			end if;
 		
 		when LOAD =>
+			state <= x"4";
 			if (ff_q(8) = '1') and (ff_wr_lock_q = '0') then
 				dissect_next_state <= CLEANUP;
 			else
@@ -102,6 +114,7 @@ begin
 			end if;
 		
 		when CLEANUP =>
+			state <= x"5";
 			dissect_next_state <= IDLE;
 	
 	end case;
@@ -140,7 +153,7 @@ port map(
 	RPReset             => RESET,
 	Q                   => ff_q,
 	Empty               => ff_empty,
-	Full                => open
+	Full                => ff_full
 );
 
 ff_rd_en <= '1' when (TC_RD_EN_IN = '1' and PS_SELECTED_IN = '1') else '0';
@@ -161,6 +174,42 @@ begin
 		end if;
 	end if;
 end process RESP_BYTES_CTR_PROC;
+
+REC_FRAMES_PROC : process(CTR)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			rec_frames <= (others => '0');
+		elsif (dissect_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
+			rec_frames <= rec_frame + x"1";
+		end if;
+	end if;
+end process REC_FRAMES_PROC;
+
+SENT_FRAMES_PROC : process(CTR)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			sent_frames <= (others => '0');
+		elsif (dissect_current_state = WAIT_FOR_LOAD and TC_BUSY_IN = '0') then
+			sent_frames <= sent_frame + x"1";
+		end if;
+	end if;
+end process SENT_FRAMES_PROC;
+
+RECEIVED_FRAMES_OUT <= rec_frames;
+SENT_FRAME_OUT      <= sent_frames;
+
+-- **** debug
+DEBUG_OUT(3 downto 0)   <= state;
+DEBUG_OUT(4)            <= ff_empty;
+DEBUG_OUT(7 downto 5)   <= "000";
+DEBUG_OUT(8)            <= ff_full;
+DEBUG_OUT(11 downto 9)  <= "000";
+DEBUG_OUT(63 downto 12) <= (others => '0');
+-- ****
+
+
 
 end trb_net16_gbe_response_constructor_ARP;
 
