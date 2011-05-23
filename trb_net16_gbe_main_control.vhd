@@ -117,10 +117,6 @@ signal redirect_current_state, redirect_next_state : redirect_states;
 
 begin
 
-DEBUG_OUT(3 downto 0)  <= state;
-DEBUG_OUT(31 downto 4) <= (others => '0');
-
-
 protocol_selector : trb_net16_gbe_protocol_selector
 port map(
 	CLK			=> CLK,
