@@ -528,7 +528,7 @@ signal mc_transmit_done              : std_logic;
 
 signal dbg_fr                        : std_logic_vector(31 downto 0);
 signal dbg_rc                        : std_logic_vector(63 downto 0);
-signal dbg_mc                        : std_logic_vector(31 downto 0);
+signal dbg_mc                        : std_logic_vector(63 downto 0);
 signal dbg_tc                        : std_logic_vector(63 downto 0);
 
 signal fr_allowed_types              : std_logic_vector(31 downto 0);
