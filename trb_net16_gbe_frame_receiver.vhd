@@ -143,7 +143,7 @@ begin
 			end if;
 		
 		when REMOVE_DEST =>
-			state <= "3";
+			state <= x"3";
 			if (remove_ctr = x"0b") then
 				filter_next_state <= REMOVE_SRC;
 			else
