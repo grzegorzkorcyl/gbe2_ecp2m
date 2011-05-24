@@ -136,7 +136,7 @@ begin
   if rising_edge(CLK) then
     FRAMES_RECEIVED_OUT              <= frames_received_ctr;
     --BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
-    BYTES_RECEIVED_OUT(15 downto 0)  <= bytes_rec_ctr;
+    BYTES_RECEIVED_OUT(15 downto 0)  <= bytes_rec_ctr(15 downto 0);
     BYTES_RECEIVED_OUT(18 downto 16) <= saved_proto;
     BYTES_RECEIVED_OUT(31 downto 19) <= (others => '0');
   end if;
