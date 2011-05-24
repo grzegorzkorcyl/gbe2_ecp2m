@@ -7,7 +7,7 @@ use work.trb_net_std.all;
 
 package trb_net_gbe_protocols is
 
-constant c_MAX_PROTOCOLS      : integer range 1 to 16 := 2;
+constant c_MAX_PROTOCOLS      : integer range 1 to 16 := 3;
 
 component trb_net16_gbe_response_constructor_Forward is
 port (
@@ -37,6 +37,33 @@ port (
 end component;
 
 component trb_net16_gbe_response_constructor_ARP is
+port (
+	CLK			: in	std_logic;  -- system clock
+	RESET			: in	std_logic;
+	
+-- INTERFACE	
+	PS_DATA_IN		: in	std_logic_vector(8 downto 0);
+	PS_WR_EN_IN		: in	std_logic;
+	PS_ACTIVATE_IN		: in	std_logic;
+	PS_RESPONSE_READY_OUT	: out	std_logic;
+	PS_BUSY_OUT		: out	std_logic;
+	PS_SELECTED_IN		: in	std_logic;
+		
+	TC_RD_EN_IN		: in	std_logic;
+	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
+	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_BUSY_IN		: in	std_logic;
+			
+	RECEIVED_FRAMES_OUT	: out	std_logic_vector(15 downto 0);
+	SENT_FRAMES_OUT		: out	std_logic_vector(15 downto 0);
+-- END OF INTERFACE
+
+-- debug
+	DEBUG_OUT		: out	std_logic_vector(31 downto 0)
+);
+end component;
+
+component trb_net16_gbe_response_constructor_Test is
 port (
 	CLK			: in	std_logic;  -- system clock
 	RESET			: in	std_logic;

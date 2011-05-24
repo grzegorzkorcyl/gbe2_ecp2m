@@ -108,6 +108,31 @@ port map (
 -- END OF INTERFACE
 );
 
+-- protocol Nr. 3
+Test : trb_net16_gbe_response_constructor_Test
+port map (
+	CLK			=> CLK,
+	RESET			=> RESET,
+	
+-- INTERFACE	
+	PS_DATA_IN		=> PS_DATA_IN,
+	PS_WR_EN_IN		=> PS_WR_EN_IN,
+	PS_ACTIVATE_IN		=> PS_PROTO_SELECT_IN(2),
+	PS_RESPONSE_READY_OUT	=> resp_ready(2),
+	PS_BUSY_OUT		=> busy(2),
+	PS_SELECTED_IN		=> selected(2),
+	
+	TC_RD_EN_IN		=> TC_RD_EN_IN,
+	TC_DATA_OUT		=> tc_data(3 * 9 - 1 downto 2 * 9),
+	TC_FRAME_SIZE_OUT	=> tc_size(3 * 16 - 1 downto 2 * 16),
+	TC_BUSY_IN		=> TC_BUSY_IN,
+	
+	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(3 * 16 - 1 downto 2 * 16),
+	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(3 * 16 - 1 downto 2 * 16),
+	DEBUG_OUT		=> PROTOS_DEBUG_OUT(3 * 32 - 1 downto 2 * 32)
+-- END OF INTERFACE
+);
+
 
 --***************
 -- DO NOT TOUCH, selection logic

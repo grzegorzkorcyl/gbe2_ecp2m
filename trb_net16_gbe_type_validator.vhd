@@ -38,8 +38,9 @@ begin
 -- frame type constants declaration
 FRAME_TYPES(0)  <= x"0800";  -- IPv4
 FRAME_TYPES(1)  <= x"0806";  -- ARP
+FRAME_TYPES(2)  <= x"08AA";  -- Test
 
-SET_GEN : for i in 2 to 31 generate
+SET_GEN : for i in 3 to 31 generate
 	FRAME_TYPES(i)  <= (others => '0');
 end generate SET_GEN;
 -- end
