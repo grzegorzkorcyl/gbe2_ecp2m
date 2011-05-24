@@ -158,6 +158,8 @@ begin
 				filter_next_state <= REMOVE_TYPE;
 			end if;
 			
+		-- TODO: here add VLAN tagging recognition
+			
 		when DECIDE =>
 			state <= x"6";
 			if (frame_type_valid = '1') then
@@ -309,7 +311,7 @@ FRAME_VALID_SYNC : signal_sync
     )
   port map(
     RESET    => RESET,
-    CLK0     => RX_MAC_CLK,
+    CLK0     => CLK,
     CLK1     => CLK,
     D_IN(0)  => frame_valid_q,
     D_OUT(0) => FR_FRAME_VALID_OUT
@@ -348,7 +350,7 @@ begin
 			dbg_ack_frames <= (others => '0');
 		elsif (filter_current_state = DECIDE and frame_type_valid = '1') then
 			dbg_ack_frames <= dbg_ack_frames + x"1";
-	end if;
+		end if;
 	end if;
 end process ACK_FRAMES_CTR;
 
