@@ -188,7 +188,7 @@ begin
 			reset_fifo        <= '0';  -- gk 28.09.10
 			allow_rx          <= '0';
 			frame_delay       <= x"0000_0000"; -- gk 09.12.10
-			allowed_types     <= x"0000_0003";  -- default ipv4 and arp
+			allowed_types     <= x"0000_0004";  -- only test protocol allowed
 
 		elsif (BUS_WRITE_EN_IN = '1') then
 			case BUS_ADDR_IN is
