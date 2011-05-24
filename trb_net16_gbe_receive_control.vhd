@@ -179,7 +179,9 @@ end process BYTES_REC_CTR_PROC;
 SAVED_PROTO_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
-		if (load_current_state = READY) then
+		if (RESET = '1') then
+			saved_proto <= (others => '0');
+		elsif (load_current_state = READY) then
 			if (and_all(proto_code) = '0') then
 				saved_proto <= proto_code;
 			else

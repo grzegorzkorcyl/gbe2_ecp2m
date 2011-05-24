@@ -159,7 +159,7 @@ ff_rd_en <= '1' when (TC_RD_EN_IN = '1' and PS_SELECTED_IN = '1') else '0';
 
 TC_DATA_OUT <= ff_q;
 
-PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = LOAD) else '0';
+PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD) or (dissect_current_state = LOAD) else '0';
 
 TC_FRAME_SIZE_OUT <= resp_bytes_ctr + x"1";
 
