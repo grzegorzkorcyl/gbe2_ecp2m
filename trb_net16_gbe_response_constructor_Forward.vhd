@@ -55,7 +55,6 @@ signal ff_rd_en                 : std_logic;
 signal resp_bytes_ctr           : std_logic_vector(15 downto 0);
 signal ff_empty                 : std_logic;
 signal ff_full                  : std_logic;
-signal reset_ctr                : std_logic;
 signal ff_q                     : std_logic_vector(8 downto 0);
 signal ff_wr_lock               : std_logic;
 signal ff_wr_lock_q             : std_logic;
@@ -153,7 +152,7 @@ port map(
 	RPReset             => RESET,
 	Q                   => ff_q,
 	Empty               => ff_empty,
-	Full                => open
+	Full                => ff_full
 );
 
 ff_rd_en <= '1' when (TC_RD_EN_IN = '1' and PS_SELECTED_IN = '1') else '0';

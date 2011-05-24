@@ -55,7 +55,6 @@ signal ff_rd_en                 : std_logic;
 signal resp_bytes_ctr           : std_logic_vector(15 downto 0);
 signal ff_empty                 : std_logic;
 signal ff_full                  : std_logic;
-signal reset_ctr                : std_logic;
 signal ff_q                     : std_logic_vector(8 downto 0);
 signal ff_wr_lock               : std_logic;
 signal ff_wr_lock_q             : std_logic;

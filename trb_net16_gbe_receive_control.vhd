@@ -62,6 +62,9 @@ signal bytes_rec_ctr             : std_logic_vector(31 downto 0);
 signal state                     : std_logic_vector(3 downto 0);
 signal proto_code                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
+-- debug only
+signal saved_proto               : std_logic_vector(2 downto 0);
+
 begin
 
 FR_RD_EN_OUT <= RC_RD_EN_IN;
@@ -132,7 +135,10 @@ SYNC_PROC : process(CLK)
 begin
   if rising_edge(CLK) then
     FRAMES_RECEIVED_OUT              <= frames_received_ctr;
-    BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
+    --BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
+    BYTES_RECEIVED_OUT(15 downto 0)  <= bytes_rec_ctr;
+    BYTES_RECEIVED_OUT(18 downto 16) <= saved_proto;
+    BYTES_RECEIVED_OUT(31 downto 19) <= (others => '0');
   end if;
 end process SYNC_PROC;
 
@@ -168,6 +174,21 @@ begin
     end if;
   end if;
 end process BYTES_REC_CTR_PROC;
+
+-- debug only
+SAVED_PROTO : process(CLK)
+begin
+	if rising_egde(CLK) then
+		if (load_current_state = READY) then
+			if (and_all(proto_code) = '0') then
+				saved_proto <= proto_code;
+			else
+				saved_proto <= (others => '0');
+			end if;
+		end if;
+	end if;
+end process SAVED_PROTO;
+-- end of debug
 
 
 end trb_net16_gbe_receive_control;
