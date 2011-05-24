@@ -31,7 +31,7 @@ port (
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	
 	
--- singals to/from transmi controller with constructed response
+-- singals to/from transmit controller with constructed response
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);

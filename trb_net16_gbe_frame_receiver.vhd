@@ -304,30 +304,15 @@ end process SYNC_PROC;
 
 --*****************
 -- synchronization between 125MHz receive clock and 100MHz system clock
-FRAME_VALID_SYNC : signal_sync
-  generic map(
-    WIDTH    => 1,
-    DEPTH    => 2
-    )
-  port map(
-    RESET    => RESET,
-    CLK0     => CLK,
-    CLK1     => CLK,
-    D_IN(0)  => frame_valid_q,
-    D_OUT(0) => FR_FRAME_VALID_OUT
+FRAME_VALID_SYNC : pulse_sync
+port map(
+	CLK_A_IN    => RX_MAC_CLK,
+	RESET_A_IN  => RESET,
+	PULSE_A_IN  => frame_valid_q,
+	CLK_B_IN    => CLK,
+	RESET_B_IN  => RESET,
+	PULSE_B_OUT => FR_FRAME_VALID_OUT
 );
--- FRAME_SIZE_SYNC : signal_sync
---   generic map(
---     WIDTH    => 16,
---     DEPTH    => 2
---     )
---   port map(
---     RESET    => RESET,
---     CLK0     => CLK,
---     CLK1     => CLK,
---     D_IN     => rx_bytes_ctr,
---     D_OUT    => FR_FRAME_SIZE_OUT
--- );
 
 
 -- ****
