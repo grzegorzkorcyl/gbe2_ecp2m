@@ -429,6 +429,7 @@ port(
 	RESET					: in	std_logic;
 	GSR_N					: in	std_logic;
 	CLK_125_OUT				: out	std_logic;
+	CLK_125_RX_OUT				: out	std_logic;
 	CLK_125_IN				: in std_logic;  -- gk 28.04.10  used when intclk
 	--SGMII connection to frame transmitter (tsmac)
 	FT_TX_CLK_EN_OUT		: out	std_logic;

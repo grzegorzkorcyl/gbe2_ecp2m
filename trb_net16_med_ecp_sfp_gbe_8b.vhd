@@ -16,7 +16,8 @@ port(
 	RESET					: in	std_logic;
 	GSR_N					: in	std_logic;
 	CLK_125_OUT				: out	std_logic;
-	CLK_125_IN				: in std_logic;  -- gk 28.04.10  used when intclk
+	CLK_125_IN				: in	std_logic;  -- gk 28.04.10  used when intclk
+	CLK_125_RX_OUT				: out	std_logic;
 	--SGMII connection to frame transmitter (tsmac)
 	FT_TX_CLK_EN_OUT			: out	std_logic;
 	FT_RX_CLK_EN_OUT			: out	std_logic;
@@ -412,7 +413,7 @@ port map(
 	tx_d				=> FT_TXD_IN, -- TX data from MAC
 	tx_en				=> FT_TX_EN_IN, -- TX data enable from MAC
 	tx_er				=> FT_TX_ER_IN, -- TX error from MAC
-		rx_clk_125			=> refclkcore, -- original clock from SerDes
+		rx_clk_125			=> sd_rx_clk, --refclkcore, -- original clock from SerDes
 	rx_clock_enable_source		=> pcs_rx_clk_en,
 	rx_clock_enable_sink		=> pcs_rx_clk_en,
 	rx_d				=> pcs_rx_d, -- RX data to MAC
@@ -460,7 +461,8 @@ MR_AN_COMPLETE_OUT   <= pcs_mr_an_complete;
 MR_AN_PAGE_RX_OUT    <= pcs_mr_page_rx;
 
 -- Clock games
-CLK_125_OUT <= refclkcore;
+CLK_125_OUT    <= refclkcore;
+CLK_125_RX_OUT <= sd_rx_clk;
 
 -- Fakes
 STAT_OP       <= (others => '0');

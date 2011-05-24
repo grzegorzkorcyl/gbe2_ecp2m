@@ -540,6 +540,8 @@ signal dbg_select_rec                : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1
 signal dbg_select_sent               : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 signal dbg_select_protos             : std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
 	
+signal serdes_rx_clk                 : std_logic;
+
 begin
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
@@ -1178,7 +1180,7 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  RESET			=> RESET,
 	  LINK_OK_IN		=> link_ok,
 	  ALLOW_RX_IN		=> allow_rx,
-	  RX_MAC_CLK		=> serdes_clk_125,
+	  RX_MAC_CLK		=> serdes_rx_clk, --serdes_clk_125,
 
   -- input signals from TS_MAC
 	  MAC_RX_EOF_IN		=> mac_rx_eof,
@@ -1209,7 +1211,7 @@ frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
 	  RESET			=> RESET,
 	  LINK_OK_IN		=> '1',
 	  ALLOW_RX_IN		=> '1',
-	  RX_MAC_CLK		=> serdes_clk_125,
+	  RX_MAC_CLK		=> serdes_rx_clk, --serdes_clk_125,
 
   -- input signals from TS_MAC
 	  MAC_RX_EOF_IN		=> MAC_RX_EOF_IN,
@@ -1249,7 +1251,7 @@ imp_gen: if (DO_SIMULATION = 0) generate
 	----------------- clock and reset port declarations ------------------
 		hclk				=> CLK,
 		txmac_clk			=> serdes_clk_125,
-		rxmac_clk			=> serdes_clk_125,
+		rxmac_clk			=> serdes_rx_clk, --serdes_clk_125,
 		reset_n				=> GSR_N,
 		txmac_clk_en			=> mac_tx_clk_en,
 		rxmac_clk_en			=> mac_rx_clk_en,
@@ -1326,6 +1328,7 @@ imp_gen: if (DO_SIMULATION = 0) generate
 			RESET				=> RESET,
 			GSR_N				=> GSR_N,
 			CLK_125_OUT			=> serdes_clk_125,
+			CLK_125_RX_OUT			=> serdes_rx_clk,
 			CLK_125_IN			=> CLK_125_IN,
 			FT_TX_CLK_EN_OUT		=> mac_tx_clk_en,
 			FT_RX_CLK_EN_OUT		=> mac_rx_clk_en,
@@ -1375,6 +1378,7 @@ imp_gen: if (DO_SIMULATION = 0) generate
 			RESET				=> RESET,
 			GSR_N				=> GSR_N,
 			CLK_125_OUT			=> serdes_clk_125,
+			CLK_125_RX_OUT			=> serdes_rx_clk,
 			CLK_125_IN			=> '0',  -- not used
 			FT_TX_CLK_EN_OUT		=> mac_tx_clk_en,
 			FT_RX_CLK_EN_OUT		=> mac_rx_clk_en,
@@ -1437,7 +1441,7 @@ sim_gen: if (DO_SIMULATION = 1) generate
 			  --------------- clock, reset, clock enable -------------------------------
 			  HCLK					=> CLK,
 			  TX_MAC_CLK			=> serdes_clk_125,
-			  RX_MAC_CLK			=> serdes_clk_125,
+			  RX_MAC_CLK			=> serdes_rx_clk, --serdes_clk_125,
 			  RESET_N				=> GSR_N,
 			  TXMAC_CLK_EN			=> mac_tx_clk_en,
 			  RXMAC_CLK_EN			=> mac_rx_clk_en,
