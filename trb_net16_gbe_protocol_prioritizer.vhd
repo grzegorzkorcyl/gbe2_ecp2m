@@ -16,6 +16,9 @@ use work.trb_net_gbe_protocols.all;
 
 entity trb_net16_gbe_protocol_prioritizer is
 port (
+	CLK			: in	std_logic;
+	RESET			: in	std_logic;
+	
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
 	PROTOCOL_CODE_IN	: in	std_logic_vector(15 downto 0);  -- higher level protocols
 	HAS_HIGHER_LEVEL_IN	: in	std_logic;
@@ -29,37 +32,47 @@ architecture trb_net16_gbe_protocol_prioritizer of trb_net16_gbe_protocol_priori
 
 begin
 
-PRIORITIZE : process(FRAME_TYPE_IN, PROTOCOL_CODE_IN, HAS_HIGHER_LEVEL_IN)
+PRIORITIZE : process(CLK, FRAME_TYPE_IN, PROTOCOL_CODE_IN, HAS_HIGHER_LEVEL_IN)
 begin
-
-	CODE_OUT <= (others => '0');
-
-	--**** HERE ADD YOU PROTOCOL RECOGNITION AT WANTED PRIORITY LEVEL
-	case FRAME_TYPE_IN is
 	
-		-- No. 1 = IPv4 
-		when x"0800" =>
-			if (HAS_HIGHER_LEVEL_IN = '1') then
-				-- in case there is another protocol inside IPv4 frame
-				CODE_OUT(0) <= '1';
-			else
-				-- branch for pure IPv4
-				CODE_OUT(0) <= '1';
-			end if;
-		
-		-- No. 2 = ARP
-		when x"0806" =>
-			CODE_OUT(1) <= '1'; 
-		
-		-- No. 3 = Test
-		when x"08AA" =>
-			CODE_OUT(2) <= '1';
-		
-		-- CODE_OUT full of 1 is invalid value for the rest of the logic
-		when others =>
-			CODE_OUT <= (others => '1');
+	if rising_edge(CLK) then
 	
-	end case;
+		CODE_OUT <= (others => '0');
+
+		if (RESET = '0') then
+				
+			--**** HERE ADD YOU PROTOCOL RECOGNITION AT WANTED PRIORITY LEVEL
+			-- priority level is the bit position in the CODE_OUT vector
+			-- less significant bit has the higher priority
+			case FRAME_TYPE_IN is
+			
+				-- No. 1 = IPv4 
+				when x"0800" =>
+					if (HAS_HIGHER_LEVEL_IN = '1') then
+						-- in case there is another protocol inside IPv4 frame
+						CODE_OUT(0) <= '1';
+					else
+						-- branch for pure IPv4
+						CODE_OUT(0) <= '1';
+					end if;
+				
+				-- No. 2 = ARP
+				when x"0806" =>
+					CODE_OUT(1) <= '1'; 
+				
+				-- No. 3 = Test
+				when x"08AA" =>
+					CODE_OUT(2) <= '1';
+				
+				-- CODE_OUT full of 1 is invalid value for the rest of the logic
+				when others =>
+					CODE_OUT <= (others => '1');
+			
+			end case;
+			
+		end if;
+		
+	end if;
 
 end process PRIORITIZE;
 

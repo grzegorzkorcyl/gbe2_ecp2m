@@ -61,6 +61,7 @@ signal bytes_rec_ctr             : std_logic_vector(31 downto 0);
 
 signal state                     : std_logic_vector(3 downto 0);
 signal proto_code                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+signal reset_prioritizer         : std_logic;
 
 -- debug only
 signal saved_proto               : std_logic_vector(2 downto 0);
@@ -73,12 +74,17 @@ RC_FRAME_SIZE_OUT <= FR_FRAME_SIZE_IN;
 
 protocol_prioritizer : trb_net16_gbe_protocol_prioritizer
 port map(
+	CLK			=> CLK,
+	RESET			=> reset_prioritizer,
+	
 	FRAME_TYPE_IN		=> FR_FRAME_PROTO_IN,	
 	PROTOCOL_CODE_IN	=> x"0000", -- TODO: recover the higer level protocol
 	HAS_HIGHER_LEVEL_IN	=> '0',  -- dummy
 	
 	CODE_OUT		=> proto_code
 );
+
+reset_prioritizer <= '1' when load_current_state = IDLE else '0';
 
 RC_FRAME_PROTO_OUT <= proto_code when (and_all(proto_code) = '0') else (others => '0');
 
