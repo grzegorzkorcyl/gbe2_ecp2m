@@ -542,6 +542,13 @@ begin
 					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(3 * 16 - 1 downto 2 * 16);
 				when x"b5" =>
 					data_out <= DBG_SELECT_PROTOS_IN(3 * 32 - 1 downto 2 * 32);
+										
+				-- Trash
+				when x"b6" =>
+					data_out(15 downto 0)  <= DBG_SELECT_REC_IN(4 * 16 - 1 downto 3 * 16);
+					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(4 * 16 - 1 downto 3 * 16);
+				when x"b7" =>
+					data_out <= DBG_SELECT_PROTOS_IN(4 * 32 - 1 downto 3 * 32);
 					
 				-- **** end of received debug section
 

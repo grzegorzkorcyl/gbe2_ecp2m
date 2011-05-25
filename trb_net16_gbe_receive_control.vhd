@@ -64,7 +64,7 @@ signal proto_code                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0
 signal reset_prioritizer         : std_logic;
 
 -- debug only
-signal saved_proto               : std_logic_vector(2 downto 0);
+signal saved_proto               : std_logic_vector(3 downto 0);
 
 begin
 
@@ -86,7 +86,8 @@ port map(
 
 reset_prioritizer <= '1' when load_current_state = IDLE else '0';
 
-RC_FRAME_PROTO_OUT <= proto_code when (and_all(proto_code) = '0') else (others => '0');
+--RC_FRAME_PROTO_OUT <= proto_code when (and_all(proto_code) = '0') else (others => '0');
+RC_FRAME_PROTO_OUT <= proto_code;  -- no more ones as the incorrect value, last slot for Trash
 
 DEBUG_OUT(3 downto 0)   <= state;
 DEBUG_OUT(11 downto 4)  <= frames_received_ctr(7 downto 0);
@@ -143,8 +144,8 @@ begin
     FRAMES_RECEIVED_OUT              <= frames_received_ctr;
     --BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
     BYTES_RECEIVED_OUT(15 downto 0)  <= bytes_rec_ctr(15 downto 0);
-    BYTES_RECEIVED_OUT(18 downto 16) <= saved_proto;
-    BYTES_RECEIVED_OUT(31 downto 19) <= (others => '0');
+    BYTES_RECEIVED_OUT(19 downto 16) <= saved_proto;
+    BYTES_RECEIVED_OUT(31 downto 20) <= (others => '0');
   end if;
 end process SYNC_PROC;
 

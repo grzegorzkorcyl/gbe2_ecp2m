@@ -116,6 +116,9 @@ signal first_byte_qq                : std_logic;
 signal proto_select                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
 
+-- debug
+signal frame_waiting_ctr            : std_logic_vector(15 downto 0);
+
 type redirect_states is (IDLE, LOAD, BUSY, FINISH, CLEANUP);
 signal redirect_current_state, redirect_next_state : redirect_states;
 
@@ -464,11 +467,24 @@ TSM_HWRITE_N_OUT  <= tsm_hwrite_n;
 
 
 -- **** debug
+FRAME_WAITING_CTR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			frame_waiting_ctr <= (others => '0');
+		elsif (RC_FRAME_WAITING_IN = '1') then
+			frame_waiting_ctr <= frame_waiting_ctr + x"1";
+		end if;
+	end if;
+end process FRAME_WAITING_CTR_PROC;
+
+
 DEBUG_OUT(3 downto 0)   <= mac_control_debug(3 downto 0);
 DEBUG_OUT(7 downto 4)   <= state;
 DEBUG_OUT(11 downto 8)  <= redirect_state;
 DEBUG_OUT(15 downto 12) <= link_state;
-DEBUG_OUT(63 downto 16) <= (others => '0');
+DEBUG_OUT(31 downto 16) <= frame_waiting_ctr;
+DEBUG_OUT(63 downto 32) <= (others => '0');
 
 
 -- ****

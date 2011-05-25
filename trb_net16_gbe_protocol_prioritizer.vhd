@@ -64,9 +64,9 @@ begin
 				when x"0806" =>
 					CODE_OUT(2) <= '1';
 				
-				-- CODE_OUT full of 1 is invalid value for the rest of the logic
+				-- last slot is reserved for Trash
 				when others =>
-					CODE_OUT <= (others => '1');
+					CODE_OUT(c_MAX_PROTOCOLS - 1) <= '1';
 			
 			end case;
 			
