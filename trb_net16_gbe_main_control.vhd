@@ -511,8 +511,8 @@ DEBUG_OUT(7 downto 4)   <= state;
 DEBUG_OUT(11 downto 8)  <= redirect_state;
 DEBUG_OUT(15 downto 12) <= link_state;
 DEBUG_OUT(23 downto 16) <= frame_waiting_ctr(7 downto 0);
-DEBUG_OUT(27 downto 24) <= ps_busy_q;
-DEBUG_OUT(31 downto 28) <= rc_frame_proto_q;
+DEBUG_OUT(27 downto 24) <= (others => '0'); --ps_busy_q;
+DEBUG_OUT(31 downto 28) <= (others => '0'); --rc_frame_proto_q;
 DEBUG_OUT(63 downto 32) <= (others => '0');
 
 

@@ -1138,7 +1138,7 @@ port map(
 	RC_FRAME_WAITING_OUT	=> rc_frame_ready,
 	RC_LOADING_DONE_IN	=> rc_loading_done,
 	RC_FRAME_SIZE_OUT	=> rc_frame_size,
-	RC_FRAME_PROTO_OUT	=> open, --rc_frame_proto,
+	RC_FRAME_PROTO_OUT	=> rc_frame_proto,
 
 -- statistics
 	FRAMES_RECEIVED_OUT	=> rc_frames_rec_ctr,
@@ -1185,7 +1185,7 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  RESET			=> RESET,
 	  LINK_OK_IN		=> link_ok,
 	  ALLOW_RX_IN		=> allow_rx,
-	  RX_MAC_CLK		=> serdes_rx_clk, --serdes_clk_125,
+	  RX_MAC_CLK		=> serdes_clk_125,
 
   -- input signals from TS_MAC
 	  MAC_RX_EOF_IN		=> mac_rx_eof,
@@ -1217,7 +1217,7 @@ frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
 	  RESET			=> RESET,
 	  LINK_OK_IN		=> '1',
 	  ALLOW_RX_IN		=> '1',
-	  RX_MAC_CLK		=> serdes_rx_clk, --serdes_clk_125,
+	  RX_MAC_CLK		=> serdes_clk_125,
 
   -- input signals from TS_MAC
 	  MAC_RX_EOF_IN		=> MAC_RX_EOF_IN,
@@ -1258,7 +1258,7 @@ imp_gen: if (DO_SIMULATION = 0) generate
 	----------------- clock and reset port declarations ------------------
 		hclk				=> CLK,
 		txmac_clk			=> serdes_clk_125,
-		rxmac_clk			=> serdes_rx_clk, --serdes_clk_125,
+		rxmac_clk			=> serdes_clk_125,
 		reset_n				=> GSR_N,
 		txmac_clk_en			=> mac_tx_clk_en,
 		rxmac_clk_en			=> mac_rx_clk_en,
@@ -1335,7 +1335,7 @@ imp_gen: if (DO_SIMULATION = 0) generate
 			RESET				=> RESET,
 			GSR_N				=> GSR_N,
 			CLK_125_OUT			=> serdes_clk_125,
-			CLK_125_RX_OUT			=> serdes_rx_clk,
+			CLK_125_RX_OUT			=> open, --serdes_rx_clk,
 			CLK_125_IN			=> CLK_125_IN,
 			FT_TX_CLK_EN_OUT		=> mac_tx_clk_en,
 			FT_RX_CLK_EN_OUT		=> mac_rx_clk_en,
@@ -1385,7 +1385,7 @@ imp_gen: if (DO_SIMULATION = 0) generate
 			RESET				=> RESET,
 			GSR_N				=> GSR_N,
 			CLK_125_OUT			=> serdes_clk_125,
-			CLK_125_RX_OUT			=> serdes_rx_clk,
+			CLK_125_RX_OUT			=> open, --serdes_rx_clk,
 			CLK_125_IN			=> '0',  -- not used
 			FT_TX_CLK_EN_OUT		=> mac_tx_clk_en,
 			FT_RX_CLK_EN_OUT		=> mac_rx_clk_en,
