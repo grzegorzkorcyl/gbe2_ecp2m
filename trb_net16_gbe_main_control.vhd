@@ -223,7 +223,19 @@ RC_RD_EN_OUT <= rc_rd_en;
 --	end if;
 --end process;
 
-RC_LOADING_DONE_OUT <= '1' when (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') else '0';
+LOADING_DONE_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			RC_LOADING_DONE_OUT <= '0';
+		elsif (RC_DATA_IN(8) = '1' and ps_wr_en = '1') then
+			RC_LOADING_DONE_OUT <= '1';
+		else
+			RC_LOADING_DONE_OUT <= '0';
+		end if;
+	end if;
+end process LOADING_DONE_PROC;
+--RC_LOADING_DONE_OUT <= '1' when (RC_DATA_IN(8) = '1') and (ps_wr_en = '1') else '0';
 
 PS_WR_EN_PROC : process(CLK)
 begin
