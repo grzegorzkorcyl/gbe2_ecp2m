@@ -118,6 +118,8 @@ signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
 
 -- debug
 signal frame_waiting_ctr            : std_logic_vector(15 downto 0);
+signal ps_busy_q                    : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+signal rc_frame_proto_q             : std_Logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
 type redirect_states is (IDLE, LOAD, BUSY, FINISH, CLEANUP);
 signal redirect_current_state, redirect_next_state : redirect_states;
@@ -490,12 +492,27 @@ begin
 	end if;
 end process FRAME_WAITING_CTR_PROC;
 
+SAVE_VALUES_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			ps_busy_q <= (others => '0');
+			rc_frame_proto_q <= (others => '0');
+		elsif (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '1') then
+			ps_busy_q <= ps_busy;
+			rc_frame_proto_q <= RC_FRAME_PROTO_IN;
+		end if;
+	end if;
+end process SAVE_VALUES_PROC;
+
 
 DEBUG_OUT(3 downto 0)   <= mac_control_debug(3 downto 0);
 DEBUG_OUT(7 downto 4)   <= state;
 DEBUG_OUT(11 downto 8)  <= redirect_state;
 DEBUG_OUT(15 downto 12) <= link_state;
-DEBUG_OUT(31 downto 16) <= frame_waiting_ctr;
+DEBUG_OUT(23 downto 16) <= frame_waiting_ctr(7 downto 0);
+DEBUG_OUT(27 downto 24) <= ps_busy_q;
+DEBUG_OUT(31 downto 28) <= rc_frame_proto_q;
 DEBUG_OUT(63 downto 32) <= (others => '0');
 
 
