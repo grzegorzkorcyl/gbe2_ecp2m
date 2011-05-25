@@ -1138,7 +1138,7 @@ port map(
 	RC_FRAME_WAITING_OUT	=> rc_frame_ready,
 	RC_LOADING_DONE_IN	=> rc_loading_done,
 	RC_FRAME_SIZE_OUT	=> rc_frame_size,
-	RC_FRAME_PROTO_OUT	=> rc_frame_proto,
+	RC_FRAME_PROTO_OUT	=> open, --rc_frame_proto,
 
 -- statistics
 	FRAMES_RECEIVED_OUT	=> rc_frames_rec_ctr,
