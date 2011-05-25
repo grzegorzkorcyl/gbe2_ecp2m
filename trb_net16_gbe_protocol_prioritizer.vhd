@@ -57,11 +57,11 @@ begin
 					end if;
 				
 				-- No. 2 = ARP
-				when x"0806" =>
+				when x"08AA" =>
 					CODE_OUT(1) <= '1'; 
 				
 				-- No. 3 = Test
-				when x"08AA" =>
+				when x"0806" =>
 					CODE_OUT(2) <= '1';
 				
 				-- CODE_OUT full of 1 is invalid value for the rest of the logic

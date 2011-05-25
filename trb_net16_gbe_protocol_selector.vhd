@@ -135,7 +135,7 @@ port map (
 
 
 --***************
--- DO NOT TOUCH, selection logic
+-- DO NOT TOUCH,  response selection logic
 PS_BUSY_OUT <= busy;
 
 SELECTOR_PROC : process(CLK)
