@@ -542,6 +542,8 @@ signal dbg_select_protos             : std_logic_vector(c_MAX_PROTOCOLS * 32 - 1
 	
 signal serdes_rx_clk                 : std_logic;
 
+signal vlan_id                       : std_logic_vector(31 downto 0);
+
 begin
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
@@ -770,6 +772,7 @@ port map(
 	GBE_ALLOW_RX_OUT          => allow_rx,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
+	GBE_VLAN_ID_OUT	          => vlan_id,
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
 	MONITOR_SENT_IN           => monitor_sent,
@@ -858,6 +861,7 @@ port map(
 	GBE_ALLOW_RX_OUT          => open,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
+	GBE_VLAN_ID_OUT	          => vlan_id,
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
 	MONITOR_SENT_IN           => monitor_sent,
@@ -1199,6 +1203,7 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
+	  FR_VLAN_ID_IN		=> vlan_id,
 
 	  DEBUG_OUT		=> dbg_fr
   );
@@ -1230,7 +1235,8 @@ frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
 	  FR_GET_FRAME_IN	=> fr_get_frame,
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
-	  FR_ALLOWED_TYPES_IN   => x"0000_0003",
+	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
+	  FR_VLAN_ID_IN		=> vlan_id,
 
 	  DEBUG_OUT		=> open
   );

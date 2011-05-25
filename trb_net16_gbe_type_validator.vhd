@@ -11,14 +11,16 @@ use work.trb_net16_hub_func.all;
 use work.trb_net_gbe_components.all;
 
 --********
--- contains valid frame types codes and performs checking 
+-- contains valid frame types codes and performs checking of type and vlan id
 -- by default there is place for 32 frame type which is hardcoded value
 -- due to allow register which is set by slow control
 
 entity trb_net16_gbe_type_validator is
 port (
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
+	SAVED_VLAN_ID_IN	: in	std_logic_vector(15 downto 0);  -- recovered vlan id
 	ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);  -- signal from gbe_setup
+	VLAN_ID_IN		: in	std_logic_vector(31 downto 0);  -- two values from gbe setup	
 	
 	VALID_OUT		: out	std_logic
 );
@@ -56,7 +58,24 @@ RESULT_GEN : for i in 0 to 31 generate
 
 end generate RESULT_GEN;
 
-VALID_OUT <= or_all(result);
+VALID_OUT_PROC : process(result, SAVED_VLAN_ID_IN, VLAN_ID_IN)
+begin
+	if (SAVED_VLAN_ID_IN = x"0000") then  -- fame without vlan tag
+		VALID_OUT <= or_all(result);
+	-- cases for tagged frames
+	elsif (VLAN_ID_IN = x"0000_0000") then -- no vlan id configured
+		VALID_OUT <= '0';
+	elsif (SAVED_VLAN_ID_IN = VLAN_ID_IN(15 downto 0)) then  -- match to first vlan id
+		VALID_OUT <= or_all(result);
+	elsif (SAVED_VLAN_ID_IN = VLAN_ID_IN(31 downto 16)) then  -- match to second vlan id
+		VALID_OUT <= or_all(result);
+	else
+		VALID_OUT <= '0';
+	end if;
+end process VALID_OUT_PROC;
+		
+--VALID_OUT <= or_all(result) when SAVED_VLAN_ID_IN = x"0000"
+--		else or_all(result) and (SAVED_VLAN_ID_IN and VLAN_ID_IN);
 
 
 end trb_net16_gbe_type_validator;

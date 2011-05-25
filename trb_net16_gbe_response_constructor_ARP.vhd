@@ -56,8 +56,7 @@ signal resp_bytes_ctr           : std_logic_vector(15 downto 0);
 signal ff_empty                 : std_logic;
 signal ff_full                  : std_logic;
 signal ff_q                     : std_logic_vector(8 downto 0);
-signal ff_wr_lock               : std_logic;
-signal ff_wr_lock_q             : std_logic;
+signal ff_rd_lock               : std_logic;
 
 signal state                    : std_logic_vector(3 downto 0);
 signal rec_frames               : std_logic_vector(15 downto 0);
@@ -76,7 +75,7 @@ begin
 	end if;
 end process DISSECT_MACHINE_PROC;
 
-DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, ff_q, TC_BUSY_IN)
+DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, ff_q, ff_rd_lock, TC_BUSY_IN)
 begin
 	case dissect_current_state is
 	
@@ -106,7 +105,7 @@ begin
 		
 		when LOAD =>
 			state <= x"4";
-			if (ff_q(8) = '1') and (ff_wr_lock_q = '0') then
+			if (ff_q(8) = '1') and (ff_rd_lock = '0') then
 				dissect_next_state <= CLEANUP;
 			else
 				dissect_next_state <= LOAD;
@@ -124,21 +123,18 @@ PS_BUSY_OUT <= '0' when dissect_current_state = IDLE else '1';
 
 ff_wr_en <= '1' when (PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') else '0';
 
-FF_WR_LOCK_PROC : process(CLK)
+FF_RD_LOCK_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
-		
-		ff_wr_lock_q <= ff_wr_lock;
-	
 		if (RESET = '1') then
-			ff_wr_lock <= '0';
-		elsif (dissect_current_state = SAVE) then
-			ff_wr_lock <= '1';
+			ff_rd_lock <= '1';
+		elsif (dissect_current_state = LOAD and ff_rd_en = '1') then
+			ff_rd_lock <= '0';
 		else 
-			ff_wr_lock <= '0';
+			ff_rd_lock <= '1';
 		end if;
 	end if;
-end process FF_WR_LOCK_PROC;
+end process FF_RD_LOCK_PROC;
 
 -- TODO: put a smaller fifo here
 FRAME_FIFO: fifo_4096x9
@@ -159,7 +155,7 @@ ff_rd_en <= '1' when (TC_RD_EN_IN = '1' and PS_SELECTED_IN = '1') else '0';
 
 TC_DATA_OUT <= ff_q;
 
-PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD) or (dissect_current_state = LOAD) else '0';
+PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = LOAD) else '0';
 
 TC_FRAME_SIZE_OUT <= resp_bytes_ctr + x"1";
 
@@ -207,8 +203,6 @@ DEBUG_OUT(8)            <= ff_full;
 DEBUG_OUT(11 downto 9)  <= "000";
 DEBUG_OUT(31 downto 12) <= (others => '0');
 -- ****
-
-
 
 end trb_net16_gbe_response_constructor_ARP;
 

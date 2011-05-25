@@ -76,6 +76,7 @@ port map (
 	FR_FRAME_SIZE_OUT	=> FR_FRAME_SIZE_OUT,
 	FR_FRAME_PROTO_OUT	=> FR_FRAME_PROTO_OUT,
 	FR_ALLOWED_TYPES_IN     => FR_ALLOWED_TYPES_IN,
+	FR_VLAN_ID_IN		=> x"aabb_0000",
 
 	DEBUG_OUT		=> DEBUG_OUT
 );
@@ -247,68 +248,7 @@ begin
 	RESET <= '0';
 	wait for 50 ns;
 	
-	FRAMES_LOOP : for i in 0 to 100 loop
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RX_EN_IN <= '1';
-	-- dest mac
-		MAC_RXD_IN		<= x"00";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"11";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"22";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"33";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"44";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"55";
-		wait until rising_edge(RX_MAC_CLK);
-	-- src mac
-		MAC_RXD_IN		<= x"00";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"11";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"22";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"33";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"44";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"55";
-		wait until rising_edge(RX_MAC_CLK);
-	-- frame type
-		MAC_RXD_IN		<= x"08";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"aa";
-		wait until rising_edge(RX_MAC_CLK);
-	-- data
-		MAC_RXD_IN		<= x"aa";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"bb";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"cc";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"dd";
-		wait until rising_edge(RX_MAC_CLK);
-	-- cs
-		MAC_RXD_IN		<= x"01";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"02";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"03";
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RXD_IN		<= x"04";
-		MAC_RX_EOF_IN <= '1';
-		
-		wait until rising_edge(RX_MAC_CLK);
-		MAC_RX_EN_IN <='0';
-		MAC_RX_EOF_IN <= '0';
-		
-		
-		wait for 100 ns;
-	end loop FRAMES_LOOP;
-	
-	wait for 1000 ns;
+	wait for 100 ns;
 
 -- FIRST FRAME (invalid frame type)	
 	wait until rising_edge(RX_MAC_CLK);
@@ -339,10 +279,20 @@ begin
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"55";
 	wait until rising_edge(RX_MAC_CLK);
--- frame type
+-- vlan tagged frame type
+	MAC_RXD_IN		<= x"81";
+	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"11";
+-- vlan id
+	MAC_RXD_IN		<= x"aa";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"bb";
+	wait until rising_edge(RX_MAC_CLK);
+-- frame type
+	MAC_RXD_IN		<= x"08";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"aa";
 	wait until rising_edge(RX_MAC_CLK);
 -- data
 	MAC_RXD_IN		<= x"aa";
@@ -627,6 +577,69 @@ begin
 	
 	
 	wait;
+	
+		FRAMES_LOOP : for i in 0 to 100 loop
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RX_EN_IN <= '1';
+	-- dest mac
+		MAC_RXD_IN		<= x"00";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"11";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"22";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"33";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"44";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"55";
+		wait until rising_edge(RX_MAC_CLK);
+	-- src mac
+		MAC_RXD_IN		<= x"00";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"11";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"22";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"33";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"44";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"55";
+		wait until rising_edge(RX_MAC_CLK);
+	-- frame type
+		MAC_RXD_IN		<= x"08";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"aa";
+		wait until rising_edge(RX_MAC_CLK);
+	-- data
+		MAC_RXD_IN		<= x"aa";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"bb";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"cc";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"dd";
+		wait until rising_edge(RX_MAC_CLK);
+	-- cs
+		MAC_RXD_IN		<= x"01";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"02";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"03";
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RXD_IN		<= x"04";
+		MAC_RX_EOF_IN <= '1';
+		
+		wait until rising_edge(RX_MAC_CLK);
+		MAC_RX_EN_IN <='0';
+		MAC_RX_EOF_IN <= '0';
+		
+		
+		wait for 100 ns;
+	end loop FRAMES_LOOP;
+	
+	wait for 1000 ns;
 
 end process;
 

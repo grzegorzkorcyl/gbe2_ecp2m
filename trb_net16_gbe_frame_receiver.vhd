@@ -41,6 +41,7 @@ port (
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);  -- high level protocol name, see description for full list
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
+	FR_VLAN_ID_IN		: in	std_logic_vector(31 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -52,7 +53,7 @@ architecture trb_net16_gbe_frame_receiver of trb_net16_gbe_frame_receiver is
 -- attribute HGROUP : string;
 -- attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_frame_rec";
 attribute syn_encoding	: string;
-type filter_states is (IDLE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, DECIDE, CLEANUP);
+type filter_states is (IDLE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, REMOVE_VID, REMOVE_VTYPE, DECIDE, CLEANUP);
 signal filter_current_state, filter_next_state : filter_states;
 attribute syn_encoding of filter_current_state : signal is "safe,gray";
 
@@ -71,6 +72,7 @@ signal remove_ctr                           : std_logic_vector(7 downto 0);
 signal new_frame                            : std_logic;
 signal new_frame_lock                       : std_logic;
 signal saved_frame_type                     : std_logic_vector(15 downto 0);
+signal saved_vid                            : std_logic_vector(15 downto 0);
 signal frame_type_valid                     : std_logic;
 
 -- debug signals
@@ -144,7 +146,7 @@ begin
 		
 		when REMOVE_SRC =>
 			state <= x"4";
-			if (remove_ctr = x"9") then
+			if (remove_ctr = x"09") then
 				filter_next_state <= REMOVE_TYPE;
 			else
 				filter_next_state <= REMOVE_SRC;
@@ -152,13 +154,31 @@ begin
 		
 		when REMOVE_TYPE =>
 			state <= x"5";
-			if (remove_ctr = x"b") then
-				filter_next_state <= DECIDE;			
+			if (remove_ctr = x"0b") then
+				if (saved_frame_type = x"8100") then  -- VLAN tagged frame
+					filter_next_state <= REMOVE_VID;
+				else
+					filter_next_state <= DECIDE;  -- no VLAN tag
+				end if;
 			else
 				filter_next_state <= REMOVE_TYPE;
 			end if;
 			
-		-- TODO: here add VLAN tagging recognition
+		when REMOVE_VID =>
+			state <= x"a";
+			if (remove_ctr = x"0d") then
+				filter_next_state <= REMOVE_VTYPE;
+			else
+				filter_next_state <= REMOVE_VID;
+			end if;
+			
+		when REMOVE_VTYPE =>
+			state <= x"b";
+			if (remove_ctr = x"0f") then
+				filter_next_state <= DECIDE;
+			else
+				filter_next_state <= REMOVE_VTYPE;
+			end if;
 			
 		when DECIDE =>
 			state <= x"6";
@@ -201,7 +221,7 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = IDLE) then
 			remove_ctr <= (others => '1');
-		elsif (MAC_RX_EN_IN = '1') and (filter_current_state /= IDLE) and (filter_current_state /= CLEANUP) then
+		elsif (MAC_RX_EN_IN = '1') and (filter_current_state /= IDLE) then --and (filter_current_state /= CLEANUP) then
 			remove_ctr <= remove_ctr + x"1";
 		end if;
 	end if;
@@ -213,18 +233,39 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_frame_type <= (others => '0');
-		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"9") then
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"09") then
 			saved_frame_type(15 downto 8) <= MAC_RXD_IN;
-		elsif (filter_current_state = REMOVE_TYPE) and (remove_ctr = x"a") then
+		elsif (filter_current_state = REMOVE_TYPE) and (remove_ctr = x"0a") then
+			saved_frame_type(7 downto 0) <= MAC_RXD_IN;
+		-- two more cases for VLAN tagged frame
+		elsif (filter_current_state = REMOVE_VID) and (remove_ctr = x"0d") then
+			saved_frame_type(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_VTYPE) and (remove_ctr = x"0e") then
 			saved_frame_type(7 downto 0) <= MAC_RXD_IN;
 		end if;
 	end if;
 end process SAVED_FRAME_TYPE_PROC;
 
+-- saves VLAN id when tagged frame spotted
+SAVED_VID_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_vid <= (others => '0');
+		elsif (filter_current_state = REMOVE_TYPE and remove_ctr = x"0b" and saved_frame_type = x"8100") then
+			saved_vid(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_VID and remove_ctr = x"0c") then
+			saved_vid(7 downto 0) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_VID_PROC;
+
 type_validator : trb_net16_gbe_type_validator
 port map(
-	FRAME_TYPE_IN		=> saved_frame_type,	
+	FRAME_TYPE_IN		=> saved_frame_type,
+	SAVED_VLAN_ID_IN	=> saved_vid,	
 	ALLOWED_TYPES_IN	=> FR_ALLOWED_TYPES_IN,
+	VLAN_ID_IN		=> FR_VLAN_ID_IN,
 	
 	VALID_OUT		=> frame_type_valid
 );
@@ -246,7 +287,9 @@ port map(
 );
 
 fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or 
-			( ((filter_current_state = REMOVE_TYPE and remove_ctr = x"b") or (filter_current_state = DECIDE)) and frame_type_valid = '1'))
+			( ((filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100") or
+				(filter_current_state = REMOVE_VTYPE and remove_ctr = x"f") or
+				(filter_current_state = DECIDE)) and frame_type_valid = '1'))
 	      else '0';
 
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;

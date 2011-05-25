@@ -46,6 +46,7 @@ port(
 	GBE_ALLOW_RX_OUT          : out std_logic;
 	GBE_FRAME_DELAY_OUT       : out std_logic_vector(31 downto 0); -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
+	GBE_VLAN_ID_OUT           : out std_logic_vector(31 downto 0);
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);
 	MONITOR_SENT_IN           : in std_logic_vector(31 downto 0);
@@ -121,6 +122,7 @@ signal reset_fifo        : std_logic;  -- gk 28.09.10
 signal allow_rx          : std_logic;
 signal frame_delay       : std_logic_vector(31 downto 0); -- gk 09.12.10
 signal allowed_types     : std_logic_vector(31 downto 0);
+signal vlan_id           : std_logic_vector(31 downto 0);
 
 begin
 
@@ -147,6 +149,7 @@ begin
 		--DBG_RESET_FIFO_OUT        <= reset_fifo;  -- gk 28.09.10
 		GBE_FRAME_DELAY_OUT       <= frame_delay; -- gk 09.12.10
 		GBE_ALLOWED_TYPES_OUT     <= allowed_types;
+		GBE_VLAN_ID_OUT           <= vlan_id;
 	end if;
 end process OUT_PROC;
 
@@ -189,6 +192,7 @@ begin
 			allow_rx          <= '0';
 			frame_delay       <= x"0000_0000"; -- gk 09.12.10
 			allowed_types     <= x"0000_0004";  -- only test protocol allowed
+			vlan_id           <= x"0000";  -- no vlan id by default
 
 		elsif (BUS_WRITE_EN_IN = '1') then
 			case BUS_ADDR_IN is
@@ -266,6 +270,9 @@ begin
 					
 				when x"0f" =>
 					allowed_types <= BUS_DATA_IN;
+					
+				when x"10" =>
+					vlan_id <= BUS_DATA_IN;
 
 				-- gk 28.09.10
 				when x"fe" =>
@@ -302,6 +309,7 @@ begin
 					allow_rx           <= allow_rx;
 					frame_delay        <= frame_delay;
 					allowed_types      <= allowed_types;
+					vlan_id            <= vlan_id;
 
 			end case;
 		else
@@ -389,6 +397,9 @@ begin
 					
 				when x"0f" =>
 					data_out <= allowed_types;
+					
+				when x"10" =>
+					data_out  <= vlan_id;
 
 				-- gk 01.06.10
 				when x"e0" =>

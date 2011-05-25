@@ -26,7 +26,9 @@ end component;
 component trb_net16_gbe_type_validator is
 port (
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
+	SAVED_VLAN_ID_IN	: in	std_logic_vector(15 downto 0);  -- recovered vlan id
 	ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);  -- signal from gbe_setup
+	VLAN_ID_IN		: in	std_logic_vector(31 downto 0);  -- two values from gbe setup	
 	
 	VALID_OUT		: out	std_logic
 );
@@ -255,6 +257,7 @@ port (
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
+	FR_VLAN_ID_IN		: in	std_logic_vector(31 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -504,6 +507,7 @@ port(
 	GBE_ALLOW_RX_OUT          : out std_logic;
 	GBE_FRAME_DELAY_OUT	  : out std_logic_vector(31 downto 0);
 	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
+	GBE_VLAN_ID_OUT           : out std_logic_vector(31 downto 0);
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);
 	MONITOR_SENT_IN           : in std_logic_vector(31 downto 0);
