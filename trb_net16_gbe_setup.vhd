@@ -192,7 +192,7 @@ begin
 			allow_rx          <= '0';
 			frame_delay       <= x"0000_0000"; -- gk 09.12.10
 			allowed_types     <= x"0000_0004";  -- only test protocol allowed
-			vlan_id           <= x"0000";  -- no vlan id by default
+			vlan_id           <= x"0000_0000";  -- no vlan id by default
 
 		elsif (BUS_WRITE_EN_IN = '1') then
 			case BUS_ADDR_IN is
