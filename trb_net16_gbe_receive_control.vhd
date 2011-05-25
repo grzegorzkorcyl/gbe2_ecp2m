@@ -120,7 +120,7 @@ begin
       state <= x"2";
       load_next_state <= READY;
 
-    when READY => -- wait for reading out the frame
+    when READY => -- wait for reading out the whole frame
       state <= x"3";
       if (RC_LOADING_DONE_IN = '1') then
 	load_next_state <= IDLE;

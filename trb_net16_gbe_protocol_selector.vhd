@@ -138,10 +138,10 @@ port map (
 -- DO NOT TOUCH, selection logic
 PS_BUSY_OUT <= busy;
 
-SELECTOR_PROC : process(CLK)
+SELECTOR_PROC : process(RESET, resp_ready) --process(CLK)
 	variable found : boolean := false;
 begin
-	if rising_edge(CLK) then
+	--if rising_edge(CLK) then
 	
 		selected              <= (others => '0');
 	
@@ -160,7 +160,7 @@ begin
 						PS_RESPONSE_READY_OUT <= '1';
 						selected(i)           <= '1';
 						found := true;
-					elsif (i = c_MAX_PROTOCOLS) and (resp_ready(i) = '0') and (found = false) then
+					elsif (i = c_MAX_PROTOCOLS - 1) and (resp_ready(i) = '0') and (found = false) then
 						found := false;
 						PS_RESPONSE_READY_OUT <= '0';
 					end if;
@@ -172,7 +172,8 @@ begin
 				found := false;
 			end if;
 		end if;
-	end if;
+		
+	--end if;
 end process SELECTOR_PROC;
 -- ************
 
