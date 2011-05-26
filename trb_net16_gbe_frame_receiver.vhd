@@ -74,6 +74,7 @@ signal new_frame                            : std_logic;
 signal new_frame_lock                       : std_logic;
 signal saved_frame_type                     : std_logic_vector(15 downto 0);
 signal saved_vid                            : std_logic_vector(15 downto 0);
+signal saved_src_mac                        : std_logic_vector(47 downto 0);
 signal frame_type_valid                     : std_logic;
 
 -- debug signals
@@ -81,6 +82,7 @@ signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
 signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
 signal dbg_drp_frames                       : std_logic_vector(15 downto 0);
 signal state                                : std_logic_vector(3 downto 0);
+signal dump                                 : std_logic_vector(15 downto 0);
 
 begin
 
@@ -228,6 +230,28 @@ begin
 	end if;
 end process REMOVE_CTR_PROC;
 
+-- saves the source mac address of the incoming frame
+SAVED_SRC_MAC_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_src_mac <= (others => '0');
+		elsif (filter_current_state = REMOVE_DEST) and (remove_ctr = x"03") then
+			saved_src_mac(7 downto 0) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"04") then
+			saved_src_mac(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"05") then
+			saved_src_mac(23 downto 16) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"06") then
+			saved_src_mac(31 downto 24) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"07") then
+			saved_src_mac(39 downto 32) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_SRC) and (remove_ctr = x"08") then
+			saved_src_mac(47 downto 40) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_SRC_MAC_PROC;
+
 -- saves the frame type of the incoming frame for futher check
 SAVED_FRAME_TYPE_PROC : process(RX_MAC_CLK)
 begin
@@ -295,8 +319,7 @@ fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FR
 
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;
 
--- TODO: and maybe smaller here
-sizes_fifo : fifo_4096x32
+sizes_fifo : fifo_512x32
 port map( 
 	Data(15 downto 0)   => rx_bytes_ctr,
 	Data(31 downto 16)  => saved_frame_type,
@@ -311,6 +334,23 @@ port map(
 	Empty               => sizes_fifo_empty,
 	Full                => sizes_fifo_full
 );
+
+macs_fifo : fifo_512x64
+port map( 
+	Data(47 downto 0)   => saved_src_mac,
+	Data(63 downto 48)  => (others => '0'),
+	WrClock             => RX_MAC_CLK,
+	RdClock             => CLK,
+	WrEn                => frame_valid_q,
+	RdEn                => FR_GET_FRAME_IN,
+	Reset               => RESET,
+	RPReset             => RESET,
+	Q(47 downto 0)      => FR_SRC_MAC_ADDRESS_OUT,
+	Q(63 downto 48)     => dump,
+	Empty               => open,
+	Full                => open
+);
+
 
 FRAME_VALID_PROC : process(RX_MAC_CLK)
 begin
