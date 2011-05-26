@@ -544,6 +544,8 @@ signal serdes_rx_clk                 : std_logic;
 
 signal vlan_id                       : std_logic_vector(31 downto 0);
 signal mc_type                       : std_logic_vector(15 downto 0);
+signal fr_mac                        : std_logic_vector(47 downto 0);
+signal rc_mac                        : std_logic_vector(47 downto 0);
 
 begin
 
@@ -578,6 +580,7 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  RC_RD_EN_OUT		=> rc_rd_en,
 	  RC_FRAME_SIZE_IN	=> rc_frame_size,
 	  RC_FRAME_PROTO_IN	=> rc_frame_proto,
+	  RC_SRC_MAC_ADDRESS_IN	=> rc_mac,
 
   -- signals to/from transmit controller
 	  TC_TRANSMIT_CTRL_OUT	=> mc_transmit_ctrl,
@@ -637,6 +640,7 @@ MC_SIM_GEN : if (DO_SIMULATION = 1) generate
 	  RC_RD_EN_OUT		=> rc_rd_en,
 	  RC_FRAME_SIZE_IN	=> rc_frame_size,
 	  RC_FRAME_PROTO_IN	=> rc_frame_proto,
+	  RC_SRC_MAC_ADDRESS_IN	=> rc_mac,
 
   -- signals to/from transmit controller
 	  TC_TRANSMIT_CTRL_OUT	=> mc_transmit_ctrl,
@@ -1136,6 +1140,7 @@ port map(
 	FR_GET_FRAME_OUT	=> fr_get_frame,
 	FR_FRAME_SIZE_IN	=> fr_frame_size,
 	FR_FRAME_PROTO_IN	=> fr_frame_proto,
+	FR_SRC_MAC_ADDRESS_IN   => fr_mac,
 
 -- signals to/from main controller
 	RC_RD_EN_IN		=> rc_rd_en,
@@ -1144,6 +1149,7 @@ port map(
 	RC_LOADING_DONE_IN	=> rc_loading_done,
 	RC_FRAME_SIZE_OUT	=> rc_frame_size,
 	RC_FRAME_PROTO_OUT	=> rc_frame_proto,
+	RC_SRC_MAC_ADDRESS_OUT	=> rc_mac,
 
 -- statistics
 	FRAMES_RECEIVED_OUT	=> rc_frames_rec_ctr,
@@ -1210,6 +1216,7 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
 	  FR_VLAN_ID_IN		=> vlan_id,
+	  FR_SRC_MAC_ADDRESS_OUT => fr_mac,
 
 	  DEBUG_OUT		=> dbg_fr
   );
@@ -1243,6 +1250,7 @@ frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
 	  FR_VLAN_ID_IN		=> vlan_id,
+	  FR_SRC_MAC_ADDRESS_OUT => fr_mac,
 
 	  DEBUG_OUT		=> open
   );

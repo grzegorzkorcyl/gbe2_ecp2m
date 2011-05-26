@@ -211,8 +211,8 @@ begin
 
 	if (ctrl_construct_current_state = WAIT_FOR_FC) and (FC_H_READY_IN = '1') then
 	  MC_RD_EN_OUT  <= '1';
-	  delayed_wr_en <= '1';
-	elsif (ctrl_construct_current_state = LOAD_DATA) and (sent_bytes_ctr /= MC_FRAME_SIZE_IN) then
+	  delayed_wr_en <= '0'; --'1';
+	elsif (ctrl_construct_current_state = LOAD_DATA) and (sent_bytes_ctr < MC_FRAME_SIZE_IN - x"2") then -- (sent_bytes_ctr /= MC_FRAME_SIZE_IN) then
 	  MC_RD_EN_OUT  <= '1';
 	  delayed_wr_en <= '1';
 	else
@@ -291,7 +291,7 @@ begin
 
     when LOAD_DATA =>
       state2 <= x"3";
-      if (sent_bytes_ctr = MC_FRAME_SIZE_IN) then
+      if (sent_bytes_ctr = MC_FRAME_SIZE_IN - x"1") then
 	ctrl_construct_next_state <= CLOSE;
       else
 	ctrl_construct_next_state <= LOAD_DATA; 
@@ -314,7 +314,7 @@ begin
   if rising_edge(CLK) then
     if (RESET = '1') or (ctrl_construct_current_state = IDLE) then
       sent_bytes_ctr <= (others => '0');
-    elsif (delayed_wr_en = '1') then
+    elsif (delayed_wr_en_q = '1') then
       sent_bytes_ctr <= sent_bytes_ctr + x"1";
     end if;
   end if;

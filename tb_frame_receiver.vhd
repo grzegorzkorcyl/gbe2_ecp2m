@@ -72,6 +72,8 @@ signal fc_ident                  : std_logic_vector(15 downto 0);
 signal fc_flags                  : std_logic_vector(15 downto 0);
 signal fc_ttl                    : std_logic_vector(7 downto 0);
 signal fc_proto                  : std_logic_vector(7 downto 0);
+signal fr_mac                    : std_logic_vector(47 downto 0);
+signal rc_mac                    : std_logic_vector(47 downto 0);
 
 begin
 
@@ -100,6 +102,7 @@ port map (
 	FR_FRAME_PROTO_OUT	=> FR_FRAME_PROTO_OUT,
 	FR_ALLOWED_TYPES_IN     => FR_ALLOWED_TYPES_IN,
 	FR_VLAN_ID_IN		=> x"aabb_0000",
+	FR_SRC_MAC_ADDRESS_OUT  => fr_mac,
 
 	DEBUG_OUT		=> DEBUG_OUT
 );
@@ -116,6 +119,7 @@ port map(
 	FR_GET_FRAME_OUT	=> FR_GET_FRAME_IN,
 	FR_FRAME_SIZE_IN	=> FR_FRAME_SIZE_OUT,
 	FR_FRAME_PROTO_IN	=> FR_FRAME_PROTO_OUT,
+	FR_SRC_MAC_ADDRESS_IN   => fr_mac,
 
 -- signals to/from main controller
 	RC_RD_EN_IN		=> RC_RD_EN_IN,
@@ -124,6 +128,7 @@ port map(
 	RC_LOADING_DONE_IN	=> RC_LOADING_DONE_IN,
 	RC_FRAME_SIZE_OUT	=> RC_FRAME_SIZE_OUT,
 	RC_FRAME_PROTO_OUT	=> RC_FRAME_PROTO_OUT,
+	RC_SRC_MAC_ADDRESS_OUT	=> rc_mac,
 
 -- statistics
 	FRAMES_RECEIVED_OUT	=> open,
@@ -148,6 +153,7 @@ port map (
 	RC_RD_EN_OUT		=> RC_RD_EN_IN,
 	RC_FRAME_SIZE_IN	=> RC_FRAME_SIZE_OUT,
 	RC_FRAME_PROTO_IN	=> RC_FRAME_PROTO_OUT,
+	RC_SRC_MAC_ADDRESS_IN	=> rc_mac,
 
 -- signals to/from transmit controller
 	TC_TRANSMIT_CTRL_OUT	=> MC_TRANSMIT_CTRL_OUT,

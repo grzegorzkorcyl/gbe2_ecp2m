@@ -34,6 +34,7 @@ port (
 	RC_RD_EN_OUT		: out	std_logic;
 	RC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	RC_FRAME_PROTO_IN	: in	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+	RC_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 
 -- signals to/from transmit controller
 	TC_TRANSMIT_CTRL_OUT	: out	std_logic;  -- slow control frame is waiting to be built and sent
@@ -138,6 +139,7 @@ port map(
 	PS_BUSY_OUT		=> ps_busy,
 	PS_FRAME_SIZE_IN	=> RC_FRAME_SIZE_IN,
 	PS_RESPONSE_READY_OUT	=> ps_response_ready,
+	PS_SRC_MAC_ADDRESS_IN	=> RC_SRC_MAC_ADDRESS_IN,
 	
 	TC_DATA_OUT		=> TC_DATA_OUT,
 	TC_RD_EN_IN		=> TC_RD_EN_IN,

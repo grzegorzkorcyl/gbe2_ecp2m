@@ -42,6 +42,7 @@ port (
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);  -- high level protocol name, see description for full list
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
 	FR_VLAN_ID_IN		: in	std_logic_vector(31 downto 0);
+	FR_SRC_MAC_ADDRESS_OUT	: out	std_logic_vector(47 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );

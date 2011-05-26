@@ -46,6 +46,7 @@ port (
 	PS_BUSY_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 	PS_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	PS_RESPONSE_READY_OUT	: out	std_logic;
+	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 	
 -- singals to/from transmi controller with constructed response
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
@@ -105,6 +106,7 @@ port (
 	RC_RD_EN_OUT		: out	std_logic;
 	RC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	RC_FRAME_PROTO_IN	: in	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+	RC_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 
 -- signals to/from transmit controller
 	TC_TRANSMIT_CTRL_OUT	: out	std_logic;  -- slow control frame is waiting to be built and sent
@@ -218,6 +220,7 @@ port (
 	FR_GET_FRAME_OUT	: out	std_logic;
 	FR_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_IN	: in	std_logic_vector(15 downto 0);
+	FR_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 
 -- signals to the rest of the logic
 	RC_RD_EN_IN		: in	std_logic;
@@ -226,6 +229,7 @@ port (
 	RC_LOADING_DONE_IN	: in	std_logic;
 	RC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	RC_FRAME_PROTO_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+	RC_SRC_MAC_ADDRESS_OUT	: out	std_logic_vector(47 downto 0);
 
 -- statistics
 	FRAMES_RECEIVED_OUT	: out	std_logic_vector(31 downto 0);
@@ -262,6 +266,7 @@ port (
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
 	FR_VLAN_ID_IN		: in	std_logic_vector(31 downto 0);
+	FR_SRC_MAC_ADDRESS_OUT	: out	std_logic_vector(47 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );

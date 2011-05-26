@@ -21,6 +21,7 @@ port (
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
 	PS_SELECTED_IN		: in	std_logic;
+	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
@@ -49,6 +50,7 @@ port (
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
 	PS_SELECTED_IN		: in	std_logic;
+	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
@@ -77,6 +79,7 @@ port (
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
 	PS_SELECTED_IN		: in	std_logic;
+	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
@@ -105,6 +108,7 @@ port (
 	PS_RESPONSE_READY_OUT	: out	std_logic;
 	PS_BUSY_OUT		: out	std_logic;
 	PS_SELECTED_IN		: in	std_logic;
+	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
