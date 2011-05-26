@@ -30,6 +30,7 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
 	
 	RECEIVED_FRAMES_OUT	: out	std_logic_vector(15 downto 0);
@@ -101,6 +102,8 @@ TC_DATA_OUT <= '0' & x"ab";
 PS_RESPONSE_READY_OUT <= '0';
 
 TC_FRAME_SIZE_OUT <= (others => '0');
+
+TC_FRAME_TYPE_OUT <= (others => '0');
 
 REC_FRAMES_PROC : process(CLK)
 begin

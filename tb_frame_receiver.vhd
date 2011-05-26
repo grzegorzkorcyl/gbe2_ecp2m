@@ -64,7 +64,8 @@ signal fc_dest_udp               : std_logic_vector(15 downto 0);
 signal fc_src_mac                : std_logic_vector(47 downto 0);
 signal fc_src_ip                 : std_logic_vector(31 downto 0);
 signal fc_src_udp                : std_logic_vector(15 downto 0);
-signal fc_frame_type             : std_logic_vector(15 downto 0);
+signal fc_type                   : std_logic_vector(15 downto 0);
+signal mc_type                   : std_logic_vector(15 downto 0);
 signal fc_ihl                    : std_logic_vector(7 downto 0);
 signal fc_tos                    : std_logic_vector(7 downto 0);
 signal fc_ident                  : std_logic_vector(15 downto 0);
@@ -154,6 +155,7 @@ port map (
 	TC_DATA_OUT		=> MC_DATA_OUT,
 	TC_RD_EN_IN		=> MC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> MC_FRAME_SIZE_OUT,
+	TC_FRAME_TYPE_OUT	=> mc_type,
 	TC_BUSY_IN		=> MC_BUSY_IN,
 	TC_TRANSMIT_DONE_IN	=> MC_TRANSMIT_DONE_IN,
 
@@ -211,6 +213,7 @@ port map(
 	MC_DATA_IN		=> MC_DATA_OUT,
 	MC_RD_EN_OUT		=> MC_RD_EN_IN,
 	MC_FRAME_SIZE_IN	=> MC_FRAME_SIZE_OUT,
+	MC_FRAME_TYPE_IN	=> mc_type,
 	MC_BUSY_OUT		=> MC_BUSY_IN,
 	MC_TRANSMIT_DONE_OUT	=> MC_TRANSMIT_DONE_IN,
 
@@ -219,6 +222,7 @@ port map(
 	FC_WR_EN_OUT		=> fc_wr_en,
 	FC_READY_IN		=> fc_ready,
 	FC_H_READY_IN		=> fc_h_ready,
+	FC_FRAME_TYPE_OUT	=> fc_type,
 	FC_IP_SIZE_OUT		=> fc_ip_size,
 	FC_UDP_SIZE_OUT		=> fc_udp_size,
 	FC_IDENT_OUT		=> fc_ident,
@@ -257,7 +261,7 @@ port map(
 	SRC_MAC_ADDRESS_IN      => fc_src_mac,
 	SRC_IP_ADDRESS_IN       => fc_src_ip,
 	SRC_UDP_PORT_IN         => fc_src_udp,
-	FRAME_TYPE_IN           => fc_frame_type,
+	FRAME_TYPE_IN           => fc_type,
 	IHL_VERSION_IN          => fc_ihl,
 	TOS_IN                  => fc_tos,
 	IDENTIFICATION_IN       => fc_ident,
@@ -307,7 +311,7 @@ begin
 	MAC_RXD_IN		<= x"00";
 	MAC_RX_EN_IN		<= '0';
 	MAC_RX_FIFO_ERR_IN	<= '0';
-	FR_ALLOWED_TYPES_IN     <= x"0000_0004";
+	FR_ALLOWED_TYPES_IN     <= x"0000_0007";
 	
 	wait for 10 ns;
 	RESET <= '0';
@@ -345,9 +349,9 @@ begin
 	MAC_RXD_IN		<= x"55";
 	wait until rising_edge(RX_MAC_CLK);
 -- vlan tagged frame type
-	MAC_RXD_IN		<= x"81";
+	MAC_RXD_IN		<= x"08";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
+	MAC_RXD_IN		<= x"06";
 	wait until rising_edge(RX_MAC_CLK);
 -- vlan id
 	MAC_RXD_IN		<= x"aa";

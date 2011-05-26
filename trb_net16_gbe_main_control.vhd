@@ -41,6 +41,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
 	TC_TRANSMIT_DONE_IN	: in	std_logic;
 
@@ -141,6 +142,7 @@ port map(
 	TC_DATA_OUT		=> TC_DATA_OUT,
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
+	TC_FRAME_TYPE_OUT	=> TC_FRAME_TYPE_OUT,
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> SELECT_REC_FRAMES_OUT,

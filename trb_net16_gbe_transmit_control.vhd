@@ -44,6 +44,7 @@ port (
 	MC_DATA_IN		: in	std_logic_vector(8 downto 0);
 	MC_RD_EN_OUT		: out	std_logic;
 	MC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
+	MC_FRAME_TYPE_IN	: in	std_logic_vector(15 downto 0);
 	MC_BUSY_OUT		: out	std_logic;
 	MC_TRANSMIT_DONE_OUT	: out	std_logic;
 
@@ -52,6 +53,7 @@ port (
 	FC_WR_EN_OUT		: out	std_logic;
 	FC_READY_IN		: in	std_logic;
 	FC_H_READY_IN		: in	std_logic;
+	FC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
 	FC_IP_SIZE_OUT		: out	std_logic_vector(15 downto 0);
 	FC_UDP_SIZE_OUT		: out	std_logic_vector(15 downto 0);
 	FC_IDENT_OUT		: out	std_logic_vector(15 downto 0);  -- internal packet counter
@@ -162,6 +164,8 @@ begin
 
   end case;
 end process TX_MACHINE;
+
+FC_FRAME_TYPE_OUT <= MC_FRAME_TYPE_IN;
 
 SELECTOR : process(CLK)
 begin

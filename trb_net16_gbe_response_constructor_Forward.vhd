@@ -30,6 +30,7 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
 		
 	RECEIVED_FRAMES_OUT	: out	std_logic_vector(15 downto 0);
@@ -158,6 +159,8 @@ TC_DATA_OUT <= ff_q;
 PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = LOAD) else '0';
 
 TC_FRAME_SIZE_OUT <= resp_bytes_ctr + x"1";
+
+TC_FRAME_TYPE_OUT <= x"0008";
 
 RESP_BYTES_CTR_PROC : process(CLK)
 begin

@@ -231,7 +231,7 @@ begin
 end process constructMachineProc;
 
 --find next state of construct machine
-constructMachine: process( constructCurrentState, delay_ctr, FRAME_DELAY_IN, START_OF_DATA_IN, END_OF_DATA_IN, headers_int_counter, put_udp_headers, CUR_MAX )
+constructMachine: process( constructCurrentState, delay_ctr, FRAME_DELAY_IN, START_OF_DATA_IN, END_OF_DATA_IN, headers_int_counter, put_udp_headers, CUR_MAX, FRAME_TYPE_IN )
 begin
 	constructNextState <= constructCurrentState;
 	if( headers_int_counter = cur_max ) then    --can be checked everytime - if not in use, counter and cur_max are 0
@@ -245,7 +245,11 @@ begin
 			when SRC_MAC_ADDR =>
 				constructNextState <= FRAME_TYPE_S;
 			when FRAME_TYPE_S =>
-				constructNextState <= VERSION;
+				if (FRAME_TYPE_IN = x"0008" ) then -- in case of udp frame continue with ip/udp headers 
+					constructNextState <= VERSION;
+				else  -- otherwise transmit data as pure ethernet frame
+					constructNextState <= SAVE_DATA;
+				end if;
 			when VERSION =>
 				constructNextState <= TOS_S;
 			when TOS_S =>

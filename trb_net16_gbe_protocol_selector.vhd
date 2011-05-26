@@ -35,6 +35,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_BUSY_IN		: in	std_logic;
 	
 	-- counters from response constructors
@@ -53,6 +54,7 @@ signal rd_en                    : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0)
 signal resp_ready               : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal tc_data                  : std_logic_vector(c_MAX_PROTOCOLS * 9 - 1 downto 0);
 signal tc_size                  : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+signal tc_type                  : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 signal busy                     : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal selected                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
@@ -75,6 +77,7 @@ port map (
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(1 * 9 - 1 downto 0 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(1 * 16 - 1 downto 0 * 16),
+	TC_FRAME_TYPE_OUT	=> tc_type(1 * 16 - 1 downto 0 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(1 * 16 - 1 downto 0 * 16),
@@ -100,6 +103,7 @@ port map (
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(2 * 9 - 1 downto 1 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(2 * 16 - 1 downto 1 * 16),
+	TC_FRAME_TYPE_OUT	=> tc_type(2 * 16 - 1 downto 1 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
@@ -125,6 +129,7 @@ port map (
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(3 * 9 - 1 downto 2 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(3 * 16 - 1 downto 2 * 16),
+	TC_FRAME_TYPE_OUT	=> tc_type(3 * 16 - 1 downto 2 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(3 * 16 - 1 downto 2 * 16),
@@ -150,6 +155,7 @@ port map (
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(4 * 9 - 1 downto 3 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(4 * 16 - 1 downto 3 * 16),
+	TC_FRAME_TYPE_OUT	=> tc_type(4 * 16 - 1 downto 3 * 16),
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(4 * 16 - 1 downto 3 * 16),
@@ -173,6 +179,7 @@ begin
 		if (RESET = '1') then
 			TC_DATA_OUT           <= (others => '0');
 			TC_FRAME_SIZE_OUT     <= (others => '0');
+			TC_FRAME_TYPE_OUT     <= (others => '0');
 			PS_RESPONSE_READY_OUT <= '0';
 			selected              <= (others => '0');
 			found := false;
@@ -181,7 +188,8 @@ begin
 				for i in 0 to c_MAX_PROTOCOLS - 1 loop
 					if (resp_ready(i) = '1') then
 						TC_DATA_OUT           <= tc_data((i + 1) * 9 - 1 downto i * 9);
-						TC_FRAME_SIZE_OUT     <= tc_size ((i + 1) * 16 - 1 downto i * 16);
+						TC_FRAME_SIZE_OUT     <= tc_size((i + 1) * 16 - 1 downto i * 16);
+						TC_FRAME_TYPE_OUT     <= tc_type((i + 1) * 16 - 1 downto i * 16);
 						PS_RESPONSE_READY_OUT <= '1';
 						selected(i)           <= '1';
 						found := true;
@@ -193,6 +201,7 @@ begin
 			else
 				TC_DATA_OUT           <= (others => '0');
 				TC_FRAME_SIZE_OUT     <= (others => '0');
+				TC_FRAME_TYPE_OUT     <= (others => '0');
 				PS_RESPONSE_READY_OUT <= '0';
 				found := false;
 			end if;

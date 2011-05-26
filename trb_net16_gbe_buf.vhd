@@ -543,6 +543,7 @@ signal dbg_select_protos             : std_logic_vector(c_MAX_PROTOCOLS * 32 - 1
 signal serdes_rx_clk                 : std_logic;
 
 signal vlan_id                       : std_logic_vector(31 downto 0);
+signal mc_type                       : std_logic_vector(15 downto 0);
 
 begin
 
@@ -553,7 +554,7 @@ LED_PACKET_SENT_OUT <= pc_ready;
 LED_AN_DONE_N_OUT <= not link_ok; --not pcs_an_complete;
 
 -- FrameConstructor fixed magic values
-fc_type           <= x"0008";
+--fc_type           <= x"0008";
 fc_ihl_version    <= x"45";
 fc_tos            <= x"10";
 fc_ttl            <= x"ff";
@@ -584,6 +585,7 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  TC_DATA_OUT		=> mc_data,
 	  TC_RD_EN_IN		=> mc_rd_en,
 	  TC_FRAME_SIZE_OUT	=> mc_frame_size,
+	  TC_FRAME_TYPE_OUT	=> mc_type,
 	  TC_BUSY_IN		=> mc_busy,
 	  TC_TRANSMIT_DONE_IN   => mc_transmit_done,
 
@@ -642,6 +644,7 @@ MC_SIM_GEN : if (DO_SIMULATION = 1) generate
 	  TC_DATA_OUT		=> mc_data,
 	  TC_RD_EN_IN		=> mc_rd_en,
 	  TC_FRAME_SIZE_OUT	=> mc_frame_size,
+	  TC_FRAME_TYPE_OUT	=> mc_type,
 	  TC_BUSY_IN		=> mc_busy,
 	  TC_TRANSMIT_DONE_IN   => mc_transmit_done,
 
@@ -709,6 +712,7 @@ port map(
 	MC_DATA_IN		=> mc_data,
 	MC_RD_EN_OUT		=> mc_rd_en,
 	MC_FRAME_SIZE_IN	=> mc_frame_size,
+	MC_FRAME_TYPE_IN	=> mc_type,
 	MC_BUSY_OUT		=> mc_busy,
 	MC_TRANSMIT_DONE_OUT    => mc_transmit_done,
 
@@ -717,6 +721,7 @@ port map(
 	FC_WR_EN_OUT		=> fc_wr_en,
 	FC_READY_IN		=> fc_ready,
 	FC_H_READY_IN		=> fc_h_ready,
+	FC_FRAME_TYPE_OUT	=> fc_type,
 	FC_IP_SIZE_OUT		=> fc_ip_size,
 	FC_UDP_SIZE_OUT		=> fc_udp_size,
 	FC_IDENT_OUT		=> fc_ident,
