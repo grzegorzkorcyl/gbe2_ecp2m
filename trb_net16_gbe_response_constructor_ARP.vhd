@@ -11,8 +11,7 @@ use work.trb_net16_hub_func.all;
 use work.trb_net_gbe_components.all;
 
 --********
--- dissects the incoming packet of the specified protocol
--- and constructs the responses if needed
+-- creates a reply for an incoming ARP request
 
 entity trb_net16_gbe_response_constructor_ARP is
 port (
@@ -210,9 +209,9 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') or (dissect_current_state = CLEANUP) or (dissect_current_state = WAIT_FOR_LOAD) then
 			data_ctr <= (others => '0');
-		elsif (PS_WR_EN_IN = '1') then  -- in case of saving data from incoming frame
+		elsif (PS_WR_EN_IN = '1') and (PS_ACTIVATE_IN = '1') and (saving_data = '1') then  -- in case of saving data from incoming frame
 			data_ctr <= data_ctr + x"1";
-		elsif (TC_RD_EN_IN = '1') then  -- in case of constructing response
+		elsif (TC_RD_EN_IN = '1') and (saving_data = '0') then  -- in case of constructing response
 			data_ctr <= data_ctr + x"1";
 		end if;
 	end if;
