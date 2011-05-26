@@ -50,6 +50,28 @@ signal MC_BUSY_IN               : std_logic;
 signal MC_TRANSMIT_DONE_IN      : std_logic;
 signal RC_FRAME_PROTO_OUT	: std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
+signal fc_data                   : std_logic_vector(7 downto 0);
+signal fc_wr_en                  : std_logic;
+signal fc_sod                    : std_logic;
+signal fc_eod                    : std_logic;
+signal fc_h_ready                : std_logic;
+signal fc_ip_size                : std_logic_vector(15 downto 0);
+signal fc_udp_size               : std_logic_vector(15 downto 0);
+signal fc_ready                  : std_logic;
+signal fc_dest_mac               : std_logic_vector(47 downto 0);
+signal fc_dest_ip                : std_logic_vector(31 downto 0);
+signal fc_dest_udp               : std_logic_vector(15 downto 0);
+signal fc_src_mac                : std_logic_vector(47 downto 0);
+signal fc_src_ip                 : std_logic_vector(31 downto 0);
+signal fc_src_udp                : std_logic_vector(15 downto 0);
+signal fc_frame_type             : std_logic_vector(15 downto 0);
+signal fc_ihl                    : std_logic_vector(7 downto 0);
+signal fc_tos                    : std_logic_vector(7 downto 0);
+signal fc_ident                  : std_logic_vector(15 downto 0);
+signal fc_flags                  : std_logic_vector(15 downto 0);
+signal fc_ttl                    : std_logic_vector(7 downto 0);
+signal fc_proto                  : std_logic_vector(7 downto 0);
+
 begin
 
 receiver : trb_net16_gbe_frame_receiver
@@ -193,25 +215,68 @@ port map(
 	MC_TRANSMIT_DONE_OUT	=> MC_TRANSMIT_DONE_IN,
 
 -- signal to/from frame constructor
-	FC_DATA_OUT		=> open,
-	FC_WR_EN_OUT		=> open,
-	FC_READY_IN		=> '1',
-	FC_H_READY_IN		=> '1',
-	FC_IP_SIZE_OUT		=> open,
-	FC_UDP_SIZE_OUT		=> open,
-	FC_IDENT_OUT		=> open,
-	FC_FLAGS_OFFSET_OUT	=> open,
-	FC_SOD_OUT		=> open,
-	FC_EOD_OUT		=> open,
+	FC_DATA_OUT		=> fc_data,
+	FC_WR_EN_OUT		=> fc_wr_en,
+	FC_READY_IN		=> fc_ready,
+	FC_H_READY_IN		=> fc_h_ready,
+	FC_IP_SIZE_OUT		=> fc_ip_size,
+	FC_UDP_SIZE_OUT		=> fc_udp_size,
+	FC_IDENT_OUT		=> fc_ident,
+	FC_FLAGS_OFFSET_OUT	=> fc_flags,
+	FC_SOD_OUT		=> fc_sod,
+	FC_EOD_OUT		=> fc_eod,
 
-	DEST_MAC_ADDRESS_OUT    => open,
-	DEST_IP_ADDRESS_OUT     => open,
-	DEST_UDP_PORT_OUT       => open,
-	SRC_MAC_ADDRESS_OUT     => open,
-	SRC_IP_ADDRESS_OUT      => open,
-	SRC_UDP_PORT_OUT        => open,
+	DEST_MAC_ADDRESS_OUT    => fc_dest_mac,
+	DEST_IP_ADDRESS_OUT     => fc_dest_ip,
+	DEST_UDP_PORT_OUT       => fc_dest_udp,
+	SRC_MAC_ADDRESS_OUT     => fc_src_mac,
+	SRC_IP_ADDRESS_OUT      => fc_src_ip,
+	SRC_UDP_PORT_OUT        => fc_src_udp,
 
 	DEBUG_OUT		=> open
+);
+
+frame_constructor : trb_net16_gbe_frame_constr
+port map( 
+	-- ports for user logic
+	RESET                   => RESET,
+	CLK                     => CLK,
+	LINK_OK_IN              => '1',
+	--
+	WR_EN_IN                => fc_wr_en,
+	DATA_IN                 => fc_data,
+	START_OF_DATA_IN        => fc_sod,
+	END_OF_DATA_IN          => fc_eod,
+	IP_F_SIZE_IN            => fc_ip_size,
+	UDP_P_SIZE_IN           => fc_udp_size,
+	HEADERS_READY_OUT       => fc_h_ready,
+	READY_OUT               => fc_ready,
+	DEST_MAC_ADDRESS_IN     => fc_dest_mac,
+	DEST_IP_ADDRESS_IN      => fc_dest_ip,
+	DEST_UDP_PORT_IN        => fc_dest_udp,
+	SRC_MAC_ADDRESS_IN      => fc_src_mac,
+	SRC_IP_ADDRESS_IN       => fc_src_ip,
+	SRC_UDP_PORT_IN         => fc_src_udp,
+	FRAME_TYPE_IN           => fc_frame_type,
+	IHL_VERSION_IN          => fc_ihl,
+	TOS_IN                  => fc_tos,
+	IDENTIFICATION_IN       => fc_ident,
+	FLAGS_OFFSET_IN         => fc_flags,
+	TTL_IN                  => fc_ttl,
+	PROTOCOL_IN             => fc_proto,
+	FRAME_DELAY_IN          => x"0000_0000",
+	-- ports for packetTransmitter
+	RD_CLK                  => RX_MAC_CLK,
+	FT_DATA_OUT             => open,
+	FT_TX_EMPTY_OUT         => open,
+	FT_TX_RD_EN_IN          => '0',
+	FT_START_OF_PACKET_OUT  => open,
+	FT_TX_DONE_IN           => '1',
+	FT_TX_DISCFRM_IN	=> '0',
+	-- debug ports
+	BSM_CONSTR_OUT          => open,
+	BSM_TRANS_OUT           => open,
+	DEBUG_OUT               => open
 );
 
 -- 100 MHz system clock

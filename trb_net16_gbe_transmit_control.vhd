@@ -216,12 +216,12 @@ begin
 	  delayed_wr_en <= '0';
 	end if;
 
-	DEST_MAC_ADDRESS_OUT <= IC_DEST_MAC_ADDRESS_IN;
-	DEST_IP_ADDRESS_OUT  <= IC_DEST_IP_ADDRESS_IN;
-	DEST_UDP_PORT_OUT    <= x"1234";
-	SRC_MAC_ADDRESS_OUT  <= IC_SRC_MAC_ADDRESS_IN;
-	SRC_IP_ADDRESS_OUT   <= IC_SRC_IP_ADDRESS_IN;
-	SRC_UDP_PORT_OUT     <= x"1234";
+	DEST_MAC_ADDRESS_OUT <= x"d93bb10c0e00";
+	DEST_IP_ADDRESS_OUT  <= x"0100a8c0";
+	DEST_UDP_PORT_OUT    <= x"50c3";
+	SRC_MAC_ADDRESS_OUT  <= x"febefebe0000";
+	SRC_IP_ADDRESS_OUT   <= x"1000a8c0";
+	SRC_UDP_PORT_OUT     <= x"50c3";
 	FC_IDENT_OUT         <= sent_packets_ctr;
 
       when others =>
