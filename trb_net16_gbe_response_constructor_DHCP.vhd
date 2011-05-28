@@ -199,7 +199,7 @@ begin
 				TC_DATA_OUT(8) <= '1';
 			end if;
 		
-		when others =>
+		when others => TC_DATA_OUT(7 downto 0) <= x"00";
 	
 	end case;
 	
