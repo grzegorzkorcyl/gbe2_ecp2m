@@ -149,7 +149,7 @@ begin
 		
 		when CLEANUP =>
 			state <= x"9";
-			dissect_next_state <= IDLE;
+			dissect_next_state <= CLEANUP;
 	
 	end case;
 end process DISSECT_MACHINE;
@@ -219,14 +219,16 @@ PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state /= IDLE and dissect_cur
 
 TC_FRAME_SIZE_OUT <= x"022a";
 
-TC_FRAME_TYPE_OUT <= x"0008";  -- frame type: udp 
+TC_FRAME_TYPE_OUT <= x"0008";  -- frame type: ip 
 
+-- for debug no receiveing frames but constructed bytes
 REC_FRAMES_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			rec_frames <= (others => '0');
-		elsif (dissect_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
+		--elsif (dissect_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
+		elsif (dissect_current_state /= IDLE and dissect_current_state /= CLEANUP and PS_ACTIVATE_IN = '1' and TC_RD_EN_IN = '1') then
 			rec_frames <= rec_frames + x"1";
 		end if;
 	end if;
@@ -248,11 +250,8 @@ SENT_FRAMES_OUT     <= sent_frames;
 
 -- **** debug
 DEBUG_OUT(3 downto 0)   <= state;
-DEBUG_OUT(4)            <= '0';
-DEBUG_OUT(7 downto 5)   <= "000";
-DEBUG_OUT(8)            <= '0';
-DEBUG_OUT(11 downto 9)  <= "000";
-DEBUG_OUT(31 downto 12) <= (others => '0');
+DEBUG_OUT(11 downto 4)  <= x"ff";
+DEBUG_OUT(31 downto 12) <= wait_ctr;
 -- ****
 
 end trb_net16_gbe_response_constructor_DHCP;
