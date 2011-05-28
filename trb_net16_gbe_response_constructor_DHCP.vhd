@@ -184,13 +184,19 @@ begin
 	case (dissect_current_state) is
 
 		when BOOTP_HEADERS =>
-			TC_DATA_OUT(7 downto 0) <= bootp_hdr((load_ctr + 1) * 8 - 1 downto load_ctr * 8);
+			for i in 0 to 7 loop
+				TC_DATA_OUT(i) <= bootp_hdr(load_ctr * 8 + i);
+			end loop;
+			--TC_DATA_OUT(7 downto 0) <= bootp_hdr((load_ctr + 1) * 8 - 1 downto load_ctr * 8);
 		
 		when ZEROS1 =>
 			TC_DATA_OUT(7 downto 0) <= x"00";
 		
 		when MY_MAC =>
-			TC_DATA_OUT(7 downto 0) <= my_mac_adr((load_ctr - 28 + 1) * 8 - 1 downto (load_ctr - 28) * 8); 
+			for i in 0 to 7 loop
+				TC_DATA_OUT(i) <= my_mac_adr((load_ctr - 28) * 8 + i);
+			end loop;
+			--TC_DATA_OUT(7 downto 0) <= my_mac_adr((load_ctr - 28 + 1) * 8 - 1 downto (load_ctr - 28) * 8); 
 		
 		when ZEROS2 =>
 			TC_DATA_OUT(7 downto 0) <= x"00";
