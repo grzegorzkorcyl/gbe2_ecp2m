@@ -176,7 +176,7 @@ begin
 	end if;
 end process LOAD_CTR_PROC;
 
-TC_DATA_PROC : process(dissect_current_state, load_ctr)
+TC_DATA_PROC : process(dissect_current_state, load_ctr, bootp_hdr, my_mac_adr)
 begin
 
 	TC_DATA_OUT(8) <= '0';
