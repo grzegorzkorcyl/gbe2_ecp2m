@@ -194,7 +194,6 @@ begin
 		when SAVE_FRAME =>
 			state <= x"7";
 			-- TODO: high level protocol recognition should be done here
-			-- TODO: mabye checksum checking at the end
 			if (MAC_RX_EOF_IN = '1') then
 				filter_next_state <= CLEANUP;
 			else

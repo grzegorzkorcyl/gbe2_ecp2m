@@ -53,6 +53,14 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	
+	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
+	TC_SRC_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_SRC_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_SRC_UDP_OUT		: out	std_logic_vector(15 downto 0);
+	
 	TC_BUSY_IN		: in	std_logic;
 	
 	-- counters from response constructors
@@ -115,6 +123,14 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	
+	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
+	TC_SRC_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_SRC_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_SRC_UDP_OUT		: out	std_logic_vector(15 downto 0);	
+	
 	TC_BUSY_IN		: in	std_logic;
 	TC_TRANSMIT_DONE_IN	: in	std_logic;
 
@@ -179,6 +195,14 @@ port (
 	MC_RD_EN_OUT		: out	std_logic;
 	MC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	MC_FRAME_TYPE_IN	: in	std_logic_vector(15 downto 0);
+	
+	MC_DEST_MAC_IN		: in	std_logic_vector(47 downto 0);
+	MC_DEST_IP_IN		: in	std_logic_vector(31 downto 0);
+	MC_DEST_UDP_IN		: in	std_logic_vector(15 downto 0);
+	MC_SRC_MAC_IN		: in	std_logic_vector(47 downto 0);
+	MC_SRC_IP_IN		: in	std_logic_vector(31 downto 0);
+	MC_SRC_UDP_IN		: in	std_logic_vector(15 downto 0);
+	
 	MC_BUSY_OUT		: out	std_logic;
 	MC_TRANSMIT_DONE_OUT	: out	std_logic;
 

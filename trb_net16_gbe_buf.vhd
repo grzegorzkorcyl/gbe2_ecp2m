@@ -547,6 +547,13 @@ signal mc_type                       : std_logic_vector(15 downto 0);
 signal fr_mac                        : std_logic_vector(47 downto 0);
 signal rc_mac                        : std_logic_vector(47 downto 0);
 
+signal mc_dest_mac			: std_logic_vector(47 downto 0);
+signal mc_dest_ip			: std_logic_vector(31 downto 0);
+signal mc_dest_udp			: std_logic_vector(15 downto 0);
+signal mc_src_mac			: std_logic_vector(47 downto 0);
+signal mc_src_ip			: std_logic_vector(31 downto 0);
+signal mc_src_udp			: std_logic_vector(15 downto 0);
+
 begin
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
@@ -589,6 +596,14 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  TC_RD_EN_IN		=> mc_rd_en,
 	  TC_FRAME_SIZE_OUT	=> mc_frame_size,
 	  TC_FRAME_TYPE_OUT	=> mc_type,
+	  
+	  TC_DEST_MAC_OUT	=> mc_dest_mac,
+	  TC_DEST_IP_OUT	=> mc_dest_ip,
+	  TC_DEST_UDP_OUT	=> mc_dest_udp,
+	  TC_SRC_MAC_OUT	=> mc_src_mac,
+	  TC_SRC_IP_OUT		=> mc_src_ip,
+	  TC_SRC_UDP_OUT	=> mc_src_udp,
+	  
 	  TC_BUSY_IN		=> mc_busy,
 	  TC_TRANSMIT_DONE_IN   => mc_transmit_done,
 
@@ -649,6 +664,14 @@ MC_SIM_GEN : if (DO_SIMULATION = 1) generate
 	  TC_RD_EN_IN		=> mc_rd_en,
 	  TC_FRAME_SIZE_OUT	=> mc_frame_size,
 	  TC_FRAME_TYPE_OUT	=> mc_type,
+	  
+	  TC_DEST_MAC_OUT	=> mc_dest_mac,
+	  TC_DEST_IP_OUT	=> mc_dest_ip,
+	  TC_DEST_UDP_OUT	=> mc_dest_udp,
+	  TC_SRC_MAC_OUT	=> mc_src_mac,
+	  TC_SRC_IP_OUT		=> mc_src_ip,
+	  TC_SRC_UDP_OUT	=> mc_src_udp,
+	
 	  TC_BUSY_IN		=> mc_busy,
 	  TC_TRANSMIT_DONE_IN   => mc_transmit_done,
 
@@ -717,6 +740,14 @@ port map(
 	MC_RD_EN_OUT		=> mc_rd_en,
 	MC_FRAME_SIZE_IN	=> mc_frame_size,
 	MC_FRAME_TYPE_IN	=> mc_type,
+	
+	MC_DEST_MAC_IN		=> mc_dest_mac,
+	MC_DEST_IP_IN		=> mc_dest_ip,
+	MC_DEST_UDP_IN		=> mc_dest_udp,
+	MC_SRC_MAC_IN		=> mc_src_mac,
+	MC_SRC_IP_IN		=> mc_src_ip,
+	MC_SRC_UDP_IN		=> mc_src_udp,
+		
 	MC_BUSY_OUT		=> mc_busy,
 	MC_TRANSMIT_DONE_OUT    => mc_transmit_done,
 

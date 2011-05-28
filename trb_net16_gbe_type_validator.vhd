@@ -73,10 +73,6 @@ begin
 		VALID_OUT <= '0';
 	end if;
 end process VALID_OUT_PROC;
-		
---VALID_OUT <= or_all(result) when SAVED_VLAN_ID_IN = x"0000"
---		else or_all(result) and (SAVED_VLAN_ID_IN and VLAN_ID_IN);
-
 
 end trb_net16_gbe_type_validator;
 

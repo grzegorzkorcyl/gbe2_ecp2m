@@ -45,6 +45,14 @@ port (
 	MC_RD_EN_OUT		: out	std_logic;
 	MC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	MC_FRAME_TYPE_IN	: in	std_logic_vector(15 downto 0);
+	
+	MC_DEST_MAC_IN		: in	std_logic_vector(47 downto 0);
+	MC_DEST_IP_IN		: in	std_logic_vector(31 downto 0);
+	MC_DEST_UDP_IN		: in	std_logic_vector(15 downto 0);
+	MC_SRC_MAC_IN		: in	std_logic_vector(47 downto 0);
+	MC_SRC_IP_IN		: in	std_logic_vector(31 downto 0);
+	MC_SRC_UDP_IN		: in	std_logic_vector(15 downto 0);
+	
 	MC_BUSY_OUT		: out	std_logic;
 	MC_TRANSMIT_DONE_OUT	: out	std_logic;
 
@@ -221,12 +229,13 @@ begin
 	  delayed_wr_en <= '0';
 	end if;
 
-	DEST_MAC_ADDRESS_OUT <= x"d93bb10c0e00";
-	DEST_IP_ADDRESS_OUT  <= x"0100a8c0";
-	DEST_UDP_PORT_OUT    <= x"50c3";
-	SRC_MAC_ADDRESS_OUT  <= x"febefebe0000";
-	SRC_IP_ADDRESS_OUT   <= x"1000a8c0";
-	SRC_UDP_PORT_OUT     <= x"50c3";
+	DEST_MAC_ADDRESS_OUT <= MC_DEST_MAC_IN;
+	DEST_IP_ADDRESS_OUT  <= MC_DEST_IP_IN;
+	DEST_UDP_PORT_OUT    <= MC_DEST_UDP_IN;
+	SRC_MAC_ADDRESS_OUT  <= MC_SRC_MAC_IN;
+	SRC_IP_ADDRESS_OUT   <= MC_SRC_IP_IN;
+	SRC_UDP_PORT_OUT     <= MC_SRC_UDP_IN;
+	
 	FC_IDENT_OUT         <= sent_packets_ctr;
 
       when others =>

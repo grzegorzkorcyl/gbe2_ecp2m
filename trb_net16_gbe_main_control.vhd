@@ -43,6 +43,14 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	
+	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
+	TC_SRC_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_SRC_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_SRC_UDP_OUT		: out	std_logic_vector(15 downto 0);
+	
 	TC_BUSY_IN		: in	std_logic;
 	TC_TRANSMIT_DONE_IN	: in	std_logic;
 
@@ -145,6 +153,14 @@ port map(
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
 	TC_FRAME_TYPE_OUT	=> TC_FRAME_TYPE_OUT,
+	
+	TC_DEST_MAC_OUT		=> TC_DEST_MAC_OUT,
+	TC_DEST_IP_OUT		=> TC_DEST_IP_OUT,
+	TC_DEST_UDP_OUT		=> TC_DEST_UDP_OUT,
+	TC_SRC_MAC_OUT		=> TC_SRC_MAC_OUT,
+	TC_SRC_IP_OUT		=> TC_SRC_IP_OUT,
+	TC_SRC_UDP_OUT		=> TC_SRC_UDP_OUT,
+	
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> SELECT_REC_FRAMES_OUT,

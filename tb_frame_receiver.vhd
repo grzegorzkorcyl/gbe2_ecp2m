@@ -75,6 +75,13 @@ signal fc_proto                  : std_logic_vector(7 downto 0);
 signal fr_mac                    : std_logic_vector(47 downto 0);
 signal rc_mac                    : std_logic_vector(47 downto 0);
 
+signal mc_dest_mac               : std_logic_vector(47 downto 0);
+signal mc_dest_ip                : std_logic_vector(31 downto 0);
+signal mc_dest_udp               : std_logic_vector(15 downto 0);
+signal mc_src_mac                : std_logic_vector(47 downto 0);
+signal mc_src_ip                 : std_logic_vector(31 downto 0);
+signal mc_src_udp                : std_logic_vector(15 downto 0);
+
 begin
 
 receiver : trb_net16_gbe_frame_receiver
@@ -162,6 +169,14 @@ port map (
 	TC_RD_EN_IN		=> MC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> MC_FRAME_SIZE_OUT,
 	TC_FRAME_TYPE_OUT	=> mc_type,
+	
+	TC_DEST_MAC_OUT		=> mc_dest_mac,
+	TC_DEST_IP_OUT		=> mc_dest_ip,
+	TC_DEST_UDP_OUT		=> mc_dest_udp,
+	TC_SRC_MAC_OUT		=> mc_src_mac,
+	TC_SRC_IP_OUT		=> mc_src_ip,
+	TC_SRC_UDP_OUT		=> mc_src_udp,
+	
 	TC_BUSY_IN		=> MC_BUSY_IN,
 	TC_TRANSMIT_DONE_IN	=> MC_TRANSMIT_DONE_IN,
 
@@ -220,6 +235,14 @@ port map(
 	MC_RD_EN_OUT		=> MC_RD_EN_IN,
 	MC_FRAME_SIZE_IN	=> MC_FRAME_SIZE_OUT,
 	MC_FRAME_TYPE_IN	=> mc_type,
+	
+	MC_DEST_MAC_IN		=> mc_dest_mac,
+	MC_DEST_IP_IN		=> mc_dest_ip,
+	MC_DEST_UDP_IN		=> mc_dest_udp,
+	MC_SRC_MAC_IN		=> mc_src_mac,
+	MC_SRC_IP_IN		=> mc_src_ip,
+	MC_SRC_UDP_IN		=> mc_src_udp,
+	
 	MC_BUSY_OUT		=> MC_BUSY_IN,
 	MC_TRANSMIT_DONE_OUT	=> MC_TRANSMIT_DONE_IN,
 

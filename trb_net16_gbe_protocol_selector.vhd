@@ -37,6 +37,14 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	
+	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
+	TC_SRC_MAC_OUT		: out	std_logic_vector(47 downto 0);
+	TC_SRC_IP_OUT		: out	std_logic_vector(31 downto 0);
+	TC_SRC_UDP_OUT		: out	std_logic_vector(15 downto 0);
+	
 	TC_BUSY_IN		: in	std_logic;
 	
 	-- counters from response constructors
@@ -58,6 +66,12 @@ signal tc_size                  : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 down
 signal tc_type                  : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 signal busy                     : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal selected                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+signal tc_mac                   : std_logic_vector(c_MAX_PROTOCOLS * 48 - 1 downto 0);
+signal tc_ip                    : std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+signal tc_udp                   : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+signal tc_src_mac               : std_logic_vector(c_MAX_PROTOCOLS * 48 - 1 downto 0);
+signal tc_src_ip                : std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+signal tc_src_udp               : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 
 begin
 
@@ -80,6 +94,14 @@ port map (
 	TC_DATA_OUT		=> tc_data(1 * 9 - 1 downto 0 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(1 * 16 - 1 downto 0 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(1 * 16 - 1 downto 0 * 16),
+	
+	TC_DEST_MAC_OUT		=> tc_mac(1 * 48 - 1 downto 0 * 48),
+	TC_DEST_IP_OUT		=> tc_ip(1 * 32 - 1 downto 0 * 32),
+	TC_DEST_UDP_OUT		=> tc_udp(1 * 16 - 1 downto 0 * 16),
+	TC_SRC_MAC_OUT		=> tc_src_mac(1 * 48 - 1 downto 0 * 48),
+	TC_SRC_IP_OUT		=> tc_src_ip(1 * 32 - 1 downto 0 * 32),
+	TC_SRC_UDP_OUT		=> tc_src_udp(1 * 16 - 1 downto 0 * 16),
+	
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(1 * 16 - 1 downto 0 * 16),
@@ -107,6 +129,14 @@ port map (
 	TC_DATA_OUT		=> tc_data(2 * 9 - 1 downto 1 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(2 * 16 - 1 downto 1 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(2 * 16 - 1 downto 1 * 16),
+	
+	TC_DEST_MAC_OUT		=> tc_mac(2 * 48 - 1 downto 1 * 48),
+	TC_DEST_IP_OUT		=> tc_ip(2 * 32 - 1 downto 1 * 32),
+	TC_DEST_UDP_OUT		=> tc_udp(2 * 16 - 1 downto 1 * 16),
+	TC_SRC_MAC_OUT		=> tc_src_mac(2 * 48 - 1 downto 1 * 48),
+	TC_SRC_IP_OUT		=> tc_src_ip(2 * 32 - 1 downto 1 * 32),
+	TC_SRC_UDP_OUT		=> tc_src_udp(2 * 16 - 1 downto 1 * 16),
+	
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
@@ -134,6 +164,14 @@ port map (
 	TC_DATA_OUT		=> tc_data(3 * 9 - 1 downto 2 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(3 * 16 - 1 downto 2 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(3 * 16 - 1 downto 2 * 16),
+	
+	TC_DEST_MAC_OUT		=> tc_mac(3 * 48 - 1 downto 2 * 48),
+	TC_DEST_IP_OUT		=> tc_ip(3 * 32 - 1 downto 2 * 32),
+	TC_DEST_UDP_OUT		=> tc_udp(3 * 16 - 1 downto 2 * 16),
+	TC_SRC_MAC_OUT		=> tc_src_mac(3 * 48 - 1 downto 2 * 48),
+	TC_SRC_IP_OUT		=> tc_src_ip(3 * 32 - 1 downto 2 * 32),
+	TC_SRC_UDP_OUT		=> tc_src_udp(3 * 16 - 1 downto 2 * 16),
+	
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(3 * 16 - 1 downto 2 * 16),
@@ -142,8 +180,8 @@ port map (
 -- END OF INTERFACE
 );
 
--- Trash - should always be in the last place
-Trash : trb_net16_gbe_response_constructor_Trash
+-- protocol No. 4 DHCP
+DHCP : trb_net16_gbe_response_constructor_DHCP
 port map (
 	CLK			=> CLK,
 	RESET			=> RESET,
@@ -161,6 +199,14 @@ port map (
 	TC_DATA_OUT		=> tc_data(4 * 9 - 1 downto 3 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(4 * 16 - 1 downto 3 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(4 * 16 - 1 downto 3 * 16),
+	
+	TC_DEST_MAC_OUT		=> tc_mac(4 * 48 - 1 downto 3 * 48),
+	TC_DEST_IP_OUT		=> tc_ip(4 * 32 - 1 downto 3 * 32),
+	TC_DEST_UDP_OUT		=> tc_udp(4 * 16 - 1 downto 3 * 16),
+	TC_SRC_MAC_OUT		=> tc_src_mac(4 * 48 - 1 downto 3 * 48),
+	TC_SRC_IP_OUT		=> tc_src_ip(4 * 32 - 1 downto 3 * 32),
+	TC_SRC_UDP_OUT		=> tc_src_udp(4 * 16 - 1 downto 3 * 16),
+	
 	TC_BUSY_IN		=> TC_BUSY_IN,
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(4 * 16 - 1 downto 3 * 16),
@@ -169,6 +215,40 @@ port map (
 -- END OF INTERFACE
 );
 
+-- Trash - should always be in the last place
+Trash : trb_net16_gbe_response_constructor_Trash
+port map (
+	CLK			=> CLK,
+	RESET			=> RESET,
+	
+-- INTERFACE	
+	PS_DATA_IN		=> PS_DATA_IN,
+	PS_WR_EN_IN		=> PS_WR_EN_IN,
+	PS_ACTIVATE_IN		=> PS_PROTO_SELECT_IN(4),
+	PS_RESPONSE_READY_OUT	=> resp_ready(4),
+	PS_BUSY_OUT		=> busy(4),
+	PS_SELECTED_IN		=> selected(4),
+	PS_SRC_MAC_ADDRESS_IN	=> PS_SRC_MAC_ADDRESS_IN,
+	
+	TC_RD_EN_IN		=> TC_RD_EN_IN,
+	TC_DATA_OUT		=> tc_data(5 * 9 - 1 downto 4 * 9),
+	TC_FRAME_SIZE_OUT	=> tc_size(5 * 16 - 1 downto 4 * 16),
+	TC_FRAME_TYPE_OUT	=> tc_type(5 * 16 - 1 downto 4 * 16),
+	
+	TC_DEST_MAC_OUT		=> tc_mac(5 * 48 - 1 downto 4 * 48),
+	TC_DEST_IP_OUT		=> tc_ip(5 * 32 - 1 downto 4 * 32),
+	TC_DEST_UDP_OUT		=> tc_udp(5 * 16 - 1 downto 4 * 16),
+	TC_SRC_MAC_OUT		=> tc_src_mac(5 * 48 - 1 downto 4 * 48),
+	TC_SRC_IP_OUT		=> tc_src_ip(5 * 32 - 1 downto 4 * 32),
+	TC_SRC_UDP_OUT		=> tc_src_udp(5 * 16 - 1 downto 4 * 16),
+	
+	TC_BUSY_IN		=> TC_BUSY_IN,
+	
+	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(5 * 16 - 1 downto 4 * 16),
+	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(5 * 16 - 1 downto 4 * 16),
+	DEBUG_OUT		=> PROTOS_DEBUG_OUT(5 * 32 - 1 downto 4 * 32)
+-- END OF INTERFACE
+);
 
 --***************
 -- DO NOT TOUCH,  response selection logic
@@ -185,6 +265,12 @@ begin
 			TC_DATA_OUT           <= (others => '0');
 			TC_FRAME_SIZE_OUT     <= (others => '0');
 			TC_FRAME_TYPE_OUT     <= (others => '0');
+			TC_DEST_MAC_OUT       <= (others => '0');
+			TC_DEST_IP_OUT        <= (others => '0');
+			TC_DEST_UDP_OUT       <= (others => '0');
+			TC_SRC_MAC_OUT       <= (others => '0');
+			TC_SRC_IP_OUT        <= (others => '0');
+			TC_SRC_UDP_OUT        <= (others => '0');
 			PS_RESPONSE_READY_OUT <= '0';
 			selected              <= (others => '0');
 			found := false;
@@ -195,6 +281,12 @@ begin
 						TC_DATA_OUT           <= tc_data((i + 1) * 9 - 1 downto i * 9);
 						TC_FRAME_SIZE_OUT     <= tc_size((i + 1) * 16 - 1 downto i * 16);
 						TC_FRAME_TYPE_OUT     <= tc_type((i + 1) * 16 - 1 downto i * 16);
+						TC_DEST_MAC_OUT       <= tc_mac((i + 1) * 48 - 1 downto i * 48);
+						TC_DEST_IP_OUT        <= tc_ip((i + 1) * 32 - 1 downto i * 32);
+						TC_DEST_UDP_OUT       <= tc_udp((i + 1) * 16 - 1 downto i * 16);
+						TC_SRC_MAC_OUT        <= tc_src_mac((i + 1) * 48 - 1 downto i * 48);
+						TC_SRC_IP_OUT         <= tc_src_ip((i + 1) * 32 - 1 downto i * 32);
+						TC_SRC_UDP_OUT        <= tc_src_udp((i + 1) * 16 - 1 downto i * 16);
 						PS_RESPONSE_READY_OUT <= '1';
 						selected(i)           <= '1';
 						found := true;
@@ -207,6 +299,12 @@ begin
 				TC_DATA_OUT           <= (others => '0');
 				TC_FRAME_SIZE_OUT     <= (others => '0');
 				TC_FRAME_TYPE_OUT     <= (others => '0');
+				TC_DEST_MAC_OUT       <= (others => '0');
+				TC_DEST_IP_OUT        <= (others => '0');
+				TC_DEST_UDP_OUT       <= (others => '0');
+				TC_SRC_MAC_OUT       <= (others => '0');
+				TC_SRC_IP_OUT        <= (others => '0');
+				TC_SRC_UDP_OUT        <= (others => '0');
 				PS_RESPONSE_READY_OUT <= '0';
 				found := false;
 			end if;
