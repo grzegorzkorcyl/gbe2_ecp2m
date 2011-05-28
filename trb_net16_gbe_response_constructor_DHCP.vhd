@@ -63,7 +63,7 @@ signal state                    : std_logic_vector(3 downto 0);
 signal rec_frames               : std_logic_vector(15 downto 0);
 signal sent_frames              : std_logic_vector(15 downto 0);
 
-signal wait_ctr                 : std_logic_vector(19 downto 0);  -- wait for 5 sec before sending request
+signal wait_ctr                 : std_logic_vector(31 downto 0);  -- wait for 5 sec before sending request
 signal load_ctr                 : integer range 0 to 600 := 0;
 
 signal bootp_hdr                : std_logic_vector(63 downto 0);
@@ -108,8 +108,8 @@ begin
 			
 		when WAIT_FOR_BOOT =>
 			state <= x"2";
-			if (wait_ctr = x"7a120") then  -- wait for 5 sec
-			--if (wait_ctr = x"00005") then -- for simulation
+			--if (wait_ctr = x"7a120") then  -- wait for 5 sec
+			if (wait_ctr = x"1dcd_6500") then -- for simulation
 				dissect_next_state <= BOOTP_HEADERS;
 			else
 				dissect_next_state <= WAIT_FOR_BOOT;
@@ -251,7 +251,7 @@ SENT_FRAMES_OUT     <= sent_frames;
 -- **** debug
 DEBUG_OUT(3 downto 0)   <= state;
 DEBUG_OUT(11 downto 4)  <= x"ff";
-DEBUG_OUT(31 downto 12) <= wait_ctr;
+DEBUG_OUT(31 downto 12) <= wait_ctr(19 downto 0);
 -- ****
 
 end trb_net16_gbe_response_constructor_DHCP;
