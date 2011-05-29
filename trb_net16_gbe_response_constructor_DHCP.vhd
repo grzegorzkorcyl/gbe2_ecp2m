@@ -55,7 +55,7 @@ architecture trb_net16_gbe_response_constructor_DHCP of trb_net16_gbe_response_c
 
 attribute syn_encoding	: string;
 
-type dissect_states is (IDLE, WAIT_FOR_BOOT, BOOTP_HEADERS, ZEROS1, MY_MAC, ZEROS2, CLEANUP);
+type dissect_states is (IDLE, WAIT_FOR_BOOT, BOOTP_HEADERS, ZEROS1, MY_MAC, ZEROS2, CLEANUP, FREEZE);
 signal dissect_current_state, dissect_next_state : dissect_states;
 attribute syn_encoding of dissect_current_state: signal is "safe,gray";
 
@@ -68,6 +68,8 @@ signal load_ctr                 : integer range 0 to 600 := 0;
 
 signal bootp_hdr                : std_logic_vector(63 downto 0);
 signal my_mac_adr               : std_logic_vector(47 downto 0);  -- only temporary
+
+signal tc_data                  : std_logic_vector(8 downto 0);
 
 begin
 
@@ -108,8 +110,8 @@ begin
 			
 		when WAIT_FOR_BOOT =>
 			state <= x"2";
-			--if (wait_ctr = x"0000_000a") then  -- for simulation
-			if (wait_ctr = x"3b9a_ca00") then  -- wait for 10 sec
+			if (wait_ctr = x"0000_000a") then  -- for simulation
+			--if (wait_ctr = x"3b9a_ca00") then  -- wait for 10 sec
 				dissect_next_state <= BOOTP_HEADERS;
 			else
 				dissect_next_state <= WAIT_FOR_BOOT;
@@ -149,7 +151,11 @@ begin
 		
 		when CLEANUP =>
 			state <= x"9";
-			dissect_next_state <= CLEANUP;
+			dissect_next_state <= FREEZE;
+			
+		when FREEZE =>
+			state <= x"a";
+			dissect_next_state <= FREEZE;
 	
 	end case;
 end process DISSECT_MACHINE;
@@ -179,45 +185,52 @@ end process LOAD_CTR_PROC;
 TC_DATA_PROC : process(dissect_current_state, load_ctr, bootp_hdr, my_mac_adr)
 begin
 
-	TC_DATA_OUT(8) <= '0';
+	tc_data(8) <= '0';
 
 	case (dissect_current_state) is
 
 		when BOOTP_HEADERS =>
 			for i in 0 to 7 loop
-				TC_DATA_OUT(i) <= bootp_hdr(load_ctr * 8 + i);
+				tc_data(i) <= bootp_hdr(load_ctr * 8 + i);
 			end loop;
 			--TC_DATA_OUT(7 downto 0) <= bootp_hdr((load_ctr + 1) * 8 - 1 downto load_ctr * 8);
 		
 		when ZEROS1 =>
-			TC_DATA_OUT(7 downto 0) <= x"00";
+			tc_data(7 downto 0) <= x"00";
 		
 		when MY_MAC =>
 			for i in 0 to 7 loop
-				TC_DATA_OUT(i) <= my_mac_adr((load_ctr - 28) * 8 + i);
+				tc_data(i) <= my_mac_adr((load_ctr - 28) * 8 + i);
 			end loop;
 			--TC_DATA_OUT(7 downto 0) <= my_mac_adr((load_ctr - 28 + 1) * 8 - 1 downto (load_ctr - 28) * 8); 
 		
 		when ZEROS2 =>
-			TC_DATA_OUT(7 downto 0) <= x"00";
+			tc_data(7 downto 0) <= x"00";
 			-- mark the last byte
 			if (load_ctr = 235) then
-				TC_DATA_OUT(8) <= '1';
+				tc_data(8) <= '1';
 			end if;
 		
-		when others => TC_DATA_OUT(7 downto 0) <= x"00";
+		when others => tc_data(7 downto 0) <= x"00";
 	
 	end case;
 	
 end process;
 
+TC_DATA_SYNC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		TC_DATA_OUT <= tc_data;
+	end if;
+end process TC_DATA_SYNC;
+
 
 PS_BUSY_OUT <= '0' when (dissect_current_state = IDLE) else '1';
 
-PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state /= IDLE and dissect_current_state /= WAIT_FOR_BOOT and dissect_current_state /= CLEANUP)
+PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = BOOTP_HEADERS or dissect_current_state = ZEROS1 or dissect_current_state = MY_MAC or dissect_current_state = ZEROS2 or dissect_current_state = CLEANUP) --(dissect_current_state /= IDLE and dissect_current_state /= WAIT_FOR_BOOT and dissect_current_state /= CLEANUP)
 			else '0';
 
-TC_FRAME_SIZE_OUT <= x"022a";
+TC_FRAME_SIZE_OUT <= x"00ec";
 
 TC_FRAME_TYPE_OUT <= x"0008";  -- frame type: ip 
 
@@ -239,7 +252,7 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			sent_frames <= (others => '0');
-		elsif (dissect_current_state = ZEROS2 and load_ctr = 235) then
+		elsif (dissect_current_state = CLEANUP) then
 			sent_frames <= sent_frames + x"1";
 		end if;
 	end if;
