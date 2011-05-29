@@ -113,6 +113,12 @@ PS_RESPONSE_READY_OUT <= '0';
 TC_FRAME_SIZE_OUT <= (others => '0');
 
 TC_FRAME_TYPE_OUT <= (others => '0');
+TC_DEST_MAC_OUT   <= (others => '0');
+TC_DEST_IP_OUT    <= (others => '0');
+TC_DEST_UDP_OUT   <= (others => '0');
+TC_SRC_MAC_OUT    <= (others => '0');
+TC_SRC_IP_OUT     <= (others => '0');
+TC_SRC_UDP_OUT    <= (others => '0');
 
 REC_FRAMES_PROC : process(CLK)
 begin

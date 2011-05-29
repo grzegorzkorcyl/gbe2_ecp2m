@@ -362,6 +362,12 @@ PS_RESPONSE_READY_OUT <= '1' when (saving_data = '0') else '0';
 TC_FRAME_SIZE_OUT <= x"001c";
 
 TC_FRAME_TYPE_OUT <= x"0608";
+TC_DEST_MAC_OUT   <= x"9a680f201300";
+TC_DEST_IP_OUT    <= x"00000000";  -- doesnt matter
+TC_DEST_UDP_OUT   <= x"0000";  -- doesnt matter
+TC_SRC_MAC_OUT    <= x"efbeefbe0000";
+TC_SRC_IP_OUT     <= x"00000000";  -- doesnt matter
+TC_SRC_UDP_OUT    <= x"0000";  -- doesnt matter
 
 REC_FRAMES_PROC : process(CLK)
 begin

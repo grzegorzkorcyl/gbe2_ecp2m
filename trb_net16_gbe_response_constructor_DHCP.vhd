@@ -228,7 +228,7 @@ begin
 		if (RESET = '1') then
 			rec_frames <= (others => '0');
 		--elsif (dissect_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
-		elsif (dissect_current_state /= IDLE and dissect_current_state /= CLEANUP and PS_ACTIVATE_IN = '1' and TC_RD_EN_IN = '1') then
+		elsif (dissect_current_state /= IDLE and dissect_current_state /= CLEANUP and PS_SELECTED_IN = '1' and TC_RD_EN_IN = '1') then
 			rec_frames <= rec_frames + x"1";
 		end if;
 	end if;
@@ -239,7 +239,7 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			sent_frames <= (others => '0');
-		elsif (dissect_current_state = CLEANUP and TC_BUSY_IN = '0') then
+		elsif (dissect_current_state = ZEROS2 and load_ctr = 235) then
 			sent_frames <= sent_frames + x"1";
 		end if;
 	end if;
@@ -251,7 +251,7 @@ SENT_FRAMES_OUT     <= sent_frames;
 -- **** debug
 DEBUG_OUT(3 downto 0)   <= state;
 DEBUG_OUT(11 downto 4)  <= x"ff";
-DEBUG_OUT(31 downto 12) <= wait_ctr(19 downto 0);
+DEBUG_OUT(31 downto 12) <= wait_ctr(31 downto 12);
 -- ****
 
 end trb_net16_gbe_response_constructor_DHCP;
