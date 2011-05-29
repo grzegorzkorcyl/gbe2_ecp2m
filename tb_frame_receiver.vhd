@@ -302,7 +302,7 @@ port map(
 	RD_CLK                  => RX_MAC_CLK,
 	FT_DATA_OUT             => open,
 	FT_TX_EMPTY_OUT         => open,
-	FT_TX_RD_EN_IN          => '0',
+	FT_TX_RD_EN_IN          => '1',
 	FT_START_OF_PACKET_OUT  => open,
 	FT_TX_DONE_IN           => '1',
 	FT_TX_DISCFRM_IN	=> '0',
