@@ -170,10 +170,10 @@ TC_FRAME_SIZE_OUT <= resp_bytes_ctr + x"1";
 
 TC_FRAME_TYPE_OUT <= x"aa08";
 TC_DEST_MAC_OUT   <= x"9a680f201300";
-TC_DEST_IP_OUT    <= x"c0a80001";
+TC_DEST_IP_OUT    <= x"0100a8c0";
 TC_DEST_UDP_OUT   <= x"51c3";
 TC_SRC_MAC_OUT    <= x"efbeefbe0000";
-TC_SRC_IP_OUT     <= x"c0a8000b";
+TC_SRC_IP_OUT     <= x"0b00a8c0";
 TC_SRC_UDP_OUT    <= x"51c3";
 
 RESP_BYTES_CTR_PROC : process(CLK)
