@@ -234,7 +234,7 @@ begin
 			saved_src_ip  <= (others => '0');
 			saved_src_mac <= (others => '0');
 			
-		elsif (saving_data = '1') and (dissect_current_state /= WAIT_FOR_LOAD) then  -- saving data from incoming request
+		elsif (saving_data = '1') and (dissect_current_state /= WAIT_FOR_LOAD) and (PS_WR_EN_IN = '1') then  -- saving data from incoming request
 		
 			case (data_ctr) is
 				-- headers
@@ -320,7 +320,7 @@ begin
 				when "01110" =>
 					TC_DATA_OUT(7 downto 0) <= x"c0";
 				when "01111" =>
-					TC_DATA_OUT(7 downto 0) <= x"a9";
+					TC_DATA_OUT(7 downto 0) <= x"a8";
 				when "10000" =>
 					TC_DATA_OUT(7 downto 0) <= x"00";
 				when "10001" =>

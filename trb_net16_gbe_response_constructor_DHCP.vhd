@@ -55,7 +55,7 @@ architecture trb_net16_gbe_response_constructor_DHCP of trb_net16_gbe_response_c
 
 attribute syn_encoding	: string;
 
-type dissect_states is (IDLE, WAIT_FOR_BOOT, BOOTP_HEADERS, ZEROS1, MY_MAC, ZEROS2, CLEANUP, FREEZE);
+type dissect_states is (IDLE, WAIT_FOR_BOOT, BOOTP_HEADERS, ZEROS1, MY_MAC, ZEROS2, VENDOR_VALS, CLEANUP, FREEZE);
 signal dissect_current_state, dissect_next_state : dissect_states;
 attribute syn_encoding of dissect_current_state: signal is "safe,gray";
 
@@ -70,6 +70,7 @@ signal bootp_hdr                : std_logic_vector(63 downto 0);
 signal my_mac_adr               : std_logic_vector(47 downto 0);  -- only temporary
 
 signal tc_data                  : std_logic_vector(8 downto 0);
+signal vendor_values            : std_logic_vector(183 downto 0);
 
 begin
 
@@ -88,6 +89,13 @@ bootp_hdr(23 downto 16) <= x"06";  -- hardware address length
 bootp_hdr(31 downto 24) <= x"00";  -- hops
 bootp_hdr(63 downto 32) <= x"cefa_adde";  -- transaction id;
 my_mac_adr <= x"efbeefbe0000";  -- my mac address later
+vendor_values(31 downto 0)    <= x"63538263"; -- magic cookie (dhcp message)
+vendor_values(55 downto 32)   <= x"010135"; -- dhcp discover
+vendor_values(79 downto 56)   <= x"01073d"; -- client identifier
+vendor_values(127 downto 80)  <= my_mac_adr;  -- client identifier
+vendor_values(143 downto 128) <= x"040c";  -- client name
+vendor_values(175 downto 144) <= x"33435254";  -- client name (TRB3)
+vendor_values(183 downto 176) <= x"ff"; -- vendor values termination
 
 DISSECT_MACHINE_PROC : process(CLK)
 begin
@@ -144,9 +152,17 @@ begin
 		when ZEROS2 =>
 			state <= x"7";
 			if (load_ctr = 235) then
-				dissect_next_state <= CLEANUP;
+				dissect_next_state <= VENDOR_VALS;
 			else
 				dissect_next_state <= ZEROS2;
+			end if;
+			
+		when VENDOR_VALS =>
+			state <= x"8";
+			if (load_ctr = 258) then
+				dissect_next_state <= CLEANUP;
+			else
+				dissect_next_state <= VENDOR_VALS;
 			end if;
 		
 		when CLEANUP =>
@@ -206,8 +222,13 @@ begin
 		
 		when ZEROS2 =>
 			tc_data(7 downto 0) <= x"00";
+			
+		when VENDOR_VALS =>
+			for i in 0 to 7 loop
+				tc_data(i) <= vendor_values((load_ctr - 236) * 8 + i);
+			end loop;
 			-- mark the last byte
-			if (load_ctr = 235) then
+			if (load_ctr = 258) then
 				tc_data(8) <= '1';
 			end if;
 		
@@ -227,10 +248,10 @@ end process TC_DATA_SYNC;
 
 PS_BUSY_OUT <= '0' when (dissect_current_state = IDLE) else '1';
 
-PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = BOOTP_HEADERS or dissect_current_state = ZEROS1 or dissect_current_state = MY_MAC or dissect_current_state = ZEROS2 or dissect_current_state = CLEANUP) --(dissect_current_state /= IDLE and dissect_current_state /= WAIT_FOR_BOOT and dissect_current_state /= CLEANUP)
+PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = BOOTP_HEADERS or dissect_current_state = ZEROS1 or dissect_current_state = MY_MAC or dissect_current_state = ZEROS2 or dissect_current_state = VENDOR_VALS or dissect_current_state = CLEANUP) --(dissect_current_state /= IDLE and dissect_current_state /= WAIT_FOR_BOOT and dissect_current_state /= CLEANUP)
 			else '0';
 
-TC_FRAME_SIZE_OUT <= x"00ec";
+TC_FRAME_SIZE_OUT <= x"0103";
 
 TC_FRAME_TYPE_OUT <= x"0008";  -- frame type: ip 
 
