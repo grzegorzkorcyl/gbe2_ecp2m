@@ -66,7 +66,8 @@ begin
 				
 				-- last slot is reserved for Trash
 				when others =>
-					CODE_OUT(c_MAX_PROTOCOLS - 1) <= '1';
+					--CODE_OUT(c_MAX_PROTOCOLS - 1) <= '1';
+					null;
 			
 			end case;
 			

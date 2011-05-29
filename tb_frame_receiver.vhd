@@ -340,7 +340,7 @@ begin
 	MAC_RXD_IN		<= x"00";
 	MAC_RX_EN_IN		<= '0';
 	MAC_RX_FIFO_ERR_IN	<= '0';
-	FR_ALLOWED_TYPES_IN     <= x"0000_0008";
+	FR_ALLOWED_TYPES_IN     <= x"0000_000f";
 	
 	wait for 10 ns;
 	RESET <= '0';

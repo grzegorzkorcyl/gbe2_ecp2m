@@ -108,8 +108,8 @@ begin
 			
 		when WAIT_FOR_BOOT =>
 			state <= x"2";
-			--if (wait_ctr = x"7a120") then  -- wait for 5 sec
-			if (wait_ctr = x"1dcd_6500") then -- for simulation
+			--if (wait_ctr = x"0000_000a") then  -- for simulation
+			if (wait_ctr = x"3b9a_ca00") then  -- wait for 10 sec
 				dissect_next_state <= BOOTP_HEADERS;
 			else
 				dissect_next_state <= WAIT_FOR_BOOT;

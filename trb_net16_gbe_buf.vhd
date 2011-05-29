@@ -421,7 +421,6 @@ signal dbg_pc2                       : std_logic_vector(31 downto 0);
 signal dbg_fc1                       : std_logic_vector(31 downto 0);
 signal dbg_fc2                       : std_logic_vector(31 downto 0);
 signal dbg_ft1                       : std_logic_vector(31 downto 0);
-signal dbg_ft2                       : std_logic_vector(31 downto 0);
 -- gk 08.06.10
 signal mac_tx_staten                 : std_logic;
 signal mac_tx_statevec               : std_logic_vector(30 downto 0);
@@ -554,6 +553,8 @@ signal mc_src_mac			: std_logic_vector(47 downto 0);
 signal mc_src_ip			: std_logic_vector(31 downto 0);
 signal mc_src_udp			: std_logic_vector(15 downto 0);
 
+signal dbg_ft                        : std_logic_vector(63 downto 0);
+
 begin
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
@@ -634,7 +635,6 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  DEBUG_OUT		=> dbg_mc
   );
 
-  dbg_ft2(10) <= tsmac_gbit_en;
 end generate MC_IMPL_GEN;
 
 MC_SIM_GEN : if (DO_SIMULATION = 1) generate
@@ -849,7 +849,7 @@ port map(
 	DBG_FC1_IN                => dbg_fc1,
 	DBG_FC2_IN                => dbg_fc2,
 	DBG_FT1_IN                => dbg_ft1,
-	DBG_FT2_IN                => dbg_ft2,
+	DBG_FT2_IN                => dbg_ft(31 downto 0),
 	DBG_FR_IN                 => dbg_fr,
 	DBG_RC_IN                 => dbg_rc,
 	DBG_MC_IN                 => dbg_mc,
@@ -938,7 +938,7 @@ port map(
 	DBG_FC1_IN                => dbg_fc1,
 	DBG_FC2_IN                => dbg_fc2,
 	DBG_FT1_IN                => dbg_ft1,
-	DBG_FT2_IN                => dbg_ft2,
+	DBG_FT2_IN                => dbg_ft(31 downto 0),
 	DBG_FR_IN                 => dbg_fr,
 	DBG_RC_IN                 => dbg_rc(31 downto 0),
 	DBG_MC_IN                 => dbg_mc,
@@ -1214,7 +1214,7 @@ port map(
 	DBG_RD_DONE_OUT			=> open,
 	DBG_INIT_DONE_OUT		=> open,
 	DBG_ENABLED_OUT			=> open,
-	DEBUG_OUT			=> open
+	DEBUG_OUT			=> dbg_ft
 	--DEBUG_OUT(31 downto 0)		=> open,
 	--DEBUG_OUT(63 downto 32)		=> open
 );  
@@ -1366,8 +1366,6 @@ imp_gen: if (DO_SIMULATION = 0) generate
 			end if;
 		end if;
 	end process dbg_statevec_proc;
-
---	dbg_ft2 <= stage_stat_regs;
 
 	serdes_intclk_gen: if (USE_125MHZ_EXTCLK = 0) generate
 		-- PHY part

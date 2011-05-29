@@ -88,11 +88,13 @@ signal resetAddr		: std_logic;
 
 signal FifoEmpty		: std_logic;
 signal debug			: std_logic_vector(63 downto 0);
+signal sent_ctr                 : std_logic_vector(31 downto 0);
 
 begin
 
 -- Fakes
-debug <= (others => '0');
+debug(63 downto 32) <= (others => '0');
+debug(31 downto 0)  <= sent_ctr;
 
 
 TransmitStateMachineProc : process (TX_MAC_CLK)
@@ -167,6 +169,17 @@ end process FifoEmptyProc;
 
 tx_fifoeof_i <= '1' when ((DATA_ENDFLAG_IN = '1') and (transmitCurrentState = T_TRANSMIT)) 
 					else '0';
+					
+SENT_CTR_PROC : process(TX_MAC_CLK)
+begin
+	if rising_edge(TX_MAC_CLK) then
+		if (RESET = '1') then
+			sent_ctr <= (others => '0');
+		elsif (TX_DONE_IN = '1') then
+			sent_ctr <= sent_ctr + x"1";
+		end if;
+	end if;
+end process SENT_CTR_PROC;
 	
 
 TX_FIFOAVAIL_OUT   <= tx_fifoavail_i;
