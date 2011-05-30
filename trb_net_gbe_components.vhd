@@ -17,7 +17,6 @@ port (
 	
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
 	PROTOCOL_CODE_IN	: in	std_logic_vector(15 downto 0);  -- higher level protocols
-	HAS_HIGHER_LEVEL_IN	: in	std_logic;
 	
 	CODE_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0)
 );
@@ -28,7 +27,15 @@ port (
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
 	SAVED_VLAN_ID_IN	: in	std_logic_vector(15 downto 0);  -- recovered vlan id
 	ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);  -- signal from gbe_setup
-	VLAN_ID_IN		: in	std_logic_vector(31 downto 0);  -- two values from gbe setup	
+	VLAN_ID_IN		: in	std_logic_vector(31 downto 0);  -- two values from gbe setup
+
+	-- IP level
+	IP_PROTOCOLS_IN		: in	std_logic_vector(7 downto 0);
+	ALLOWED_IP_PROTOCOLS_IN	: in	std_logic_vector(31 downto 0);
+	
+	-- UDP level
+	UDP_PROTOCOL_IN		: in	std_logic_vector(15 downto 0);
+	ALLOWED_UDP_PROTOCOLS_IN : in	std_logic_vector(31 downto 0);
 	
 	VALID_OUT		: out	std_logic
 );
@@ -46,7 +53,13 @@ port (
 	PS_BUSY_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 	PS_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	PS_RESPONSE_READY_OUT	: out	std_logic;
+	
 	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
+	PS_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
+	PS_SRC_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	PS_DEST_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	PS_SRC_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
+	PS_DEST_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
 	
 -- singals to/from transmi controller with constructed response
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
@@ -114,7 +127,13 @@ port (
 	RC_RD_EN_OUT		: out	std_logic;
 	RC_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	RC_FRAME_PROTO_IN	: in	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+	
 	RC_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
+	RC_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
+	RC_SRC_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	RC_DEST_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	RC_SRC_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
+	RC_DEST_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
 
 -- signals to/from transmit controller
 	TC_TRANSMIT_CTRL_OUT	: out	std_logic;  -- slow control frame is waiting to be built and sent
@@ -244,7 +263,13 @@ port (
 	FR_GET_FRAME_OUT	: out	std_logic;
 	FR_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_IN	: in	std_logic_vector(15 downto 0);
+	
 	FR_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
+	FR_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
+	FR_SRC_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	FR_DEST_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	FR_SRC_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
+	FR_DEST_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
 
 -- signals to the rest of the logic
 	RC_RD_EN_IN		: in	std_logic;
@@ -253,7 +278,13 @@ port (
 	RC_LOADING_DONE_IN	: in	std_logic;
 	RC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	RC_FRAME_PROTO_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+	
 	RC_SRC_MAC_ADDRESS_OUT	: out	std_logic_vector(47 downto 0);
+	RC_DEST_MAC_ADDRESS_OUT : out	std_logic_vector(47 downto 0);
+	RC_SRC_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	RC_DEST_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	RC_SRC_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
+	RC_DEST_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 
 -- statistics
 	FRAMES_RECEIVED_OUT	: out	std_logic_vector(31 downto 0);
@@ -289,8 +320,16 @@ port (
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
+	FR_ALLOWED_IP_IN	: in	std_logic_vector(31 downto 0);
+	FR_ALLOWED_UDP_IN	: in	std_logic_vector(31 downto 0);
 	FR_VLAN_ID_IN		: in	std_logic_vector(31 downto 0);
+	
 	FR_SRC_MAC_ADDRESS_OUT	: out	std_logic_vector(47 downto 0);
+	FR_DEST_MAC_ADDRESS_OUT : out	std_logic_vector(47 downto 0);
+	FR_SRC_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	FR_DEST_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	FR_SRC_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
+	FR_DEST_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -540,6 +579,8 @@ port(
 	GBE_ALLOW_RX_OUT          : out std_logic;
 	GBE_FRAME_DELAY_OUT	  : out std_logic_vector(31 downto 0);
 	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
+	GBE_ALLOWED_IP_OUT	  : out	std_logic_vector(31 downto 0);
+	GBE_ALLOWED_UDP_OUT	  : out	std_logic_vector(31 downto 0);
 	GBE_VLAN_ID_OUT           : out std_logic_vector(31 downto 0);
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);

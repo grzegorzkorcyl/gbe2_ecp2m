@@ -245,7 +245,7 @@ begin
 			when SRC_MAC_ADDR =>
 				constructNextState <= FRAME_TYPE_S;
 			when FRAME_TYPE_S =>
-				if (FRAME_TYPE_IN = x"0008" ) then -- in case of udp frame continue with ip/udp headers 
+				if (FRAME_TYPE_IN = x"0008" ) then -- in case of ip frame continue with ip/udp headers 
 					constructNextState <= VERSION;
 				else  -- otherwise transmit data as pure ethernet frame
 					constructNextState <= SAVE_DATA;

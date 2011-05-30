@@ -29,8 +29,13 @@ port (
 	PS_BUSY_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 	PS_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	PS_RESPONSE_READY_OUT	: out	std_logic;
-	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 	
+	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
+	PS_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
+	PS_SRC_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	PS_DEST_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	PS_SRC_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
+	PS_DEST_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
 	
 -- singals to/from transmit controller with constructed response
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
@@ -88,7 +93,13 @@ port map (
 	PS_RESPONSE_READY_OUT	=> resp_ready(0),
 	PS_BUSY_OUT		=> busy(0),
 	PS_SELECTED_IN		=> selected(0),
+	
 	PS_SRC_MAC_ADDRESS_IN	=> PS_SRC_MAC_ADDRESS_IN,
+	PS_DEST_MAC_ADDRESS_IN  => PS_DEST_MAC_ADDRESS_IN,
+	PS_SRC_IP_ADDRESS_IN	=> PS_SRC_IP_ADDRESS_IN,
+	PS_DEST_IP_ADDRESS_IN	=> PS_DEST_IP_ADDRESS_IN,
+	PS_SRC_UDP_PORT_IN	=> PS_SRC_UDP_PORT_IN,
+	PS_DEST_UDP_PORT_IN	=> PS_DEST_UDP_PORT_IN,
 	
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(1 * 9 - 1 downto 0 * 9),
@@ -123,7 +134,13 @@ port map (
 	PS_RESPONSE_READY_OUT	=> resp_ready(1),
 	PS_BUSY_OUT		=> busy(1),
 	PS_SELECTED_IN		=> selected(1),
+
 	PS_SRC_MAC_ADDRESS_IN	=> PS_SRC_MAC_ADDRESS_IN,
+	PS_DEST_MAC_ADDRESS_IN  => PS_DEST_MAC_ADDRESS_IN,
+	PS_SRC_IP_ADDRESS_IN	=> PS_SRC_IP_ADDRESS_IN,
+	PS_DEST_IP_ADDRESS_IN	=> PS_DEST_IP_ADDRESS_IN,
+	PS_SRC_UDP_PORT_IN	=> PS_SRC_UDP_PORT_IN,
+	PS_DEST_UDP_PORT_IN	=> PS_DEST_UDP_PORT_IN,
 	
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(2 * 9 - 1 downto 1 * 9),
@@ -158,7 +175,13 @@ port map (
 	PS_RESPONSE_READY_OUT	=> resp_ready(2),
 	PS_BUSY_OUT		=> busy(2),
 	PS_SELECTED_IN		=> selected(2),
+	
 	PS_SRC_MAC_ADDRESS_IN	=> PS_SRC_MAC_ADDRESS_IN,
+	PS_DEST_MAC_ADDRESS_IN  => PS_DEST_MAC_ADDRESS_IN,
+	PS_SRC_IP_ADDRESS_IN	=> PS_SRC_IP_ADDRESS_IN,
+	PS_DEST_IP_ADDRESS_IN	=> PS_DEST_IP_ADDRESS_IN,
+	PS_SRC_UDP_PORT_IN	=> PS_SRC_UDP_PORT_IN,
+	PS_DEST_UDP_PORT_IN	=> PS_DEST_UDP_PORT_IN,
 	
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(3 * 9 - 1 downto 2 * 9),
@@ -193,7 +216,13 @@ port map (
 	PS_RESPONSE_READY_OUT	=> resp_ready(3),
 	PS_BUSY_OUT		=> busy(3),
 	PS_SELECTED_IN		=> selected(3),
+	
 	PS_SRC_MAC_ADDRESS_IN	=> PS_SRC_MAC_ADDRESS_IN,
+	PS_DEST_MAC_ADDRESS_IN  => PS_DEST_MAC_ADDRESS_IN,
+	PS_SRC_IP_ADDRESS_IN	=> PS_SRC_IP_ADDRESS_IN,
+	PS_DEST_IP_ADDRESS_IN	=> PS_DEST_IP_ADDRESS_IN,
+	PS_SRC_UDP_PORT_IN	=> PS_SRC_UDP_PORT_IN,
+	PS_DEST_UDP_PORT_IN	=> PS_DEST_UDP_PORT_IN,
 	
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_DATA_OUT		=> tc_data(4 * 9 - 1 downto 3 * 9),

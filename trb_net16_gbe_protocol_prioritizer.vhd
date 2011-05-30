@@ -21,7 +21,6 @@ port (
 	
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
 	PROTOCOL_CODE_IN	: in	std_logic_vector(15 downto 0);  -- higher level protocols
-	HAS_HIGHER_LEVEL_IN	: in	std_logic;
 	
 	CODE_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0)
 );
@@ -32,7 +31,7 @@ architecture trb_net16_gbe_protocol_prioritizer of trb_net16_gbe_protocol_priori
 
 begin
 
-PRIORITIZE : process(CLK, FRAME_TYPE_IN, PROTOCOL_CODE_IN, HAS_HIGHER_LEVEL_IN)
+PRIORITIZE : process(CLK, FRAME_TYPE_IN, PROTOCOL_CODE_IN)
 begin
 	
 	if rising_edge(CLK) then
@@ -48,9 +47,8 @@ begin
 			
 				-- No. 1 = IPv4 
 				when x"0800" =>
-					if (HAS_HIGHER_LEVEL_IN = '1') then
-						-- in case there is another protocol inside IPv4 frame
-						CODE_OUT(0) <= '1';
+					if (PROTOCOL_CODE_IN = x"0044") then  -- DHCP Client
+						CODE_OUT(3) <= '1';
 					else
 						-- branch for pure IPv4
 						CODE_OUT(0) <= '1';

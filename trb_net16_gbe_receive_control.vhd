@@ -29,7 +29,14 @@ port (
 	FR_GET_FRAME_OUT	: out	std_logic;
 	FR_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_IN	: in	std_logic_vector(15 downto 0);
+	
 	FR_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
+	FR_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
+	FR_SRC_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	FR_DEST_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	FR_SRC_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
+	FR_DEST_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
+
 
 -- signals to/from main controller
 	RC_RD_EN_IN		: in	std_logic;
@@ -38,7 +45,13 @@ port (
 	RC_LOADING_DONE_IN	: in	std_logic;
 	RC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	RC_FRAME_PROTO_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
+
 	RC_SRC_MAC_ADDRESS_OUT	: out	std_logic_vector(47 downto 0);
+	RC_DEST_MAC_ADDRESS_OUT : out	std_logic_vector(47 downto 0);
+	RC_SRC_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	RC_DEST_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	RC_SRC_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
+	RC_DEST_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 
 -- statistics
 	FRAMES_RECEIVED_OUT	: out	std_logic_vector(31 downto 0);
@@ -70,19 +83,23 @@ signal saved_proto               : std_logic_vector(3 downto 0);
 
 begin
 
-FR_RD_EN_OUT <= RC_RD_EN_IN;
-RC_Q_OUT <= RC_DATA_IN;
-RC_FRAME_SIZE_OUT <= FR_FRAME_SIZE_IN;
-RC_SRC_MAC_ADDRESS_OUT <= FR_SRC_MAC_ADDRESS_IN;
+FR_RD_EN_OUT            <= RC_RD_EN_IN;
+RC_Q_OUT                <= RC_DATA_IN;
+RC_FRAME_SIZE_OUT       <= FR_FRAME_SIZE_IN;
+RC_SRC_MAC_ADDRESS_OUT  <= FR_SRC_MAC_ADDRESS_IN;
+RC_DEST_MAC_ADDRESS_OUT <= FR_DEST_MAC_ADDRESS_IN;
+RC_SRC_IP_ADDRESS_OUT   <= FR_SRC_IP_ADDRESS_IN;
+RC_DEST_IP_ADDRESS_OUT  <= FR_DEST_IP_ADDRESS_IN;
+RC_SRC_UDP_PORT_OUT     <= FR_SRC_UDP_PORT_IN;
+RC_DEST_UDP_PORT_OUT    <= FR_DEST_UDP_PORT_IN;
 
 protocol_prioritizer : trb_net16_gbe_protocol_prioritizer
 port map(
 	CLK			=> CLK,
 	RESET			=> reset_prioritizer,
 	
-	FRAME_TYPE_IN		=> FR_FRAME_PROTO_IN,	
-	PROTOCOL_CODE_IN	=> x"0000", -- TODO: recover the higer level protocol
-	HAS_HIGHER_LEVEL_IN	=> '0',  -- dummy
+	FRAME_TYPE_IN		=> FR_FRAME_PROTO_IN,
+	PROTOCOL_CODE_IN	=> FR_DEST_UDP_PORT_IN,
 	
 	CODE_OUT		=> proto_code
 );

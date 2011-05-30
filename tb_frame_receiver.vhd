@@ -72,8 +72,18 @@ signal fc_ident                  : std_logic_vector(15 downto 0);
 signal fc_flags                  : std_logic_vector(15 downto 0);
 signal fc_ttl                    : std_logic_vector(7 downto 0);
 signal fc_proto                  : std_logic_vector(7 downto 0);
-signal fr_mac                    : std_logic_vector(47 downto 0);
-signal rc_mac                    : std_logic_vector(47 downto 0);
+signal fr_src_mac                : std_logic_vector(47 downto 0);
+signal fr_dest_mac               : std_logic_vector(47 downto 0);
+signal fr_src_ip                 : std_logic_vector(31 downto 0);
+signal fr_dest_ip                : std_logic_vector(31 downto 0);
+signal fr_src_udp                : std_logic_vector(15 downto 0);
+signal fr_dest_udp               : std_logic_vector(15 downto 0);
+signal rc_src_mac                : std_logic_vector(47 downto 0);
+signal rc_dest_mac               : std_logic_vector(47 downto 0);
+signal rc_src_ip                 : std_logic_vector(31 downto 0);
+signal rc_dest_ip                : std_logic_vector(31 downto 0);
+signal rc_src_udp                : std_logic_vector(15 downto 0);
+signal rc_dest_udp               : std_logic_vector(15 downto 0);
 
 signal mc_dest_mac               : std_logic_vector(47 downto 0);
 signal mc_dest_ip                : std_logic_vector(31 downto 0);
@@ -81,6 +91,9 @@ signal mc_dest_udp               : std_logic_vector(15 downto 0);
 signal mc_src_mac                : std_logic_vector(47 downto 0);
 signal mc_src_ip                 : std_logic_vector(31 downto 0);
 signal mc_src_udp                : std_logic_vector(15 downto 0);
+
+signal fr_allowed_ip             : std_logic_vector(31 downto 0);
+signal fr_allowed_udp            : std_logic_vector(31 downto 0);
 
 begin
 
@@ -108,8 +121,16 @@ port map (
 	FR_FRAME_SIZE_OUT	=> FR_FRAME_SIZE_OUT,
 	FR_FRAME_PROTO_OUT	=> FR_FRAME_PROTO_OUT,
 	FR_ALLOWED_TYPES_IN     => FR_ALLOWED_TYPES_IN,
+	FR_ALLOWED_IP_IN        => fr_allowed_ip,
+	FR_ALLOWED_UDP_IN       => fr_allowed_udp,
 	FR_VLAN_ID_IN		=> x"aabb_0000",
-	FR_SRC_MAC_ADDRESS_OUT  => fr_mac,
+	
+	FR_SRC_MAC_ADDRESS_OUT	=> fr_src_mac,
+	FR_DEST_MAC_ADDRESS_OUT => fr_dest_mac,
+	FR_SRC_IP_ADDRESS_OUT	=> fr_src_ip,
+	FR_DEST_IP_ADDRESS_OUT	=> fr_dest_ip,
+	FR_SRC_UDP_PORT_OUT	=> fr_src_udp,
+	FR_DEST_UDP_PORT_OUT	=> fr_dest_udp,
 
 	DEBUG_OUT		=> DEBUG_OUT
 );
@@ -126,7 +147,13 @@ port map(
 	FR_GET_FRAME_OUT	=> FR_GET_FRAME_IN,
 	FR_FRAME_SIZE_IN	=> FR_FRAME_SIZE_OUT,
 	FR_FRAME_PROTO_IN	=> FR_FRAME_PROTO_OUT,
-	FR_SRC_MAC_ADDRESS_IN   => fr_mac,
+	
+	FR_SRC_MAC_ADDRESS_IN	=> fr_src_mac,
+	FR_DEST_MAC_ADDRESS_IN  => fr_dest_mac,
+	FR_SRC_IP_ADDRESS_IN	=> fr_src_ip,
+	FR_DEST_IP_ADDRESS_IN	=> fr_dest_ip,
+	FR_SRC_UDP_PORT_IN	=> fr_src_udp,
+	FR_DEST_UDP_PORT_IN	=> fr_dest_udp,
 
 -- signals to/from main controller
 	RC_RD_EN_IN		=> RC_RD_EN_IN,
@@ -135,7 +162,13 @@ port map(
 	RC_LOADING_DONE_IN	=> RC_LOADING_DONE_IN,
 	RC_FRAME_SIZE_OUT	=> RC_FRAME_SIZE_OUT,
 	RC_FRAME_PROTO_OUT	=> RC_FRAME_PROTO_OUT,
-	RC_SRC_MAC_ADDRESS_OUT	=> rc_mac,
+
+	RC_SRC_MAC_ADDRESS_OUT	=> rc_src_mac,
+	RC_DEST_MAC_ADDRESS_OUT => rc_dest_mac,
+	RC_SRC_IP_ADDRESS_OUT	=> rc_src_ip,
+	RC_DEST_IP_ADDRESS_OUT	=> rc_dest_ip,
+	RC_SRC_UDP_PORT_OUT	=> rc_src_udp,
+	RC_DEST_UDP_PORT_OUT	=> rc_dest_udp,
 
 -- statistics
 	FRAMES_RECEIVED_OUT	=> open,
@@ -160,7 +193,13 @@ port map (
 	RC_RD_EN_OUT		=> RC_RD_EN_IN,
 	RC_FRAME_SIZE_IN	=> RC_FRAME_SIZE_OUT,
 	RC_FRAME_PROTO_IN	=> RC_FRAME_PROTO_OUT,
-	RC_SRC_MAC_ADDRESS_IN	=> rc_mac,
+
+	RC_SRC_MAC_ADDRESS_IN	=> rc_src_mac,
+	RC_DEST_MAC_ADDRESS_IN  => rc_dest_mac,
+	RC_SRC_IP_ADDRESS_IN	=> rc_src_ip,
+	RC_DEST_IP_ADDRESS_IN	=> rc_dest_ip,
+	RC_SRC_UDP_PORT_IN	=> rc_src_udp,
+	RC_DEST_UDP_PORT_IN	=> rc_dest_udp,
 
 -- signals to/from transmit controller
 	TC_TRANSMIT_CTRL_OUT	=> MC_TRANSMIT_CTRL_OUT,
@@ -341,6 +380,8 @@ begin
 	MAC_RX_EN_IN		<= '0';
 	MAC_RX_FIFO_ERR_IN	<= '0';
 	FR_ALLOWED_TYPES_IN     <= x"0000_000f";
+	fr_allowed_ip           <= x"0000_000f";
+	fr_allowed_udp          <= x"0000_000f";
 	
 	wait for 10 ns;
 	RESET <= '0';
@@ -348,7 +389,7 @@ begin
 	
 	wait for 100 ns;
 
--- FIRST FRAME (ARP Request)	
+-- FIRST FRAME UDP
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <= '1';
 -- dest mac
@@ -377,77 +418,70 @@ begin
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"ee";
 	wait until rising_edge(RX_MAC_CLK);
--- arp frame type
-	MAC_RXD_IN		<= x"08";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"06";
-	wait until rising_edge(RX_MAC_CLK);
--- hardware type
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"01";
-	wait until rising_edge(RX_MAC_CLK);
--- protocol type
+-- frame type
 	MAC_RXD_IN		<= x"08";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
--- hardware size
-	MAC_RXD_IN		<= x"06";
-	wait until rising_edge(RX_MAC_CLK);
--- protocol size
-	MAC_RXD_IN		<= x"04";
-	wait until rising_edge(RX_MAC_CLK);
--- opcode (request)
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"01";
-	wait until rising_edge(RX_MAC_CLK);
--- sender mac
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"aa";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"bb";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"cc";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"dd";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"ee";
-	wait until rising_edge(RX_MAC_CLK);
--- sender ip
-	MAC_RXD_IN		<= x"c0";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"a9";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"01";
-	wait until rising_edge(RX_MAC_CLK);
--- target mac
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
-	wait until rising_edge(RX_MAC_CLK);
--- target ip
-	MAC_RXD_IN		<= x"c0";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"a9";
+-- ip headers
+	MAC_RXD_IN		<= x"45";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"02";
 	wait until rising_edge(RX_MAC_CLK);
--- cs
+	MAC_RXD_IN		<= x"45";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"ab";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"cd";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"40";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"11";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"aa";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"bb";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"c0";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"a8";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"01";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"c0";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"a8";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"02";
+-- udp headers
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"11";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"11";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"44";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"02";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"2c";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"aa";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"bb";
+	wait until rising_edge(RX_MAC_CLK);
+-- few data words
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"01";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"02";
@@ -496,7 +530,7 @@ begin
 -- arp frame type
 	MAC_RXD_IN		<= x"08";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"06";
+	MAC_RXD_IN		<= x"07";
 	wait until rising_edge(RX_MAC_CLK);
 -- hardware type
 	MAC_RXD_IN		<= x"00";

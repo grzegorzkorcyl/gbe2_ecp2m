@@ -41,8 +41,16 @@ port (
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);  -- high level protocol name, see description for full list
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
+	FR_ALLOWED_IP_IN	: in	std_logic_vector(31 downto 0);
+	FR_ALLOWED_UDP_IN	: in	std_logic_vector(31 downto 0);
 	FR_VLAN_ID_IN		: in	std_logic_vector(31 downto 0);
+	
 	FR_SRC_MAC_ADDRESS_OUT	: out	std_logic_vector(47 downto 0);
+	FR_DEST_MAC_ADDRESS_OUT : out	std_logic_vector(47 downto 0);
+	FR_SRC_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	FR_DEST_IP_ADDRESS_OUT	: out	std_logic_vector(31 downto 0);
+	FR_SRC_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
+	FR_DEST_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -54,7 +62,7 @@ architecture trb_net16_gbe_frame_receiver of trb_net16_gbe_frame_receiver is
 -- attribute HGROUP : string;
 -- attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_frame_rec";
 attribute syn_encoding	: string;
-type filter_states is (IDLE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, REMOVE_VID, REMOVE_VTYPE, DECIDE, CLEANUP);
+type filter_states is (IDLE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, REMOVE_VID, REMOVE_VTYPE, REMOVE_IP, REMOVE_UDP, DECIDE, CLEANUP);
 signal filter_current_state, filter_next_state : filter_states;
 attribute syn_encoding of filter_current_state : signal is "safe,gray";
 
@@ -75,14 +83,20 @@ signal new_frame_lock                       : std_logic;
 signal saved_frame_type                     : std_logic_vector(15 downto 0);
 signal saved_vid                            : std_logic_vector(15 downto 0);
 signal saved_src_mac                        : std_logic_vector(47 downto 0);
+signal saved_dest_mac                       : std_logic_vector(47 downto 0);
 signal frame_type_valid                     : std_logic;
+signal saved_proto                          : std_logic_vector(7 downto 0);
+signal saved_src_ip                         : std_logic_vector(31 downto 0);
+signal saved_dest_ip                        : std_logic_vector(31 downto 0);
+signal saved_src_udp                        : std_logic_vector(15 downto 0);
+signal saved_dest_udp                       : std_logic_vector(15 downto 0);
+
 
 -- debug signals
 signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
 signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
 signal dbg_drp_frames                       : std_logic_vector(15 downto 0);
 signal state                                : std_logic_vector(3 downto 0);
-signal dump                                 : std_logic_vector(15 downto 0);
 
 begin
 
@@ -160,8 +174,12 @@ begin
 			if (remove_ctr = x"0b") then
 				if (saved_frame_type = x"8100") then  -- VLAN tagged frame
 					filter_next_state <= REMOVE_VID;
-				else
-					filter_next_state <= DECIDE;  -- no VLAN tag
+				else  -- no VLAN tag
+					if (saved_frame_type = x"0800") then  -- in case of IP continue removing headers
+						filter_next_state <= REMOVE_IP;
+					else
+						filter_next_state <= DECIDE;
+					end if;
 				end if;
 			else
 				filter_next_state <= REMOVE_TYPE;
@@ -178,9 +196,33 @@ begin
 		when REMOVE_VTYPE =>
 			state <= x"b";
 			if (remove_ctr = x"0f") then
-				filter_next_state <= DECIDE;
+				if (saved_frame_type = x"0800") then  -- in case of IP continue removing headers
+					filter_next_state <= REMOVE_IP;
+				else
+					filter_next_state <= DECIDE;
+				end if;
 			else
 				filter_next_state <= REMOVE_VTYPE;
+			end if;
+			
+		when REMOVE_IP =>
+			state <= x"c";
+			if (remove_ctr = x"10") then
+				if (saved_proto = x"11") then
+					filter_next_state <= REMOVE_UDP;
+				else
+					filter_next_state <= DROP_FRAME;
+				end if;
+			else
+				filter_next_state <= REMOVE_IP;
+			end if;
+			
+		when REMOVE_UDP =>
+			state <= x"d";
+			if (remove_ctr = x"18") then
+				filter_next_state <= DECIDE;
+			else
+				filter_next_state <= REMOVE_UDP;
 			end if;
 			
 		when DECIDE =>
@@ -193,7 +235,6 @@ begin
 			
 		when SAVE_FRAME =>
 			state <= x"7";
-			-- TODO: high level protocol recognition should be done here
 			if (MAC_RX_EOF_IN = '1') then
 				filter_next_state <= CLEANUP;
 			else
@@ -221,13 +262,109 @@ end process;
 REMOVE_CTR_PROC : process(RX_MAC_CLK)
 begin
 	if rising_edge(RX_MAC_CLK) then
-		if (RESET = '1') or (filter_current_state = IDLE) then
+		if (RESET = '1') or (filter_current_state = IDLE) or
+			(filter_current_state = REMOVE_VTYPE and remove_ctr = x"0f") or
+			(filter_current_state = REMOVE_TYPE and remove_ctr = x"0b") then
+			
 			remove_ctr <= (others => '1');
 		elsif (MAC_RX_EN_IN = '1') and (filter_current_state /= IDLE) then --and (filter_current_state /= CLEANUP) then
 			remove_ctr <= remove_ctr + x"1";
 		end if;
 	end if;
 end process REMOVE_CTR_PROC;
+
+SAVED_PROTO_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_proto <= (others => '0');
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"06") then
+			saved_proto <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_PROTO_PROC;
+
+SAVED_SRC_IP_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_src_ip <= (others => '0');
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"09") then
+			saved_src_ip(7 downto 0) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0a") then
+			saved_src_ip(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0b") then
+			saved_src_ip(23 downto 16) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0c") then
+			saved_src_ip(31 downto 24) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_SRC_IP_PROC;
+
+SAVED_DEST_IP_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_dest_ip <= (others => '0');
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0d") then
+			saved_dest_ip(7 downto 0) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0e") then
+			saved_dest_ip(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0f") then
+			saved_dest_ip(23 downto 16) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"10") then
+			saved_dest_ip(31 downto 24) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_DEST_IP_PROC;
+
+SAVED_SRC_UDP_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_src_udp <= (others => '0');
+		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"11") then
+			saved_src_udp(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"12") then
+			saved_src_udp(7 downto 0) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_SRC_UDP_PROC;
+
+SAVED_DEST_UDP_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_dest_udp <= (others => '0');
+		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"13") then
+			saved_dest_udp(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"14") then
+			saved_dest_udp(7 downto 0) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_DEST_UDP_PROC;
+
+-- saves the destination mac address of the incoming frame
+SAVED_DEST_MAC_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') or (filter_current_state = CLEANUP) then
+			saved_dest_mac <= (others => '0');
+		elsif (filter_current_state = IDLE) and (MAC_RX_EN_IN = '1') and (new_frame = '0') then
+			saved_dest_mac(7 downto 0) <= MAC_RXD_IN;
+		elsif (filter_current_state = IDLE) and (new_frame = '1') and (ALLOW_RX_IN = '1') then
+			saved_dest_mac(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_DEST) and (remove_ctr = x"FF") then
+			saved_dest_mac(23 downto 16) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_DEST) and (remove_ctr = x"00") then
+			saved_dest_mac(31 downto 24) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_DEST) and (remove_ctr = x"01") then
+			saved_dest_mac(39 downto 32) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_DEST) and (remove_ctr = x"02") then
+			saved_dest_mac(47 downto 40) <= MAC_RXD_IN;
+		end if;
+	end if;
+end process SAVED_DEST_MAC_PROC;
 
 -- saves the source mac address of the incoming frame
 SAVED_SRC_MAC_PROC : process(RX_MAC_CLK)
@@ -291,6 +428,14 @@ port map(
 	ALLOWED_TYPES_IN	=> FR_ALLOWED_TYPES_IN,
 	VLAN_ID_IN		=> FR_VLAN_ID_IN,
 	
+	-- IP level
+	IP_PROTOCOLS_IN		=> saved_proto,
+	ALLOWED_IP_PROTOCOLS_IN	=> FR_ALLOWED_IP_IN,
+	
+	-- UDP level
+	UDP_PROTOCOL_IN		=> saved_dest_udp,
+	ALLOWED_UDP_PROTOCOLS_IN => FR_ALLOWED_UDP_IN,
+	
 	VALID_OUT		=> frame_type_valid
 );
 
@@ -311,7 +456,7 @@ port map(
 );
 
 fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or 
-			( ((filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100") or
+			( ((filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100" and saved_frame_type /= x"0800") or
 				(filter_current_state = REMOVE_VTYPE and remove_ctr = x"f") or
 				(filter_current_state = DECIDE)) and frame_type_valid = '1'))
 	      else '0';
@@ -337,7 +482,7 @@ port map(
 macs_fifo : fifo_512x64
 port map( 
 	Data(47 downto 0)   => saved_src_mac,
-	Data(63 downto 48)  => (others => '0'),
+	Data(63 downto 48)  => saved_src_udp,
 	WrClock             => RX_MAC_CLK,
 	RdClock             => CLK,
 	WrEn                => frame_valid_q,
@@ -345,11 +490,42 @@ port map(
 	Reset               => RESET,
 	RPReset             => RESET,
 	Q(47 downto 0)      => FR_SRC_MAC_ADDRESS_OUT,
-	Q(63 downto 48)     => dump,
+	Q(63 downto 48)     => FR_SRC_UDP_PORT_OUT,
 	Empty               => open,
 	Full                => open
 );
 
+macd_fifo : fifo_512x64
+port map( 
+	Data(47 downto 0)   => saved_dest_mac,
+	Data(63 downto 48)  => saved_dest_udp,
+	WrClock             => RX_MAC_CLK,
+	RdClock             => CLK,
+	WrEn                => frame_valid_q,
+	RdEn                => FR_GET_FRAME_IN,
+	Reset               => RESET,
+	RPReset             => RESET,
+	Q(47 downto 0)      => FR_DEST_MAC_ADDRESS_OUT,
+	Q(63 downto 48)     => FR_DEST_UDP_PORT_OUT,
+	Empty               => open,
+	Full                => open
+);
+
+ip_fifo : fifo_512x64
+port map( 
+	Data(31 downto 0)   => saved_src_ip,
+	Data(63 downto 32)  => saved_dest_ip,
+	WrClock             => RX_MAC_CLK,
+	RdClock             => CLK,
+	WrEn                => frame_valid_q,
+	RdEn                => FR_GET_FRAME_IN,
+	Reset               => RESET,
+	RPReset             => RESET,
+	Q(31 downto 0)      => FR_SRC_IP_ADDRESS_OUT,
+	Q(63 downto 32)     => FR_DEST_IP_ADDRESS_OUT,
+	Empty               => open,
+	Full                => open
+);
 
 FRAME_VALID_PROC : process(RX_MAC_CLK)
 begin

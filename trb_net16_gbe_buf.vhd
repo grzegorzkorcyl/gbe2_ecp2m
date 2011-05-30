@@ -531,6 +531,8 @@ signal dbg_mc                        : std_logic_vector(63 downto 0);
 signal dbg_tc                        : std_logic_vector(63 downto 0);
 
 signal fr_allowed_types              : std_logic_vector(31 downto 0);
+signal fr_allowed_ip                 : std_logic_vector(31 downto 0);
+signal fr_allowed_udp                : std_logic_vector(31 downto 0);
 
 signal fr_frame_proto                : std_logic_vector(15 downto 0);
 signal rc_frame_proto                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
@@ -543,8 +545,18 @@ signal serdes_rx_clk                 : std_logic;
 
 signal vlan_id                       : std_logic_vector(31 downto 0);
 signal mc_type                       : std_logic_vector(15 downto 0);
-signal fr_mac                        : std_logic_vector(47 downto 0);
-signal rc_mac                        : std_logic_vector(47 downto 0);
+signal fr_src_mac                : std_logic_vector(47 downto 0);
+signal fr_dest_mac               : std_logic_vector(47 downto 0);
+signal fr_src_ip                 : std_logic_vector(31 downto 0);
+signal fr_dest_ip                : std_logic_vector(31 downto 0);
+signal fr_src_udp                : std_logic_vector(15 downto 0);
+signal fr_dest_udp               : std_logic_vector(15 downto 0);
+signal rc_src_mac                : std_logic_vector(47 downto 0);
+signal rc_dest_mac               : std_logic_vector(47 downto 0);
+signal rc_src_ip                 : std_logic_vector(31 downto 0);
+signal rc_dest_ip                : std_logic_vector(31 downto 0);
+signal rc_src_udp                : std_logic_vector(15 downto 0);
+signal rc_dest_udp               : std_logic_vector(15 downto 0);
 
 signal mc_dest_mac			: std_logic_vector(47 downto 0);
 signal mc_dest_ip			: std_logic_vector(31 downto 0);
@@ -588,7 +600,13 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 	  RC_RD_EN_OUT		=> rc_rd_en,
 	  RC_FRAME_SIZE_IN	=> rc_frame_size,
 	  RC_FRAME_PROTO_IN	=> rc_frame_proto,
-	  RC_SRC_MAC_ADDRESS_IN	=> rc_mac,
+
+	  RC_SRC_MAC_ADDRESS_IN	=> rc_src_mac,
+	  RC_DEST_MAC_ADDRESS_IN  => rc_dest_mac,
+	  RC_SRC_IP_ADDRESS_IN	=> rc_src_ip,
+	  RC_DEST_IP_ADDRESS_IN	=> rc_dest_ip,
+	  RC_SRC_UDP_PORT_IN	=> rc_src_udp,
+	  RC_DEST_UDP_PORT_IN	=> rc_dest_udp,
 
   -- signals to/from transmit controller
 	  TC_TRANSMIT_CTRL_OUT	=> mc_transmit_ctrl,
@@ -655,7 +673,13 @@ MC_SIM_GEN : if (DO_SIMULATION = 1) generate
 	  RC_RD_EN_OUT		=> rc_rd_en,
 	  RC_FRAME_SIZE_IN	=> rc_frame_size,
 	  RC_FRAME_PROTO_IN	=> rc_frame_proto,
-	  RC_SRC_MAC_ADDRESS_IN	=> rc_mac,
+
+	  RC_SRC_MAC_ADDRESS_IN	=> rc_src_mac,
+	  RC_DEST_MAC_ADDRESS_IN  => rc_dest_mac,
+	  RC_SRC_IP_ADDRESS_IN	=> rc_src_ip,
+	  RC_DEST_IP_ADDRESS_IN	=> rc_dest_ip,
+	  RC_SRC_UDP_PORT_IN	=> rc_src_udp,
+	  RC_DEST_UDP_PORT_IN	=> rc_dest_udp,
 
   -- signals to/from transmit controller
 	  TC_TRANSMIT_CTRL_OUT	=> mc_transmit_ctrl,
@@ -812,6 +836,8 @@ port map(
 	GBE_ALLOW_RX_OUT          => allow_rx,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
+	GBE_ALLOWED_IP_OUT	  => fr_allowed_ip,
+	GBE_ALLOWED_UDP_OUT	  => fr_allowed_udp,
 	GBE_VLAN_ID_OUT	          => vlan_id,
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
@@ -901,6 +927,8 @@ port map(
 	GBE_ALLOW_RX_OUT          => open,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
+	GBE_ALLOWED_IP_OUT	  => fr_allowed_ip,
+	GBE_ALLOWED_UDP_OUT	  => fr_allowed_udp,
 	GBE_VLAN_ID_OUT	          => vlan_id,
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          => bytes_sent_ctr,
@@ -1171,7 +1199,13 @@ port map(
 	FR_GET_FRAME_OUT	=> fr_get_frame,
 	FR_FRAME_SIZE_IN	=> fr_frame_size,
 	FR_FRAME_PROTO_IN	=> fr_frame_proto,
-	FR_SRC_MAC_ADDRESS_IN   => fr_mac,
+	
+	FR_SRC_MAC_ADDRESS_IN	=> fr_src_mac,
+	FR_DEST_MAC_ADDRESS_IN  => fr_dest_mac,
+	FR_SRC_IP_ADDRESS_IN	=> fr_src_ip,
+	FR_DEST_IP_ADDRESS_IN	=> fr_dest_ip,
+	FR_SRC_UDP_PORT_IN	=> fr_src_udp,
+	FR_DEST_UDP_PORT_IN	=> fr_dest_udp,
 
 -- signals to/from main controller
 	RC_RD_EN_IN		=> rc_rd_en,
@@ -1180,7 +1214,13 @@ port map(
 	RC_LOADING_DONE_IN	=> rc_loading_done,
 	RC_FRAME_SIZE_OUT	=> rc_frame_size,
 	RC_FRAME_PROTO_OUT	=> rc_frame_proto,
-	RC_SRC_MAC_ADDRESS_OUT	=> rc_mac,
+	
+	RC_SRC_MAC_ADDRESS_OUT	=> rc_src_mac,
+	RC_DEST_MAC_ADDRESS_OUT => rc_dest_mac,
+	RC_SRC_IP_ADDRESS_OUT	=> rc_src_ip,
+	RC_DEST_IP_ADDRESS_OUT	=> rc_dest_ip,
+	RC_SRC_UDP_PORT_OUT	=> rc_src_udp,
+	RC_DEST_UDP_PORT_OUT	=> rc_dest_udp,
 
 -- statistics
 	FRAMES_RECEIVED_OUT	=> rc_frames_rec_ctr,
@@ -1246,8 +1286,16 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
+	  FR_ALLOWED_IP_IN      => fr_allowed_ip,
+	  FR_ALLOWED_UDP_IN     => fr_allowed_udp,
 	  FR_VLAN_ID_IN		=> vlan_id,
-	  FR_SRC_MAC_ADDRESS_OUT => fr_mac,
+	
+	FR_SRC_MAC_ADDRESS_OUT	=> fr_src_mac,
+	FR_DEST_MAC_ADDRESS_OUT => fr_dest_mac,
+	FR_SRC_IP_ADDRESS_OUT	=> fr_src_ip,
+	FR_DEST_IP_ADDRESS_OUT	=> fr_dest_ip,
+	FR_SRC_UDP_PORT_OUT	=> fr_src_udp,
+	FR_DEST_UDP_PORT_OUT	=> fr_dest_udp,
 
 	  DEBUG_OUT		=> dbg_fr
   );
@@ -1280,8 +1328,15 @@ frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
 	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
 	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
 	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
+	  FR_ALLOWED_IP_IN      => fr_allowed_ip,
+	  FR_ALLOWED_UDP_IN     => fr_allowed_udp,
 	  FR_VLAN_ID_IN		=> vlan_id,
-	  FR_SRC_MAC_ADDRESS_OUT => fr_mac,
+	FR_SRC_MAC_ADDRESS_OUT	=> fr_src_mac,
+	FR_DEST_MAC_ADDRESS_OUT => fr_dest_mac,
+	FR_SRC_IP_ADDRESS_OUT	=> fr_src_ip,
+	FR_DEST_IP_ADDRESS_OUT	=> fr_dest_ip,
+	FR_SRC_UDP_PORT_OUT	=> fr_src_udp,
+	FR_DEST_UDP_PORT_OUT	=> fr_dest_udp,
 
 	  DEBUG_OUT		=> open
   );

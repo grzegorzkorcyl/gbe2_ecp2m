@@ -46,6 +46,8 @@ port(
 	GBE_ALLOW_RX_OUT          : out std_logic;
 	GBE_FRAME_DELAY_OUT       : out std_logic_vector(31 downto 0); -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
+	GBE_ALLOWED_IP_OUT	  : out	std_logic_vector(31 downto 0);
+	GBE_ALLOWED_UDP_OUT	  : out	std_logic_vector(31 downto 0);
 	GBE_VLAN_ID_OUT           : out std_logic_vector(31 downto 0);
 	-- gk 28.07.10
 	MONITOR_BYTES_IN          : in std_logic_vector(31 downto 0);
@@ -122,6 +124,8 @@ signal reset_fifo        : std_logic;  -- gk 28.09.10
 signal allow_rx          : std_logic;
 signal frame_delay       : std_logic_vector(31 downto 0); -- gk 09.12.10
 signal allowed_types     : std_logic_vector(31 downto 0);
+signal allowed_ip        : std_logic_vector(31 downto 0);
+signal allowed_udp       : std_logic_vector(31 downto 0);
 signal vlan_id           : std_logic_vector(31 downto 0);
 
 begin
@@ -149,6 +153,8 @@ begin
 		--DBG_RESET_FIFO_OUT        <= reset_fifo;  -- gk 28.09.10
 		GBE_FRAME_DELAY_OUT       <= frame_delay; -- gk 09.12.10
 		GBE_ALLOWED_TYPES_OUT     <= allowed_types;
+		GBE_ALLOWED_IP_OUT        <= allowed_ip;
+		GBE_ALLOWED_UDP_OUT       <= allowed_udp;
 		GBE_VLAN_ID_OUT           <= vlan_id;
 	end if;
 end process OUT_PROC;
@@ -192,6 +198,8 @@ begin
 			allow_rx          <= '0';
 			frame_delay       <= x"0000_0000"; -- gk 09.12.10
 			allowed_types     <= x"0000_0004";  -- only test protocol allowed
+			allowed_ip        <= x"0000_000f";
+			allowed_udp       <= x"0000_000f";
 			vlan_id           <= x"0000_0000";  -- no vlan id by default
 
 		elsif (BUS_WRITE_EN_IN = '1') then
@@ -273,6 +281,12 @@ begin
 					
 				when x"10" =>
 					vlan_id <= BUS_DATA_IN;
+					
+				when x"11" =>
+					allowed_ip <= BUS_DATA_IN;
+					
+				when x"12" =>
+					allowed_udp <= BUS_DATA_IN;
 
 				-- gk 28.09.10
 				when x"fe" =>
@@ -310,6 +324,8 @@ begin
 					frame_delay        <= frame_delay;
 					allowed_types      <= allowed_types;
 					vlan_id            <= vlan_id;
+					allowed_ip         <= allowed_ip;
+					allowed_udp        <= allowed_udp;
 
 			end case;
 		else
@@ -400,6 +416,12 @@ begin
 					
 				when x"10" =>
 					data_out  <= vlan_id;
+					
+				when x"11" =>
+					data_out  <= allowed_ip;
+					
+				when x"12" =>
+					data_out  <= allowed_udp;
 
 				-- gk 01.06.10
 				when x"e0" =>

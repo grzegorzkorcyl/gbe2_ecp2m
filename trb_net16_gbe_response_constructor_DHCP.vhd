@@ -26,6 +26,11 @@ port (
 	PS_BUSY_OUT		: out	std_logic;
 	PS_SELECTED_IN		: in	std_logic;
 	PS_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
+	PS_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
+	PS_SRC_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	PS_DEST_IP_ADDRESS_IN	: in	std_logic_vector(31 downto 0);
+	PS_SRC_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
+	PS_DEST_UDP_PORT_IN	: in	std_logic_vector(15 downto 0);
 		
 	TC_RD_EN_IN		: in	std_logic;
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
@@ -55,9 +60,13 @@ architecture trb_net16_gbe_response_constructor_DHCP of trb_net16_gbe_response_c
 
 attribute syn_encoding	: string;
 
-type dissect_states is (IDLE, WAIT_FOR_BOOT, BOOTP_HEADERS, ZEROS1, MY_MAC, ZEROS2, VENDOR_VALS, CLEANUP, FREEZE);
-signal dissect_current_state, dissect_next_state : dissect_states;
-attribute syn_encoding of dissect_current_state: signal is "safe,gray";
+type main_states is (BOOTING, SENDING_DISCOVER, WAITING_FOR_OFFER, SENDING_REQUEST, WAITING_FOR_ACK, ESTABLISHED);
+signal main_current_state, main_next_state : main_states;
+attribute syn_encoding of main_current_state: signal is "safe,gray";
+
+type discover_states is (IDLE, BOOTP_HEADERS, ZEROS1, MY_MAC, ZEROS2, VENDOR_VALS, CLEANUP, FREEZE);
+signal discover_current_state, discover_next_state : discover_states;
+attribute syn_encoding of discover_current_state: signal is "safe,gray";
 
 signal state                    : std_logic_vector(3 downto 0);
 signal rec_frames               : std_logic_vector(15 downto 0);
@@ -97,100 +106,141 @@ vendor_values(143 downto 128) <= x"040c";  -- client name
 vendor_values(175 downto 144) <= x"33435254";  -- client name (TRB3)
 vendor_values(183 downto 176) <= x"ff"; -- vendor values termination
 
-DISSECT_MACHINE_PROC : process(CLK)
+
+MAIN_MACHINE_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
-			dissect_current_state <= IDLE;
+			main_current_state <= BOOTING;
 		else
-			dissect_current_state <= dissect_next_state;
+			main_current_state <= main_next_state;
 		end if;
 	end if;
-end process DISSECT_MACHINE_PROC;
+end process MAIN_MACHINE_PROC;
 
-DISSECT_MACHINE : process(dissect_current_state, wait_ctr, load_ctr)
+MAIN_MACHINE : process(main_current_state, discover_current_state, wait_ctr)
 begin
-	case dissect_current_state is
+
+	case (main_current_state) is
 	
-		when IDLE =>
-			state <= x"1";
-			dissect_next_state <= WAIT_FOR_BOOT;
-			
-		when WAIT_FOR_BOOT =>
-			state <= x"2";
-			--if (wait_ctr = x"0000_000a") then  -- for simulation
+		when BOOTING =>
 			if (wait_ctr = x"3b9a_ca00") then  -- wait for 10 sec
-				dissect_next_state <= BOOTP_HEADERS;
+			--if (wait_ctr = x"0000_0010") then
+				main_next_state <= SENDING_DISCOVER;
 			else
-				dissect_next_state <= WAIT_FOR_BOOT;
-			end if;
-			
-		when BOOTP_HEADERS =>
-			state <= x"3";
-			if (load_ctr = 7) then
-				dissect_next_state <= ZEROS1;
-			else
-				dissect_next_state <= BOOTP_HEADERS;
-			end if;
-			
-		when ZEROS1 =>
-			state <= x"5";
-			if (load_ctr = 27) then
-				dissect_next_state <= MY_MAC;
-			else
-				dissect_next_state <= ZEROS1;
+				main_next_state <= BOOTING;
 			end if;
 		
-		when MY_MAC =>
-			state <= x"6";
-			if (load_ctr = 33) then
-				dissect_next_state <= ZEROS2;
+		when SENDING_DISCOVER =>
+			if (discover_current_state = CLEANUP) then
+				main_next_state <= ESTABLISHED; --WAITING_FOR_OFFER;
 			else
-				dissect_next_state <= MY_MAC;
+				main_next_state <= SENDING_DISCOVER;
 			end if;
 		
-		when ZEROS2 =>
-			state <= x"7";
-			if (load_ctr = 235) then
-				dissect_next_state <= VENDOR_VALS;
-			else
-				dissect_next_state <= ZEROS2;
-			end if;
-			
-		when VENDOR_VALS =>
-			state <= x"8";
-			if (load_ctr = 258) then
-				dissect_next_state <= CLEANUP;
-			else
-				dissect_next_state <= VENDOR_VALS;
-			end if;
+		when WAITING_FOR_OFFER => null;
 		
-		when CLEANUP =>
-			state <= x"9";
-			dissect_next_state <= FREEZE;
-			
-		when FREEZE =>
-			state <= x"a";
-			dissect_next_state <= FREEZE;
+		when SENDING_REQUEST => null;
+		
+		when WAITING_FOR_ACK => null;
+		
+		when ESTABLISHED =>
+			main_next_state <= ESTABLISHED;
 	
 	end case;
-end process DISSECT_MACHINE;
+
+end process MAIN_MACHINE;
 
 WAIT_CTR_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			wait_ctr <= (others => '0');
-		elsif (dissect_current_state = WAIT_FOR_BOOT) then
+		elsif (main_current_state = BOOTING) then
 			wait_ctr <= wait_ctr + x"1";
 		end if;
 	end if;
 end process WAIT_CTR_PROC;
 
+
+DISCOVER_MACHINE_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			discover_current_state <= IDLE;
+		else
+			discover_current_state <= discover_next_state;
+		end if;
+	end if;
+end process DISCOVER_MACHINE_PROC;
+
+DISCOVER_MACHINE : process(discover_current_state, main_current_state, load_ctr)
+begin
+	case discover_current_state is
+	
+		when IDLE =>
+			state <= x"1";
+			if (main_current_state = SENDING_DISCOVER) then
+				discover_next_state <= BOOTP_HEADERS;
+			else
+				discover_next_state <= IDLE;
+			end if;
+			
+		when BOOTP_HEADERS =>
+			state <= x"3";
+			if (load_ctr = 7) then
+				discover_next_state <= ZEROS1;
+			else
+				discover_next_state <= BOOTP_HEADERS;
+			end if;
+			
+		when ZEROS1 =>
+			state <= x"5";
+			if (load_ctr = 27) then
+				discover_next_state <= MY_MAC;
+			else
+				discover_next_state <= ZEROS1;
+			end if;
+		
+		when MY_MAC =>
+			state <= x"6";
+			if (load_ctr = 33) then
+				discover_next_state <= ZEROS2;
+			else
+				discover_next_state <= MY_MAC;
+			end if;
+		
+		when ZEROS2 =>
+			state <= x"7";
+			if (load_ctr = 235) then
+				discover_next_state <= VENDOR_VALS;
+			else
+				discover_next_state <= ZEROS2;
+			end if;
+			
+		when VENDOR_VALS =>
+			state <= x"8";
+			if (load_ctr = 258) then
+				discover_next_state <= CLEANUP;
+			else
+				discover_next_state <= VENDOR_VALS;
+			end if;
+		
+		when CLEANUP =>
+			state <= x"9";
+			discover_next_state <= FREEZE;
+			
+		when FREEZE =>
+			state <= x"a";
+			discover_next_state <= FREEZE;
+	
+	end case;
+end process DISCOVER_MACHINE;
+
 LOAD_CTR_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
-		if (RESET = '1') or (dissect_current_state = IDLE) then
+		if (RESET = '1') or (discover_current_state = IDLE) then
 			load_ctr <= 0;
 		elsif (TC_RD_EN_IN = '1') and (PS_SELECTED_IN = '1') then
 			load_ctr <= load_ctr + 1;
@@ -198,12 +248,12 @@ begin
 	end if;
 end process LOAD_CTR_PROC;
 
-TC_DATA_PROC : process(dissect_current_state, load_ctr, bootp_hdr, my_mac_adr)
+TC_DATA_PROC : process(discover_current_state, load_ctr, bootp_hdr, my_mac_adr)
 begin
 
 	tc_data(8) <= '0';
 
-	case (dissect_current_state) is
+	case (discover_current_state) is
 
 		when BOOTP_HEADERS =>
 			for i in 0 to 7 loop
@@ -246,9 +296,9 @@ begin
 end process TC_DATA_SYNC;
 
 
-PS_BUSY_OUT <= '0' when (dissect_current_state = IDLE) else '1';
+PS_BUSY_OUT <= '0' when (discover_current_state = IDLE) else '1';
 
-PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = BOOTP_HEADERS or dissect_current_state = ZEROS1 or dissect_current_state = MY_MAC or dissect_current_state = ZEROS2 or dissect_current_state = VENDOR_VALS or dissect_current_state = CLEANUP) --(dissect_current_state /= IDLE and dissect_current_state /= WAIT_FOR_BOOT and dissect_current_state /= CLEANUP)
+PS_RESPONSE_READY_OUT <= '1' when (discover_current_state = BOOTP_HEADERS or discover_current_state = ZEROS1 or discover_current_state = MY_MAC or discover_current_state = ZEROS2 or discover_current_state = VENDOR_VALS or discover_current_state = CLEANUP)
 			else '0';
 
 TC_FRAME_SIZE_OUT <= x"0103";
@@ -261,8 +311,8 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			rec_frames <= (others => '0');
-		--elsif (dissect_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
-		elsif (dissect_current_state /= IDLE and dissect_current_state /= CLEANUP and PS_SELECTED_IN = '1' and TC_RD_EN_IN = '1') then
+		--elsif (discover_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
+		elsif (discover_current_state /= IDLE and discover_current_state /= CLEANUP and PS_SELECTED_IN = '1' and TC_RD_EN_IN = '1') then
 			rec_frames <= rec_frames + x"1";
 		end if;
 	end if;
@@ -273,7 +323,7 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			sent_frames <= (others => '0');
-		elsif (dissect_current_state = CLEANUP) then
+		elsif (discover_current_state = CLEANUP) then
 			sent_frames <= sent_frames + x"1";
 		end if;
 	end if;
