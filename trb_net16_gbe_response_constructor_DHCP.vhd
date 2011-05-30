@@ -116,7 +116,7 @@ bootp_hdr(95 downto 64) <= x"0000_0000";  -- seconds elapsed/flags
 transaction_id <= x"cefa_adde";
 my_mac_addr <= x"efbeefbe0000";  -- my mac address later
 vendor_values(31 downto 0)    <= x"63538263"; -- magic cookie (dhcp message)
-vendor_values(55 downto 32)   <= x"010135"; -- dhcp discover
+vendor_values(55 downto 32)   <= x"010135" when (main_current_state = BOOTING or main_current_state = SENDING_DISCOVER) else "030135"; -- dhcp discover, then dhcp request
 vendor_values(79 downto 56)   <= x"01073d"; -- client identifier
 vendor_values(127 downto 80)  <= my_mac_addr;  -- client identifier
 vendor_values(143 downto 128) <= x"040c";  -- client name
