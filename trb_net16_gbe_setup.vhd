@@ -197,7 +197,7 @@ begin
 			reset_fifo        <= '0';  -- gk 28.09.10
 			allow_rx          <= '0';
 			frame_delay       <= x"0000_0000"; -- gk 09.12.10
-			allowed_types     <= x"0000_0004";  -- only test protocol allowed
+			allowed_types     <= x"0000_000f";  -- only test protocol allowed
 			allowed_ip        <= x"0000_000f";
 			allowed_udp       <= x"0000_000f";
 			vlan_id           <= x"0000_0000";  -- no vlan id by default
