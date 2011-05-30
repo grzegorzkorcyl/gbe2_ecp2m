@@ -93,17 +93,19 @@ signal saved_true_ip            : std_logic_vector(31 downto 0);
 signal transaction_id           : std_logic_vector(31 downto 0);
 signal client_ip_reg            : std_logic_vector(31 downto 0);
 signal your_ip_reg              : std_logic_vector(31 downto 0);
+signal saved_server_mac         : std_logic_vector(47 downto 0);
+signal saved_server_ip          : std_logic_vector(31 downto 0);
 
 begin
 
 
 -- ****
 -- fixing the constant values for DHCP request headers
-TC_DEST_MAC_OUT <= x"ffffffffffff";
-TC_DEST_IP_OUT  <= x"ffffffff";
+TC_DEST_MAC_OUT <= x"ffffffffffff" when (main_current_state = BOOTING or main_current_state = SENDING_DISCOVER) else saved_server_mac;
+TC_DEST_IP_OUT  <= x"ffffffff" when (main_current_state = BOOTING or main_current_state = SENDING_DISCOVER) else saved_server_ip;
 TC_DEST_UDP_OUT <= x"4300";
 TC_SRC_MAC_OUT  <= my_mac_addr;
-TC_SRC_IP_OUT   <= x"00000000";
+TC_SRC_IP_OUT   <= x"00000000" when (main_current_state = BOOTING or main_current_state = SENDING_DISCOVER) else saved_proposed_ip;
 TC_SRC_UDP_OUT  <= x"4400";
 bootp_hdr(7 downto 0)   <= x"01";  -- message type(request)
 bootp_hdr(15 downto 8)  <= x"01";  -- hardware type (eth)
@@ -120,6 +122,20 @@ vendor_values(127 downto 80)  <= my_mac_addr;  -- client identifier
 vendor_values(143 downto 128) <= x"040c";  -- client name
 vendor_values(175 downto 144) <= x"33435254";  -- client name (TRB3)
 vendor_values(183 downto 176) <= x"ff"; -- vendor values termination
+
+
+SAVE_SERVER_ADDR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			saved_server_mac <= (others => '0');
+			saved_server_ip <= (others => '0');
+		elsif (main_current_state = WAITING_FOR_OFFER) and (receive_current_state = SAVE_VALUES and save_ctr = 1) then
+			saved_server_mac <= PS_SRC_MAC_ADDRESS_IN;
+			saved_server_ip  <= PS_SRC_IP_ADDRESS_IN;
+		end if;
+	end if;
+end process SAVE_SERVER_ADDR_PROC;
 
 
 MAIN_MACHINE_PROC : process(CLK)
