@@ -84,7 +84,6 @@ signal my_mac_addr              : std_logic_vector(47 downto 0);  -- only tempor
 
 signal tc_data                  : std_logic_vector(8 downto 0);
 signal vendor_values            : std_logic_vector(183 downto 0);
-signal discard_incoming         : std_logic;
 signal save_ctr                 : integer range 0 to 600 := 0;
 signal saved_transaction_id     : std_logic_vector(31 downto 0);
 signal saved_proposed_ip        : std_logic_vector(31 downto 0);
@@ -95,6 +94,8 @@ signal client_ip_reg            : std_logic_vector(31 downto 0);
 signal your_ip_reg              : std_logic_vector(31 downto 0);
 signal saved_server_mac         : std_logic_vector(47 downto 0);
 signal saved_server_ip          : std_logic_vector(31 downto 0);
+signal state2                   : std_logic_vector(3 downto 0);
+signal state3                   : std_logic_vector(3 downto 0);
 
 begin
 
@@ -155,6 +156,7 @@ begin
 	case (main_current_state) is
 	
 		when BOOTING =>
+			state2 <= x"1";
 			if (wait_ctr = x"3b9a_ca00") then  -- wait for 10 sec
 			--if (wait_ctr = x"0000_0010") then
 				main_next_state <= SENDING_DISCOVER;
@@ -163,6 +165,7 @@ begin
 			end if;
 		
 		when SENDING_DISCOVER =>
+			state2 <= x"2";
 			if (construct_current_state = CLEANUP) then
 				main_next_state <= WAITING_FOR_OFFER;
 			else
@@ -170,6 +173,7 @@ begin
 			end if;
 		
 		when WAITING_FOR_OFFER =>
+			state2 <= x"3"; 
 			if (receive_current_state = SAVE_VALUES) and (PS_DATA_IN(8) = '1') then
 				main_next_state <= SENDING_REQUEST;
 			else
@@ -177,6 +181,7 @@ begin
 			end if;
 		
 		when SENDING_REQUEST =>
+			state2 <= x"4";
 			if (construct_current_state = CLEANUP) then
 				main_next_state <= WAITING_FOR_ACK;
 			else
@@ -184,6 +189,7 @@ begin
 			end if;
 		
 		when WAITING_FOR_ACK =>
+			state2 <= x"5";
 			if (receive_current_state = SAVE_VALUES) and (PS_DATA_IN(8) = '1') then
 				main_next_state <= ESTABLISHED;
 			else
@@ -191,6 +197,7 @@ begin
 			end if;
 		
 		when ESTABLISHED =>
+			state2 <= x"6";
 			main_next_state <= ESTABLISHED;
 	
 	end case;
@@ -208,8 +215,6 @@ begin
 	end if;
 end process WAIT_CTR_PROC;
 
-discard_incoming <= '0' when (main_current_state = WAITING_FOR_OFFER or main_current_state = WAITING_FOR_ACK) else '0';
-
 RECEIVE_MACHINE_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
@@ -221,13 +226,14 @@ begin
 	end if;
 end process RECEIVE_MACHINE_PROC;
 
-RECEIVE_MACHINE : process(receive_current_state, main_current_state, PS_DATA_IN, PS_DEST_MAC_ADDRESS_IN, my_mac_addr, PS_ACTIVATE_IN, discard_incoming, save_ctr)
+RECEIVE_MACHINE : process(receive_current_state, main_current_state, PS_DATA_IN, PS_DEST_MAC_ADDRESS_IN, my_mac_addr, PS_ACTIVATE_IN, PS_WR_EN_IN, save_ctr)
 begin
 	case receive_current_state is
 	
 		when IDLE =>
-			if (PS_ACTIVATE_IN = '1') then
-				if (discard_incoming = '0') then  -- ready to receive dhcp frame
+			state3 <= x"1";
+			if (PS_ACTIVATE_IN = '1' and PS_WR_EN_IN = '1') then
+				if ((main_current_state = WAITING_FOR_OFFER or main_current_state = WAITING_FOR_ACK)) then  -- ready to receive dhcp frame
 					if (PS_DEST_MAC_ADDRESS_IN = my_mac_addr) then  -- check if i'm the addressee (discards broadcasts also)
 						receive_next_state <= SAVE_VALUES;
 					else
@@ -241,6 +247,7 @@ begin
 			end if;
 			
 		when SAVE_VALUES =>
+			state3 <= x"2";
 			if (PS_DATA_IN(8) = '1') then
 				receive_next_state <= CLEANUP;
 			elsif (save_ctr = 9) and (saved_transaction_id /= bootp_hdr(63 downto 32)) then  -- check if the same transaction
@@ -253,6 +260,7 @@ begin
 			end if;
 		
 		when DISCARD =>
+			state3 <= x"3";
 			if (PS_DATA_IN(8) = '1') then
 				receive_next_state <= CLEANUP;
 			else
@@ -260,6 +268,7 @@ begin
 			end if;
 			
 		when CLEANUP =>
+			state3 <= x"4";
 			receive_next_state <= IDLE;
 	
 	end case;
@@ -569,7 +578,8 @@ SENT_FRAMES_OUT     <= sent_frames;
 
 -- **** debug
 DEBUG_OUT(3 downto 0)   <= state;
-DEBUG_OUT(11 downto 4)  <= x"ff" when main_current_state = ESTABLISHED else x"55";
+DEBUG_OUT(7 downto 4)   <= state2;
+DEBUG_OUT(11 downto 8)  <= state3;
 DEBUG_OUT(31 downto 12) <= wait_ctr(31 downto 12);
 -- ****
 
