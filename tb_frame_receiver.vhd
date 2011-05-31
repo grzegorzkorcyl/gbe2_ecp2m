@@ -387,7 +387,7 @@ begin
 	RESET <= '0';
 	wait for 50 ns;
 	
-	wait for 3500 ns;
+	wait for 1000 ns;
 	
 -- FIRST FRAME UDP - DHCP Offer
 	wait until rising_edge(RX_MAC_CLK);
@@ -478,7 +478,6 @@ begin
 	MAC_RXD_IN		<= x"aa";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"bb";
-	wait until rising_edge(RX_MAC_CLK);
 -- dhcp data
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"02";

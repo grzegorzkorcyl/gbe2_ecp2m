@@ -233,7 +233,7 @@ begin
 		when IDLE =>
 			state3 <= x"1";
 			if (PS_ACTIVATE_IN = '1' and PS_WR_EN_IN = '1') then
-				if ((main_current_state = WAITING_FOR_OFFER or main_current_state = WAITING_FOR_ACK)) then  -- ready to receive dhcp frame
+				if (main_current_state = WAITING_FOR_OFFER or main_current_state = WAITING_FOR_ACK) then  -- ready to receive dhcp frame
 					if (PS_DEST_MAC_ADDRESS_IN = my_mac_addr) then  -- check if i'm the addressee (discards broadcasts also)
 						receive_next_state <= SAVE_VALUES;
 					else
@@ -253,7 +253,7 @@ begin
 			elsif (save_ctr = 9) and (saved_transaction_id /= bootp_hdr(63 downto 32)) then  -- check if the same transaction
 				receive_next_state <= DISCARD;
 			-- if wrong message at the wrong time
-			elsif (main_current_state = WAITING_FOR_OFFER) and (save_ctr = 244) and (saved_dhcp_type /= x"020135") then
+			elsif (main_current_state = WAITING_FOR_OFFER) and (save_ctr = 242) and (saved_dhcp_type /= x"020135") then
 				receive_next_state <= DISCARD;			
 			else
 				receive_next_state <= SAVE_VALUES;
@@ -298,38 +298,39 @@ begin
 		
 			case save_ctr is
 			
-				when 5 =>
+				when 3 =>
 					saved_transaction_id(7 downto 0) <= PS_DATA_IN(7 downto 0);
 				
-				when 6 =>
+				when 4 =>
 					saved_transaction_id(15 downto 8) <= PS_DATA_IN(7 downto 0);
 			
-				when 7 =>
+				when 5 =>
 					saved_transaction_id(23 downto 16) <= PS_DATA_IN(7 downto 0);
 					
-				when 8 =>
+				when 6 =>
 					saved_transaction_id(31 downto 24) <= PS_DATA_IN(7 downto 0);
 					
 					
-				when 17 =>
+				when 15 =>
 					saved_proposed_ip(7 downto 0) <= PS_DATA_IN(7 downto 0);
 				
-				when 18 =>
+				when 16 =>
 					saved_proposed_ip(15 downto 8) <= PS_DATA_IN(7 downto 0);
 					
-				when 19 =>
+				when 17 =>
 					saved_proposed_ip(23 downto 16) <= PS_DATA_IN(7 downto 0);
 					
-				when 20 =>
+				when 18 =>
 					saved_proposed_ip(31 downto 24) <= PS_DATA_IN(7 downto 0);
 					
-				when 241 =>
+					
+				when 239 =>
 					saved_dhcp_type(7 downto 0) <= PS_DATA_IN(7 downto 0);
 					
-				when 242 =>
+				when 240 =>
 					saved_dhcp_type(15 downto 8) <= PS_DATA_IN(7 downto 0);
 					
-				when 243 =>
+				when 241 =>
 					saved_dhcp_type(23 downto 16) <= PS_DATA_IN(7 downto 0);
 					
 				when others => null;

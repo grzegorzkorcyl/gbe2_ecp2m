@@ -137,7 +137,7 @@ signal frame_waiting_ctr            : std_logic_vector(15 downto 0);
 signal ps_busy_q                    : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal rc_frame_proto_q             : std_Logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 
-type redirect_states is (IDLE, LOAD, BUSY, FINISH, CLEANUP);
+type redirect_states is (IDLE, CHECK_BUSY, LOAD, BUSY, FINISH, CLEANUP);
 signal redirect_current_state, redirect_next_state : redirect_states;
 
 begin
@@ -182,8 +182,9 @@ port map(
 	DEBUG_OUT		=> open
 );
 
-proto_select <= (others => '0') when (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '0')
-		else RC_FRAME_PROTO_IN;
+proto_select <= RC_FRAME_PROTO_IN;
+--proto_select <= (others => '0') when (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '0')
+--		else RC_FRAME_PROTO_IN;
 
 
 REDIRECT_MACHINE_PROC : process(CLK)
@@ -204,13 +205,22 @@ begin
 		when IDLE =>
 			redirect_state <= x"1";
 			if (RC_FRAME_WAITING_IN = '1') then
-				if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
-					redirect_next_state <= LOAD;
-				else
-					redirect_next_state <= BUSY;
-				end if;
+			--	if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
+			--		redirect_next_state <= LOAD;
+			--	else
+			--		redirect_next_state <= BUSY;
+			--	end if;
+				redirect_next_state <= CHECK_BUSY;
 			else
 				redirect_next_state <= IDLE;
+			end if;
+			
+		when CHECK_BUSY =>
+			redirect_state <= x"6";
+			if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
+				redirect_next_state <= LOAD;
+			else
+				redirect_next_state <= BUSY;
 			end if;
 		
 		when LOAD =>

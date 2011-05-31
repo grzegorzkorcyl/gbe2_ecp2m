@@ -433,7 +433,7 @@ port map(
 	ALLOWED_IP_PROTOCOLS_IN	=> FR_ALLOWED_IP_IN,
 	
 	-- UDP level
-	UDP_PROTOCOL_IN		=> saved_dest_udp,
+	UDP_PROTOCOL_IN		 => saved_dest_udp,
 	ALLOWED_UDP_PROTOCOLS_IN => FR_ALLOWED_UDP_IN,
 	
 	VALID_OUT		=> frame_type_valid
