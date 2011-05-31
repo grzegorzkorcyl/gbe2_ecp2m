@@ -207,7 +207,7 @@ begin
 			
 		when REMOVE_IP =>
 			state <= x"c";
-			if (remove_ctr = x"10") then
+			if (remove_ctr = x"07") then
 				if (saved_proto = x"11") then  -- forced to recognize udp only, TODO check all protocols
 					filter_next_state <= REMOVE_UDP;
 				else
