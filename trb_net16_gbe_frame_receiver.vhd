@@ -207,7 +207,7 @@ begin
 			
 		when REMOVE_IP =>
 			state <= x"c";
-			if (remove_ctr = x"07") then
+			if (remove_ctr = x"11") then
 				if (saved_proto = x"11") then  -- forced to recognize udp only, TODO check all protocols
 					filter_next_state <= REMOVE_UDP;
 				else
@@ -219,7 +219,7 @@ begin
 			
 		when REMOVE_UDP =>
 			state <= x"d";
-			if (remove_ctr = x"18") then
+			if (remove_ctr = x"19") then
 				filter_next_state <= DECIDE;
 			else
 				filter_next_state <= REMOVE_UDP;
@@ -278,7 +278,7 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_proto <= (others => '0');
-		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"06") then
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"07") then
 			saved_proto <= MAC_RXD_IN;
 		end if;
 	end if;
@@ -289,13 +289,13 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_src_ip <= (others => '0');
-		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"09") then
-			saved_src_ip(7 downto 0) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0a") then
-			saved_src_ip(15 downto 8) <= MAC_RXD_IN;
+			saved_src_ip(7 downto 0) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0b") then
-			saved_src_ip(23 downto 16) <= MAC_RXD_IN;
+			saved_src_ip(15 downto 8) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0c") then
+			saved_src_ip(23 downto 16) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0d") then
 			saved_src_ip(31 downto 24) <= MAC_RXD_IN;
 		end if;
 	end if;
@@ -306,13 +306,13 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_dest_ip <= (others => '0');
-		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0d") then
-			saved_dest_ip(7 downto 0) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0e") then
-			saved_dest_ip(15 downto 8) <= MAC_RXD_IN;
+			saved_dest_ip(7 downto 0) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"0f") then
-			saved_dest_ip(23 downto 16) <= MAC_RXD_IN;
+			saved_dest_ip(15 downto 8) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"10") then
+			saved_dest_ip(23 downto 16) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_IP) and (remove_ctr = x"11") then
 			saved_dest_ip(31 downto 24) <= MAC_RXD_IN;
 		end if;
 	end if;
@@ -323,9 +323,9 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_src_udp <= (others => '0');
-		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"11") then
-			saved_src_udp(15 downto 8) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"12") then
+			saved_src_udp(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"13") then
 			saved_src_udp(7 downto 0) <= MAC_RXD_IN;
 		end if;
 	end if;
@@ -336,9 +336,9 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') or (filter_current_state = CLEANUP) then
 			saved_dest_udp <= (others => '0');
-		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"13") then
-			saved_dest_udp(15 downto 8) <= MAC_RXD_IN;
 		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"14") then
+			saved_dest_udp(15 downto 8) <= MAC_RXD_IN;
+		elsif (filter_current_state = REMOVE_UDP) and (remove_ctr = x"15") then
 			saved_dest_udp(7 downto 0) <= MAC_RXD_IN;
 		end if;
 	end if;

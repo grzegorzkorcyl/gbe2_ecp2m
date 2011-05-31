@@ -22,7 +22,7 @@ constant IP_PROTOCOLS : ip_protos_a := (x"11", x"22");
 
 -- this are the destination ports of the i ncoming packet
 type udp_protos_a is array(c_MAX_UDP_PROTOCOLS - 1 downto 0) of std_logic_vector(15 downto 0);
-constant UDP_PROTOCOLS : udp_protos_a := (x"0044", x"0000");
+constant UDP_PROTOCOLS : udp_protos_a := (x"0044", x"7120");
 -- DHCP client, dummy
 
 

@@ -40,7 +40,7 @@ end trb_net16_gbe_type_validator;
 
 architecture trb_net16_gbe_type_validator of trb_net16_gbe_type_validator is
 
-signal result                   : std_logic_vector(c_MAX_FRAME_TYPES - 1 downto 0);
+signal result                  : std_logic_vector(c_MAX_FRAME_TYPES - 1 downto 0);
 signal ip_result               : std_logic_vector(c_MAX_IP_PROTOCOLS - 1 downto 0);
 signal udp_result              : std_logic_vector(c_MAX_UDP_PROTOCOLS - 1 downto 0);
 
@@ -77,27 +77,40 @@ RESULT_GEN : for i in 0 to c_MAX_FRAME_TYPES - 1 generate
 
 end generate RESULT_GEN;
 
-VALID_OUT_PROC : process(result, SAVED_VLAN_ID_IN, VLAN_ID_IN, IP_PROTOCOLS_IN, UDP_PROTOCOL_IN, FRAME_TYPE_IN)
+VALID_OUT_PROC : process(result, SAVED_VLAN_ID_IN, VLAN_ID_IN, IP_PROTOCOLS_IN, FRAME_TYPE_IN, udp_result)
 begin
 	if (SAVED_VLAN_ID_IN = x"0000") then  -- frame without vlan tag
-		if (FRAME_TYPE_IN = x"0800") and (IP_PROTOCOLS_IN = x"11") then -- in case of udp packet
-			VALID_OUT <= or_all(result) and or_all(udp_result); 
-		else
+		if (FRAME_TYPE_IN = x"0800") then  -- in case of ip frame
+			if (IP_PROTOCOLS_IN = x"11") then -- in case of udp inside ip
+				VALID_OUT <= or_all(udp_result);
+			else  -- do not accept other protocols than udp inside ip
+				VALID_OUT <= '0';
+			end if;
+		else  -- in case of other frame_type
 			VALID_OUT <= or_all(result);
 		end if;
+		
 	-- cases for tagged frames
 	elsif (VLAN_ID_IN = x"0000_0000") then -- no vlan id configured
 		VALID_OUT <= '0';
 	elsif (SAVED_VLAN_ID_IN = VLAN_ID_IN(15 downto 0)) then  -- match to first vlan id
-		if (FRAME_TYPE_IN = x"0800") and (IP_PROTOCOLS_IN = x"11") then -- in case of udp packet
-			VALID_OUT <= or_all(result) and or_all(udp_result); 
-		else
+		if (FRAME_TYPE_IN = x"0800") then  -- in case of ip frame
+			if (IP_PROTOCOLS_IN = x"11") then -- in case of udp inside ip
+				VALID_OUT <= or_all(udp_result);
+			else  -- do not accept other protocols than udp inside ip
+				VALID_OUT <= '0';
+			end if;
+		else  -- in case of other frame_type
 			VALID_OUT <= or_all(result);
 		end if;
 	elsif (SAVED_VLAN_ID_IN = VLAN_ID_IN(31 downto 16)) then  -- match to second vlan id
-		if (FRAME_TYPE_IN = x"0800") and (IP_PROTOCOLS_IN = x"11") then -- in case of udp packet
-			VALID_OUT <= or_all(result) and or_all(udp_result); 
-		else
+		if (FRAME_TYPE_IN = x"0800") then  -- in case of ip frame
+			if (IP_PROTOCOLS_IN = x"11") then -- in case of udp inside ip
+				VALID_OUT <= or_all(udp_result);
+			else  -- do not accept other protocols than udp inside ip
+				VALID_OUT <= '0';
+			end if;
+		else  -- in case of other frame_type
 			VALID_OUT <= or_all(result);
 		end if;
 	else

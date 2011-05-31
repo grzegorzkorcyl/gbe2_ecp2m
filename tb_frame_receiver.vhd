@@ -426,25 +426,27 @@ begin
 -- ip headers
 	MAC_RXD_IN		<= x"45";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"00";
+	MAC_RXD_IN		<= x"10";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"02";
+	MAC_RXD_IN		<= x"01";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"45";
+	MAC_RXD_IN		<= x"5a";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"ab";
-	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"cd";
+	MAC_RXD_IN		<= x"49";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"40";
+	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"11";
+	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"aa";
+	MAC_RXD_IN		<= x"ff";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"bb";
+	MAC_RXD_IN		<= x"11";  -- udp
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"cc";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"cc";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"c0";
 	wait until rising_edge(RX_MAC_CLK);
