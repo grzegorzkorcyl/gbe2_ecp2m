@@ -42,7 +42,8 @@ port (
 	FR_FRAME_VALID_OUT	: out	std_logic;
 	FR_GET_FRAME_IN		: in	std_logic;
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
-	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);  -- high level protocol name, see description for full list
+	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);
+	FR_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
 	FR_ALLOWED_IP_IN	: in	std_logic_vector(31 downto 0);
 	FR_ALLOWED_UDP_IN	: in	std_logic_vector(31 downto 0);
@@ -94,6 +95,8 @@ signal saved_dest_ip                        : std_logic_vector(31 downto 0);
 signal saved_src_udp                        : std_logic_vector(15 downto 0);
 signal saved_dest_udp                       : std_logic_vector(15 downto 0);
 
+signal dump                                 : std_logic_vector(7 downto 0);
+signal dump2                                : std_logic_vector(7 downto 0);
 
 -- debug signals
 signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
@@ -489,10 +492,11 @@ port map(
 	Full                => sizes_fifo_full
 );
 
-macs_fifo : fifo_512x64
+macs_fifo : fifo_512x72
 port map( 
 	Data(47 downto 0)   => saved_src_mac,
 	Data(63 downto 48)  => saved_src_udp,
+	Data(71 downto 64)  => (others => '0'),
 	WrClock             => RX_MAC_CLK,
 	RdClock             => CLK,
 	WrEn                => frame_valid_q,
@@ -501,14 +505,16 @@ port map(
 	RPReset             => RESET,
 	Q(47 downto 0)      => FR_SRC_MAC_ADDRESS_OUT,
 	Q(63 downto 48)     => FR_SRC_UDP_PORT_OUT,
+	Q(71 downto 64)     => dump2,
 	Empty               => open,
 	Full                => open
 );
 
-macd_fifo : fifo_512x64
+macd_fifo : fifo_512x72
 port map( 
 	Data(47 downto 0)   => saved_dest_mac,
 	Data(63 downto 48)  => saved_dest_udp,
+	Data(71 downto 64)  => (others => '0'),
 	WrClock             => RX_MAC_CLK,
 	RdClock             => CLK,
 	WrEn                => frame_valid_q,
@@ -517,14 +523,16 @@ port map(
 	RPReset             => RESET,
 	Q(47 downto 0)      => FR_DEST_MAC_ADDRESS_OUT,
 	Q(63 downto 48)     => FR_DEST_UDP_PORT_OUT,
+	Q(71 downto 64)     => dump,
 	Empty               => open,
 	Full                => open
 );
 
-ip_fifo : fifo_512x64
+ip_fifo : fifo_512x72
 port map( 
 	Data(31 downto 0)   => saved_src_ip,
 	Data(63 downto 32)  => saved_dest_ip,
+	Data(71 downto 64)  => saved_proto,
 	WrClock             => RX_MAC_CLK,
 	RdClock             => CLK,
 	WrEn                => frame_valid_q,
@@ -533,6 +541,7 @@ port map(
 	RPReset             => RESET,
 	Q(31 downto 0)      => FR_SRC_IP_ADDRESS_OUT,
 	Q(63 downto 32)     => FR_DEST_IP_ADDRESS_OUT,
+	Q(71 downto 64)     => FR_IP_PROTOCOL_OUT,
 	Empty               => open,
 	Full                => open
 );
@@ -547,8 +556,6 @@ begin
 		end if;
 	end if;
 end process FRAME_VALID_PROC;
---frame_valid_q <= '1' when (MAC_RX_EOF_IN = '1' and ALLOW_RX_IN = '1') and (frame_type_valid = '1')
---		    else '0';
 
 -- received bytes counter is valid only after FR_FRAME_VALID_OUT is asserted for few clock cycles
 RX_BYTES_CTR_PROC : process(RX_MAC_CLK)

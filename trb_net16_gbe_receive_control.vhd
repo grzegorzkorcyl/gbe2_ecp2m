@@ -29,6 +29,7 @@ port (
 	FR_GET_FRAME_OUT	: out	std_logic;
 	FR_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_IN	: in	std_logic_vector(15 downto 0);
+	FR_IP_PROTOCOL_IN	: in	std_logic_vector(7 downto 0);
 	
 	FR_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 	FR_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
@@ -79,7 +80,7 @@ signal proto_code                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0
 signal reset_prioritizer         : std_logic;
 
 -- debug only
-signal saved_proto               : std_logic_vector(3 downto 0);
+signal saved_proto               : std_logic_vector(4 downto 0);
 
 begin
 
@@ -99,7 +100,8 @@ port map(
 	RESET			=> reset_prioritizer,
 	
 	FRAME_TYPE_IN		=> FR_FRAME_PROTO_IN,
-	PROTOCOL_CODE_IN	=> FR_DEST_UDP_PORT_IN,
+	PROTOCOL_CODE_IN	=> FR_IP_PROTOCOL_IN,
+	UDP_PROTOCOL_IN		=> FR_DEST_UDP_PORT_IN,
 	
 	CODE_OUT		=> proto_code
 );
@@ -164,8 +166,8 @@ begin
     FRAMES_RECEIVED_OUT              <= frames_received_ctr;
     --BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
     BYTES_RECEIVED_OUT(15 downto 0)  <= bytes_rec_ctr(15 downto 0);
-    BYTES_RECEIVED_OUT(19 downto 16) <= saved_proto;
-    BYTES_RECEIVED_OUT(31 downto 20) <= (others => '0');
+    BYTES_RECEIVED_OUT(20 downto 16) <= saved_proto;
+    BYTES_RECEIVED_OUT(31 downto 21) <= (others => '0');
   end if;
 end process SYNC_PROC;
 

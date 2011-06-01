@@ -98,6 +98,7 @@ signal fr_allowed_udp            : std_logic_vector(31 downto 0);
 signal my_mac                    : std_logic_vector(47 downto 0);
 signal allow_brdcst_eth          : std_logic;
 signal allow_brdcst_ip           : std_logic;
+signal fr_ip_proto                   : std_logic_vector(7 downto 0);
 
 begin
 
@@ -127,6 +128,7 @@ port map (
 	FR_GET_FRAME_IN		=> FR_GET_FRAME_IN,
 	FR_FRAME_SIZE_OUT	=> FR_FRAME_SIZE_OUT,
 	FR_FRAME_PROTO_OUT	=> FR_FRAME_PROTO_OUT,
+	FR_IP_PROTOCOL_OUT	=> fr_ip_proto,
 	FR_ALLOWED_TYPES_IN     => FR_ALLOWED_TYPES_IN,
 	FR_ALLOWED_IP_IN        => fr_allowed_ip,
 	FR_ALLOWED_UDP_IN       => fr_allowed_udp,
@@ -154,6 +156,7 @@ port map(
 	FR_GET_FRAME_OUT	=> FR_GET_FRAME_IN,
 	FR_FRAME_SIZE_IN	=> FR_FRAME_SIZE_OUT,
 	FR_FRAME_PROTO_IN	=> FR_FRAME_PROTO_OUT,
+	FR_IP_PROTOCOL_IN	=> fr_ip_proto,
 	
 	FR_SRC_MAC_ADDRESS_IN	=> fr_src_mac,
 	FR_DEST_MAC_ADDRESS_IN  => fr_dest_mac,

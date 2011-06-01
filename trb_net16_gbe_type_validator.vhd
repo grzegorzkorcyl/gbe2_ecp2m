@@ -83,6 +83,8 @@ begin
 		if (FRAME_TYPE_IN = x"0800") then  -- in case of ip frame
 			if (IP_PROTOCOLS_IN = x"11") then -- in case of udp inside ip
 				VALID_OUT <= or_all(udp_result);
+			elsif (IP_PROTOCOLS_IN = x"01") then  -- in case of ICMP
+				VALID_OUT <= '1';
 			else  -- do not accept other protocols than udp inside ip
 				VALID_OUT <= '0';
 			end if;
@@ -97,6 +99,8 @@ begin
 		if (FRAME_TYPE_IN = x"0800") then  -- in case of ip frame
 			if (IP_PROTOCOLS_IN = x"11") then -- in case of udp inside ip
 				VALID_OUT <= or_all(udp_result);
+			elsif (IP_PROTOCOLS_IN = x"01") then  -- in case of ICMP
+				VALID_OUT <= '1';
 			else  -- do not accept other protocols than udp inside ip
 				VALID_OUT <= '0';
 			end if;
@@ -107,6 +111,8 @@ begin
 		if (FRAME_TYPE_IN = x"0800") then  -- in case of ip frame
 			if (IP_PROTOCOLS_IN = x"11") then -- in case of udp inside ip
 				VALID_OUT <= or_all(udp_result);
+			elsif (IP_PROTOCOLS_IN = x"01") then  -- in case of ICMP
+				VALID_OUT <= '1';
 			else  -- do not accept other protocols than udp inside ip
 				VALID_OUT <= '0';
 			end if;

@@ -253,7 +253,7 @@ begin
 						receive_next_state <= DISCARD;  -- discard if the frame is not for me
 					end if;
 				else
-					receive_next_state <= DISCARD;
+					receive_next_state <= DISCARD;  -- discard if the frame arrived at wrong time
 				end if;
 			else
 				receive_next_state <= IDLE;
@@ -598,7 +598,8 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			rec_frames <= (others => '0');
-		elsif (receive_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
+		--elsif (receive_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
+		elsif (receive_current_state = SAVE_VALUES and PS_DATA_IN(8) = '1') then
 			rec_frames <= rec_frames + x"1";
 		end if;
 	end if;

@@ -16,7 +16,8 @@ port (
 	RESET			: in	std_logic;
 	
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
-	PROTOCOL_CODE_IN	: in	std_logic_vector(15 downto 0);  -- higher level protocols
+	PROTOCOL_CODE_IN	: in	std_logic_vector(7 downto 0);  -- ip protocol
+	UDP_PROTOCOL_IN		: in	std_logic_vector(15 downto 0);
 	
 	CODE_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0)
 );
@@ -263,6 +264,7 @@ port (
 	FR_GET_FRAME_OUT	: out	std_logic;
 	FR_FRAME_SIZE_IN	: in	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_IN	: in	std_logic_vector(15 downto 0);
+	FR_IP_PROTOCOL_IN	: in	std_logic_vector(7 downto 0);
 	
 	FR_SRC_MAC_ADDRESS_IN	: in	std_logic_vector(47 downto 0);
 	FR_DEST_MAC_ADDRESS_IN  : in	std_logic_vector(47 downto 0);
@@ -322,6 +324,7 @@ port (
 	FR_GET_FRAME_IN		: in	std_logic;
 	FR_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	FR_FRAME_PROTO_OUT	: out	std_logic_vector(15 downto 0);
+	FR_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	FR_ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);
 	FR_ALLOWED_IP_IN	: in	std_logic_vector(31 downto 0);
 	FR_ALLOWED_UDP_IN	: in	std_logic_vector(31 downto 0);
@@ -705,16 +708,16 @@ port(
 );
 end component;
 
-component fifo_512x64 is
+component fifo_512x72 is
 port( 
-	Data    : in    std_logic_vector(63 downto 0);
+	Data    : in    std_logic_vector(71 downto 0);
 	WrClock : in    std_logic;
 	RdClock : in    std_logic;
 	WrEn    : in    std_logic;
 	RdEn    : in    std_logic;
 	Reset   : in    std_logic;
 	RPReset : in    std_logic;
-	Q       : out   std_logic_vector(63 downto 0);
+	Q       : out   std_logic_vector(71 downto 0);
 	Empty   : out   std_logic;
 	Full    : out   std_logic
 );
