@@ -159,7 +159,7 @@ begin
 	
 		when BOOTING =>
 			state2 <= x"1";
-			if (wait_ctr = x"3b9a_ca00") then  -- wait for 10 sec
+			if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
 			--if (wait_ctr = x"0000_0010") then  -- for sim only
 				main_next_state <= SENDING_DISCOVER;
 			else
