@@ -481,7 +481,7 @@ begin
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"43";
+	MAC_RXD_IN		<= x"44";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"02";
 	wait until rising_edge(RX_MAC_CLK);

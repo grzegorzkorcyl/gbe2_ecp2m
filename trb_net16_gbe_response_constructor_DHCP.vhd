@@ -68,7 +68,7 @@ type receive_states is (IDLE, DISCARD, CLEANUP, SAVE_VALUES);
 signal receive_current_state, receive_next_state : receive_states;
 attribute syn_encoding of receive_current_state: signal is "safe,gray";
 
-type discover_states is (IDLE, BOOTP_HEADERS, CLIENT_IP, YOUR_IP, ZEROS1, MY_MAC, ZEROS2, VENDOR_VALS, CLEANUP);
+type discover_states is (IDLE, BOOTP_HEADERS, CLIENT_IP, YOUR_IP, ZEROS1, MY_MAC, ZEROS2, VENDOR_VALS, VENDOR_VALS2, TERMINATION, CLEANUP);
 signal construct_current_state, construct_next_state : discover_states;
 attribute syn_encoding of construct_current_state: signal is "safe,gray";
 
@@ -83,7 +83,7 @@ signal bootp_hdr                : std_logic_vector(95 downto 0);
 signal my_mac_addr              : std_logic_vector(47 downto 0);  -- only temporary
 
 signal tc_data                  : std_logic_vector(8 downto 0);
-signal vendor_values            : std_logic_vector(183 downto 0);
+signal vendor_values            : std_logic_vector(175 downto 0);
 signal save_ctr                 : integer range 0 to 600 := 0;
 signal saved_transaction_id     : std_logic_vector(31 downto 0);
 signal saved_proposed_ip        : std_logic_vector(31 downto 0);
@@ -96,6 +96,7 @@ signal saved_server_mac         : std_logic_vector(47 downto 0);
 signal saved_server_ip          : std_logic_vector(31 downto 0);
 signal state2                   : std_logic_vector(3 downto 0);
 signal state3                   : std_logic_vector(3 downto 0);
+signal vendor_values2           : std_logic_vector(47 downto 0);
 
 begin
 
@@ -122,7 +123,8 @@ vendor_values(79 downto 56)   <= x"01073d"; -- client identifier
 vendor_values(127 downto 80)  <= my_mac_addr;  -- client identifier
 vendor_values(143 downto 128) <= x"040c";  -- client name
 vendor_values(175 downto 144) <= x"33425254";  -- client name (TRB3)
-vendor_values(183 downto 176) <= x"ff"; -- vendor values termination
+vendor_values2(15 downto 0)   <= x"0436";  -- server identifier
+vendor_values2(47 downto 16)  <= saved_server_ip;
 
 
 SAVE_SERVER_ADDR_PROC : process(CLK)
@@ -458,11 +460,29 @@ begin
 			
 		when VENDOR_VALS =>
 			state <= x"8";
-			if (load_ctr = 258) then
-				construct_next_state <= CLEANUP;
+			if (load_ctr = 257) then
+				-- for discover it's enough of values
+				if (main_current_state = SENDING_DISCOVER) then
+					construct_next_state <= TERMINATION;
+				-- for request there is some more values needed
+				else
+					construct_next_state <= VENDOR_VALS2;
+				end if;
 			else
 				construct_next_state <= VENDOR_VALS;
 			end if;
+			
+		when VENDOR_VALS2 =>
+			state <= x"d";
+			if (load_ctr = 263) then
+				construct_next_state <= TERMINATION;
+			else
+				construct_next_state <= VENDOR_VALS2;
+			end if;
+			
+		when TERMINATION =>
+			state <= x"e";
+			construct_next_state <= CLEANUP;
 		
 		when CLEANUP =>
 			state <= x"9";
@@ -482,7 +502,7 @@ begin
 	end if;
 end process LOAD_CTR_PROC;
 
-TC_DATA_PROC : process(construct_current_state, load_ctr, bootp_hdr, my_mac_addr)
+TC_DATA_PROC : process(construct_current_state, load_ctr, bootp_hdr, my_mac_addr, main_current_state)
 begin
 
 	tc_data(8) <= '0';
@@ -521,10 +541,16 @@ begin
 			for i in 0 to 7 loop
 				tc_data(i) <= vendor_values((load_ctr - 236) * 8 + i);
 			end loop;
-			-- mark the last byte
-			if (load_ctr = 258) then
-				tc_data(8) <= '1';
-			end if;
+			
+		-- needed only for DHCP Request message
+		when VENDOR_VALS2 =>
+			for i in 0 to 7 loop
+				tc_data(i) <= vendor_values2((load_ctr - 258) * 8 + i);
+			end loop;
+			
+		when TERMINATION =>
+			tc_data(7 downto 0) <= x"ff";
+			tc_data(8)          <= '1';
 		
 		when others => tc_data(7 downto 0) <= x"00";
 	
@@ -543,10 +569,12 @@ end process TC_DATA_SYNC;
 PS_BUSY_OUT <= '0' when (construct_current_state = IDLE) else '1';
 
 -- change this damn line
-PS_RESPONSE_READY_OUT <= '1' when (construct_current_state = BOOTP_HEADERS or construct_current_state = CLIENT_IP or construct_current_state = YOUR_IP or construct_current_state = ZEROS1 or construct_current_state = MY_MAC or construct_current_state = ZEROS2 or construct_current_state = VENDOR_VALS or construct_current_state = CLEANUP)
-			else '0';
+--PS_RESPONSE_READY_OUT <= '1' when (construct_current_state = BOOTP_HEADERS or construct_current_state = CLIENT_IP or construct_current_state = YOUR_IP or construct_current_state = ZEROS1 or construct_current_state = MY_MAC or construct_current_state = ZEROS2 or construct_current_state = VENDOR_VALS or construct_current_state = CLEANUP)
+PS_RESPONSE_READY_OUT <= '0' when (construct_current_state = IDLE)
+			else '1';
 
-TC_FRAME_SIZE_OUT <= x"0103";  -- fixe frame size for discover and request
+-- fixed sizes for discover and request messages
+TC_FRAME_SIZE_OUT <= x"0103" when (main_current_state = SENDING_DISCOVER) else x"0109";
 
 TC_FRAME_TYPE_OUT <= x"0008";  -- frame type: ip 
 
