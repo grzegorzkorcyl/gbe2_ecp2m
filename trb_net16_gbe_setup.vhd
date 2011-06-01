@@ -578,6 +578,13 @@ begin
 					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(4 * 16 - 1 downto 3 * 16);
 				when x"b7" =>
 					data_out <= DBG_SELECT_PROTOS_IN(4 * 32 - 1 downto 3 * 32);	
+					
+				-- PING
+				when x"b8" =>
+					data_out(15 downto 0)  <= DBG_SELECT_REC_IN(5 * 16 - 1 downto 4 * 16);
+					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(5 * 16 - 1 downto 4 * 16);
+				when x"b9" =>
+					data_out <= DBG_SELECT_PROTOS_IN(5 * 32 - 1 downto 4 * 32);
 										
 				-- Trash
 				--when x"b8" =>
