@@ -98,6 +98,8 @@ signal state2                   : std_logic_vector(3 downto 0);
 signal state3                   : std_logic_vector(3 downto 0);
 signal vendor_values2           : std_logic_vector(47 downto 0);
 
+signal discarded_ctr            : std_logic_vector(15 downto 0);
+
 begin
 
 
@@ -140,6 +142,8 @@ begin
 	end if;
 end process SAVE_SERVER_ADDR_PROC;
 
+
+-- **** MAIN MACHINE PART
 
 MAIN_MACHINE_PROC : process(CLK)
 begin
@@ -200,7 +204,11 @@ begin
 		
 		when ESTABLISHED =>
 			state2 <= x"6";
-			main_next_state <= ESTABLISHED;
+			if (saved_proposed_ip = saved_true_ip) then
+				main_next_state <= ESTABLISHED;
+			else
+				main_next_state <= BOOTING;
+			end if;
 	
 	end case;
 
@@ -209,13 +217,16 @@ end process MAIN_MACHINE;
 WAIT_CTR_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
-		if (RESET = '1') then
+		if (RESET = '1') or (main_current_state = ESTABLISHED) then
 			wait_ctr <= (others => '0');
 		elsif (main_current_state = BOOTING) then
 			wait_ctr <= wait_ctr + x"1";
 		end if;
 	end if;
 end process WAIT_CTR_PROC;
+
+
+-- **** MESSAGES RECEIVEING PART
 
 RECEIVE_MACHINE_PROC : process(CLK)
 begin
@@ -252,11 +263,15 @@ begin
 			state3 <= x"2";
 			if (PS_DATA_IN(8) = '1') then
 				receive_next_state <= CLEANUP;
-			elsif (save_ctr = 9) and (saved_transaction_id /= bootp_hdr(63 downto 32)) then  -- check if the same transaction
+			-- check if the same transaction
+			elsif (save_ctr = 9) and (saved_transaction_id /= bootp_hdr(63 downto 32)) then
 				receive_next_state <= DISCARD;
-			-- if wrong message at the wrong time
+			-- if the wrong message at the wrong time
 			elsif (main_current_state = WAITING_FOR_OFFER) and (save_ctr = 242) and (saved_dhcp_type /= x"020135") then
-				receive_next_state <= DISCARD;			
+				receive_next_state <= DISCARD;
+			-- if the wrong message at the wrong time
+			elsif (main_current_state = WAITING_FOR_ACK) and (save_ctr = 242) and (saved_dhcp_type /= x"050135") then
+				receive_next_state <= DISCARD;
 			else
 				receive_next_state <= SAVE_VALUES;
 			end if;
@@ -386,6 +401,8 @@ begin
 	end if;
 end process SAVE_VALUES_PROC;
 
+
+-- **** MESSAGES CONSTRUCTING PART
 
 CONSTRUCT_MACHINE_PROC : process(CLK)
 begin
@@ -568,24 +585,20 @@ end process TC_DATA_SYNC;
 
 PS_BUSY_OUT <= '0' when (construct_current_state = IDLE) else '1';
 
--- change this damn line
---PS_RESPONSE_READY_OUT <= '1' when (construct_current_state = BOOTP_HEADERS or construct_current_state = CLIENT_IP or construct_current_state = YOUR_IP or construct_current_state = ZEROS1 or construct_current_state = MY_MAC or construct_current_state = ZEROS2 or construct_current_state = VENDOR_VALS or construct_current_state = CLEANUP)
-PS_RESPONSE_READY_OUT <= '0' when (construct_current_state = IDLE)
-			else '1';
+PS_RESPONSE_READY_OUT <= '0' when (construct_current_state = IDLE) else '1';
 
 -- fixed sizes for discover and request messages
 TC_FRAME_SIZE_OUT <= x"0103" when (main_current_state = SENDING_DISCOVER) else x"0109";
 
 TC_FRAME_TYPE_OUT <= x"0008";  -- frame type: ip 
 
--- for debug no receiveing frames but constructed bytes
+-- **** statistics
 REC_FRAMES_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			rec_frames <= (others => '0');
 		elsif (receive_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
-		--elsif (construct_current_state /= IDLE and construct_current_state /= CLEANUP and PS_SELECTED_IN = '1' and TC_RD_EN_IN = '1') then
 			rec_frames <= rec_frames + x"1";
 		end if;
 	end if;
@@ -604,12 +617,26 @@ end process SENT_FRAMES_PROC;
 
 RECEIVED_FRAMES_OUT <= rec_frames;
 SENT_FRAMES_OUT     <= sent_frames;
+-- ****
+
 
 -- **** debug
 DEBUG_OUT(3 downto 0)   <= state;
 DEBUG_OUT(7 downto 4)   <= state2;
 DEBUG_OUT(11 downto 8)  <= state3;
-DEBUG_OUT(31 downto 12) <= wait_ctr(31 downto 12);
+DEBUG_OUT(15 downto 12) <= (others => '0');
+DEBUG_OUT(31 downto 16) <= discarded_ctr;
+
+DISCARDED_CTR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			discarded_ctr <= (others => '0');
+		elsif (receive_current_state = DISCARD and PS_DATA_IN(8) = '1') then
+			discarded_ctr <= discarded_ctr + x"1";
+		end if;
+	end if;
+end process DISCARDED_CTR_PROC;
 -- ****
 
 end trb_net16_gbe_response_constructor_DHCP;
