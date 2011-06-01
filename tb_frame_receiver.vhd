@@ -95,6 +95,10 @@ signal mc_src_udp                : std_logic_vector(15 downto 0);
 signal fr_allowed_ip             : std_logic_vector(31 downto 0);
 signal fr_allowed_udp            : std_logic_vector(31 downto 0);
 
+signal my_mac                    : std_logic_vector(47 downto 0);
+signal allow_brdcst_eth          : std_logic;
+signal allow_brdcst_ip           : std_logic;
+
 begin
 
 receiver : trb_net16_gbe_frame_receiver
@@ -103,6 +107,9 @@ port map (
 	RESET			=> RESET,
 	LINK_OK_IN              => LINK_OK_IN,
 	ALLOW_RX_IN		=> ALLOW_RX_IN,
+	ALLOW_BRDCST_ETH_IN	=> allow_brdcst_eth,
+	ALLOW_BRDCST_IP_IN	=> allow_brdcst_ip,
+	MY_MAC_IN		=> my_mac,
 	RX_MAC_CLK		=> RX_MAC_CLK,
 
 	MAC_RX_EOF_IN		=> MAC_RX_EOF_IN,
@@ -382,6 +389,9 @@ begin
 	FR_ALLOWED_TYPES_IN     <= x"0000_000f";
 	fr_allowed_ip           <= x"0000_000f";
 	fr_allowed_udp          <= x"0000_000f";
+	allow_brdcst_eth        <= '1';
+	allow_brdcst_ip         <= '1';
+	my_mac                  <= x"efbeefbe0000";
 	
 	wait for 10 ns;
 	RESET <= '0';
@@ -471,7 +481,7 @@ begin
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"00";
 	wait until rising_edge(RX_MAC_CLK);
-	MAC_RXD_IN		<= x"44";
+	MAC_RXD_IN		<= x"43";
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RXD_IN		<= x"02";
 	wait until rising_edge(RX_MAC_CLK);

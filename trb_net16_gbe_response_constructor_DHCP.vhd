@@ -121,7 +121,7 @@ vendor_values(55 downto 32)   <= x"010135" when (main_current_state = BOOTING or
 vendor_values(79 downto 56)   <= x"01073d"; -- client identifier
 vendor_values(127 downto 80)  <= my_mac_addr;  -- client identifier
 vendor_values(143 downto 128) <= x"040c";  -- client name
-vendor_values(175 downto 144) <= x"33435254";  -- client name (TRB3)
+vendor_values(175 downto 144) <= x"33425254";  -- client name (TRB3)
 vendor_values(183 downto 176) <= x"ff"; -- vendor values termination
 
 

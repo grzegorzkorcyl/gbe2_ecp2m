@@ -44,6 +44,8 @@ port(
 	GBE_DELAY_OUT             : out std_logic_vector(31 downto 0);
 	GBE_ALLOW_LARGE_OUT       : out std_logic;
 	GBE_ALLOW_RX_OUT          : out std_logic;
+	GBE_ALLOW_BRDCST_ETH_OUT  : out std_logic;
+	GBE_ALLOW_BRDCST_IP_OUT   : out std_logic;
 	GBE_FRAME_DELAY_OUT       : out std_logic_vector(31 downto 0); -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
 	GBE_ALLOWED_IP_OUT	  : out	std_logic_vector(31 downto 0);
@@ -127,6 +129,8 @@ signal allowed_types     : std_logic_vector(31 downto 0);
 signal allowed_ip        : std_logic_vector(31 downto 0);
 signal allowed_udp       : std_logic_vector(31 downto 0);
 signal vlan_id           : std_logic_vector(31 downto 0);
+signal allow_brdcst_eth  : std_logic;
+signal allow_brdcst_ip   : std_logic;
 
 begin
 
@@ -150,6 +154,8 @@ begin
 		GBE_DELAY_OUT             <= delay; -- gk 28.04.10
 		GBE_ALLOW_LARGE_OUT       <= allow_large;  -- gk 21.07.10
 		GBE_ALLOW_RX_OUT          <= allow_rx;
+		GBE_ALLOW_BRDCST_ETH_OUT  <= allow_brdcst_eth;
+		GBE_ALLOW_BRDCST_IP_OUT   <= allow_brdcst_ip;
 		--DBG_RESET_FIFO_OUT        <= reset_fifo;  -- gk 28.09.10
 		GBE_FRAME_DELAY_OUT       <= frame_delay; -- gk 09.12.10
 		GBE_ALLOWED_TYPES_OUT     <= allowed_types;
@@ -201,6 +207,8 @@ begin
 			allowed_ip        <= x"0000_000f";
 			allowed_udp       <= x"0000_000f";
 			vlan_id           <= x"0000_0000";  -- no vlan id by default
+			allow_brdcst_eth  <= '1';
+			allow_brdcst_ip   <= '1';
 
 		elsif (BUS_WRITE_EN_IN = '1') then
 			case BUS_ADDR_IN is
@@ -270,11 +278,9 @@ begin
 					frame_delay <= BUS_DATA_IN;
 
 				when x"0e" =>
-					if (BUS_DATA_IN = x"0000_0000") then
-						allow_rx <= '0';
-					else
-						allow_rx <= '1';
-					end if;
+					allow_rx         <= BUS_DATA_IN(0);
+					allow_brdcst_eth <= BUS_DATA_IN(1);
+					allow_brdcst_ip  <= BUS_DATA_IN(2);
 					
 				when x"0f" =>
 					allowed_types <= BUS_DATA_IN;
@@ -326,6 +332,8 @@ begin
 					vlan_id            <= vlan_id;
 					allowed_ip         <= allowed_ip;
 					allowed_udp        <= allowed_udp;
+					allow_brdcst_eth   <= allow_brdcst_eth;
+					allow_brdcst_ip    <= allow_brdcst_ip;
 
 			end case;
 		else
@@ -405,11 +413,10 @@ begin
 
 
 				when x"0e" =>
-					if (allow_rx = '0') then
-						data_out <= x"0000_0000";
-					else
-						data_out <= x"0000_0001";
-					end if;
+					data_out(0) <= allow_rx;
+					data_out(1) <= allow_brdcst_eth;
+					data_out(2) <= allow_brdcst_ip;
+					data_out(31 downto 3) <= (others => '0');
 					
 				when x"0f" =>
 					data_out <= allowed_types;

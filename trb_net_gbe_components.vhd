@@ -301,6 +301,9 @@ port (
 	RESET			: in	std_logic;
 	LINK_OK_IN              : in    std_logic;
 	ALLOW_RX_IN		: in	std_logic;
+	ALLOW_BRDCST_ETH_IN	: in	std_logic;
+	ALLOW_BRDCST_IP_IN	: in	std_logic;
+	MY_MAC_IN		: in	std_logic_vector(47 downto 0);
 	RX_MAC_CLK		: in	std_logic;  -- receiver serdes clock
 
 -- input signals from TS_MAC
@@ -577,6 +580,8 @@ port(
 	GBE_DELAY_OUT             : out std_logic_vector(31 downto 0);
 	GBE_ALLOW_LARGE_OUT       : out std_logic;
 	GBE_ALLOW_RX_OUT          : out std_logic;
+	GBE_ALLOW_BRDCST_ETH_OUT  : out std_logic;
+	GBE_ALLOW_BRDCST_IP_OUT   : out std_logic;
 	GBE_FRAME_DELAY_OUT	  : out std_logic_vector(31 downto 0);
 	GBE_ALLOWED_TYPES_OUT	  : out	std_logic_vector(31 downto 0);
 	GBE_ALLOWED_IP_OUT	  : out	std_logic_vector(31 downto 0);
