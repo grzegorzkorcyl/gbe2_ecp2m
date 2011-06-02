@@ -210,7 +210,7 @@ end process TC_DATA_SYNC;
 
 PS_BUSY_OUT <= '0' when (dissect_current_state = IDLE) else '1';
 
-PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD or dissect_current_state = LOAD_FRAME) else '0';
+PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD or dissect_current_state = LOAD_FRAME or dissect_current_state = CLEANUP) else '0';
 
 TC_FRAME_SIZE_OUT <= x"001c";  -- fixed frame size
 
