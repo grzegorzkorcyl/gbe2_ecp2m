@@ -64,6 +64,9 @@ end trb_net16_gbe_protocol_selector;
 
 architecture trb_net16_gbe_protocol_selector of trb_net16_gbe_protocol_selector is
 
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_protocol_selector : architecture is "GBE_MAIN_group";
+
 signal rd_en                    : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal resp_ready               : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal tc_data                  : std_logic_vector(c_MAX_PROTOCOLS * 9 - 1 downto 0);

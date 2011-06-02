@@ -90,8 +90,8 @@ end trb_net16_gbe_main_control;
 
 architecture trb_net16_gbe_main_control of trb_net16_gbe_main_control is
 
--- attribute HGROUP : string;
--- attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_main_ctrl";
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_main_control : architecture is "GBE_MAIN_group";
 
 signal saved_frame_req                      : std_logic;
 signal saved_frame_req_q                    : std_logic;

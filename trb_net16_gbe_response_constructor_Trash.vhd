@@ -59,6 +59,9 @@ end trb_net16_gbe_response_constructor_Trash;
 
 architecture trb_net16_gbe_response_constructor_Trash of trb_net16_gbe_response_constructor_Trash is
 
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_response_constructor_Trash : architecture is "GBE_MAIN_group";
+
 attribute syn_encoding	: string;
 
 type dissect_states is (IDLE, SAVE, CLEANUP);

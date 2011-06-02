@@ -59,6 +59,9 @@ end trb_net16_gbe_response_constructor_Test;
 
 architecture trb_net16_gbe_response_constructor_Test of trb_net16_gbe_response_constructor_Test is
 
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_response_constructor_Test: architecture is "GBE_MAIN_group";
+
 attribute syn_encoding	: string;
 
 type dissect_states is (IDLE, SAVE, WAIT_FOR_LOAD, LOAD, CLEANUP);

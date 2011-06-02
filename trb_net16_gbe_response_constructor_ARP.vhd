@@ -58,6 +58,9 @@ end trb_net16_gbe_response_constructor_ARP;
 
 architecture trb_net16_gbe_response_constructor_ARP of trb_net16_gbe_response_constructor_ARP is
 
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_response_constructor_ARP : architecture is "GBE_MAIN_group";
+
 attribute syn_encoding	: string;
 
 type dissect_states is (IDLE, READ_FRAME, DECIDE, LOAD_FRAME, WAIT_FOR_LOAD, CLEANUP);
@@ -170,6 +173,7 @@ begin
 		if (RESET = '1') then
 			saved_opcode    <= (others => '0');
 			saved_sender_ip <= (others => '0');
+			saved_target_ip <= (others => '0');
 		elsif (dissect_current_state = READ_FRAME) then
 			case (data_ctr) is
 				
@@ -188,13 +192,13 @@ begin
 				when 17 =>
 					saved_sender_ip(31 downto 24) <= PS_DATA_IN(7 downto 0);
 					
-				when 20 =>
+				when 24 =>
 					saved_target_ip(7 downto 0) <= PS_DATA_IN(7 downto 0);
-				when 21 =>
+				when 25 =>
 					saved_target_ip(15 downto 8) <= PS_DATA_IN(7 downto 0);
-				when 22 =>
+				when 26 =>
 					saved_target_ip(23 downto 16) <= PS_DATA_IN(7 downto 0);
-				when 23 =>
+				when 27 =>
 					saved_target_ip(31 downto 24) <= PS_DATA_IN(7 downto 0);
 					
 				when others => null;
