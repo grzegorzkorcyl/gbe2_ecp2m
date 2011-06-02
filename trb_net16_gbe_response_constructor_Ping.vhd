@@ -187,8 +187,7 @@ CS_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
-			checksum(7 downto 0)  <= x"00";
-			checksum(15 downto 8) <= x"08";
+			checksum(15 downto 0)  <= (others => '0');
 		elsif (dissect_current_state = READ_FRAME and data_ctr > 4) then
 			if (std_logic_vector(to_unsigned(data_ctr, 1)) = "0") then
 				checksum(7 downto 0) <= checksum(7 downto 0) + PS_DATA_IN(7 downto 0);
