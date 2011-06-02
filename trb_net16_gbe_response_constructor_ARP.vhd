@@ -188,7 +188,9 @@ begin
 	tc_data(8) <= '0';
 	
 	if (dissect_current_state = LOAD_FRAME) then
-		tc_data(7 downto 0) <= values(data_ctr * 8 - 1 downto (data_ctr - 1) * 8);
+		for i in 0 to 7 loop
+			tc_data(i) <= values((data_ctr - 1) * 8 + i);
+		end loop;
 		-- mark the last byte
 		if (data_ctr = 28) then
 			tc_data(8) <= '1';
