@@ -60,12 +60,13 @@ architecture trb_net16_gbe_response_constructor_ARP of trb_net16_gbe_response_co
 
 attribute syn_encoding	: string;
 
-type dissect_states is (IDLE, READ_FRAME, LOAD_FRAME, WAIT_FOR_LOAD, CLEANUP);
+type dissect_states is (IDLE, READ_FRAME, DECIDE, LOAD_FRAME, WAIT_FOR_LOAD, CLEANUP);
 signal dissect_current_state, dissect_next_state : dissect_states;
 attribute syn_encoding of dissect_current_state: signal is "safe,gray";
 
 signal saved_opcode             : std_logic_vector(15 downto 0);
 signal saved_sender_ip          : std_logic_vector(31 downto 0);
+signal saved_target_ip          : std_logic_vector(31 downto 0);
 signal data_ctr                 : integer range 0 to 30;
 signal values                   : std_logic_vector(223 downto 0);
 signal tc_data                  : std_logic_vector(8 downto 0);
@@ -97,7 +98,7 @@ begin
 	end if;
 end process DISSECT_MACHINE_PROC;
 
-DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, TC_BUSY_IN, data_ctr, PS_SELECTED_IN)
+DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, TC_BUSY_IN, data_ctr, PS_SELECTED_IN, saved_target_ip)
 begin
 	case dissect_current_state is
 	
@@ -112,13 +113,23 @@ begin
 		when READ_FRAME =>
 			state <= x"2";
 			if (PS_DATA_IN(8) = '1') then
-				dissect_next_state <= WAIT_FOR_LOAD;
+				dissect_next_state <= DECIDE;
 			else
 				dissect_next_state <= READ_FRAME;
 			end if;
 			
+		when DECIDE =>
+			state <= x"3";
+			-- in case the request is not for me, drop it
+			if (saved_target_ip /= x"6500a8c0") then
+				dissect_next_state <= IDLE;
+			else
+				dissect_next_state <= WAIT_FOR_LOAD;
+			end if;
+			
 		when WAIT_FOR_LOAD =>
 			state <= x"3";
+			
 			if (TC_BUSY_IN = '0' and PS_SELECTED_IN = '1') then
 				dissect_next_state <= LOAD_FRAME;
 			else
@@ -176,6 +187,15 @@ begin
 					saved_sender_ip(23 downto 16) <= PS_DATA_IN(7 downto 0);
 				when 17 =>
 					saved_sender_ip(31 downto 24) <= PS_DATA_IN(7 downto 0);
+					
+				when 20 =>
+					saved_target_ip(7 downto 0) <= PS_DATA_IN(7 downto 0);
+				when 21 =>
+					saved_target_ip(15 downto 8) <= PS_DATA_IN(7 downto 0);
+				when 22 =>
+					saved_target_ip(23 downto 16) <= PS_DATA_IN(7 downto 0);
+				when 23 =>
+					saved_target_ip(31 downto 24) <= PS_DATA_IN(7 downto 0);
 					
 				when others => null;
 			end case;
