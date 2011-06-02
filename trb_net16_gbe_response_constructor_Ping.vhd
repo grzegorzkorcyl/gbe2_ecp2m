@@ -64,21 +64,23 @@ attribute HGROUP of trb_net16_gbe_response_constructor_Ping : architecture is "G
 
 attribute syn_encoding	: string;
 
-type dissect_states is (IDLE, SAVE, WAIT_FOR_LOAD, LOAD, CLEANUP);
+type dissect_states is (IDLE, READ_FRAME, WAIT_FOR_LOAD, LOAD_FRAME, CLEANUP);
 signal dissect_current_state, dissect_next_state : dissect_states;
 attribute syn_encoding of dissect_current_state: signal is "safe,gray";
 
-signal ff_wr_en                 : std_logic;
-signal ff_rd_en                 : std_logic;
-signal resp_bytes_ctr           : std_logic_vector(15 downto 0);
-signal ff_empty                 : std_logic;
-signal ff_full                  : std_logic;
-signal ff_q                     : std_logic_vector(8 downto 0);
-signal ff_rd_lock               : std_logic;
 
 signal state                    : std_logic_vector(3 downto 0);
 signal rec_frames               : std_logic_vector(15 downto 0);
 signal sent_frames              : std_logic_vector(15 downto 0);
+
+signal saved_data               : std_logic_vector(447 downto 0);
+signal saved_headers            : std_logic_vector(63 downto 0);
+
+signal data_ctr                 : integer range 1 to 66;
+signal data_length              : integer range 1 to 66;
+signal tc_data                  : std_logic_vector(8 downto 0);
+
+signal checksum                 : std_logic_vector(15 downto 0);
 
 begin
 
@@ -93,40 +95,40 @@ begin
 	end if;
 end process DISSECT_MACHINE_PROC;
 
-DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, ff_q, ff_rd_lock, TC_BUSY_IN)
+DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, TC_BUSY_IN, data_ctr, data_length)
 begin
 	case dissect_current_state is
 	
 		when IDLE =>
 			state <= x"1";
 			if (PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
-				dissect_next_state <= SAVE;
+				dissect_next_state <= READ_FRAME;
 			else
 				dissect_next_state <= IDLE;
 			end if;
 		
-		when SAVE =>
+		when READ_FRAME =>
 			state <= x"2";
 			if (PS_DATA_IN(8) = '1') then
 				dissect_next_state <= WAIT_FOR_LOAD;
 			else
-				dissect_next_state <= SAVE;
+				dissect_next_state <= READ_FRAME;
 			end if;
 			
 		when WAIT_FOR_LOAD =>
 			state <= x"3";
 			if (TC_BUSY_IN = '0') then
-				dissect_next_state <= LOAD;
+				dissect_next_state <= LOAD_FRAME;
 			else
 				dissect_next_state <= WAIT_FOR_LOAD;
 			end if;
 		
-		when LOAD =>
+		when LOAD_FRAME =>
 			state <= x"4";
-			if (ff_q(8) = '1') and (ff_rd_lock = '0') then
+			if (data_ctr = data_length - 1) then
 				dissect_next_state <= CLEANUP;
 			else
-				dissect_next_state <= LOAD;
+				dissect_next_state <= LOAD_FRAME;
 			end if;
 		
 		when CLEANUP =>
@@ -136,64 +138,127 @@ begin
 	end case;
 end process DISSECT_MACHINE;
 
-PS_BUSY_OUT <= '0' when dissect_current_state = IDLE else '1';
+DATA_CTR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') or (dissect_current_state = IDLE) or (dissect_current_state = WAIT_FOR_LOAD) then
+			data_ctr <= 2;
+		elsif (dissect_current_state = READ_FRAME and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then  -- in case of saving data from incoming frame
+			data_ctr <= data_ctr + 1;
+		elsif (dissect_current_state = LOAD_FRAME and TC_RD_EN_IN = '1' and PS_SELECTED_IN = '1') then  -- in case of constructing response
+			data_ctr <= data_ctr + 1;
+		end if;
+	end if;
+end process DATA_CTR_PROC;
 
-ff_wr_en <= '1' when (PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') else '0';
-
-FF_RD_LOCK_PROC : process(CLK)
+DATA_LENGTH_PROC: process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
-			ff_rd_lock <= '1';
-		elsif (dissect_current_state = LOAD and ff_rd_en = '1') then
-			ff_rd_lock <= '0';
-		else 
-			ff_rd_lock <= '1';
+			data_length <= 1;
+		elsif (dissect_current_state = READ_FRAME and PS_DATA_IN(8) = '1') then
+			data_length <= data_ctr;
 		end if;
 	end if;
-end process FF_RD_LOCK_PROC;
+end process DATA_LENGTH_PROC;
 
--- TODO: put a smaller fifo here
-FRAME_FIFO: fifo_4096x9
-port map( 
-	Data                => PS_DATA_IN,
-	WrClock             => CLK,
-	RdClock             => CLK,
-	WrEn                => ff_wr_en,
-	RdEn                => ff_rd_en,
-	Reset               => RESET,
-	RPReset             => RESET,
-	Q                   => ff_q,
-	Empty               => ff_empty,
-	Full                => ff_full
-);
-
-ff_rd_en <= '1' when (TC_RD_EN_IN = '1' and PS_SELECTED_IN = '1') else '0';
-
-TC_DATA_OUT <= ff_q;
-
-PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = LOAD) else '0';
-
-TC_FRAME_SIZE_OUT <= resp_bytes_ctr + x"1";
-
-TC_FRAME_TYPE_OUT <= x"0008";
-TC_DEST_MAC_OUT   <= x"9a680f201300";
-TC_DEST_IP_OUT    <= x"0100a8c0";
-TC_DEST_UDP_OUT   <= x"50c3";
-TC_SRC_MAC_OUT    <= x"efbeefbe0000";
-TC_SRC_IP_OUT     <= x"0b00a8c0";
-TC_SRC_UDP_OUT    <= x"50c3";
-
-RESP_BYTES_CTR_PROC : process(CLK)
+SAVE_VALUES_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
-		if (RESET = '1') or (dissect_current_state = IDLE) then
-			resp_bytes_ctr <= (others => '0');
-		elsif (dissect_current_state = SAVE) then
-			resp_bytes_ctr <= resp_bytes_ctr + x"1";
+		if (RESET = '1') then
+			saved_headers <= (others => '0');
+			saved_data    <= (others => '0');
+		elsif (dissect_current_state = IDLE and PS_WR_EN_IN = '1' and PS_ACTIVATE_IN = '1') then
+			saved_headers(7 downto 0) <= PS_DATA_IN(7 downto 0);
+		elsif (dissect_current_state = READ_FRAME) then
+			if (data_ctr < 9) then  -- headers
+				saved_headers(data_ctr * 8 - 1 downto (data_ctr - 1) * 8) <= PS_DATA_IN(7 downto 0);
+			else
+				saved_data((data_ctr - 8) * 8 - 1 downto (data_ctr - 9) * 8) <= PS_DATA_IN(7 downto 0);
+			end if;
+		elsif (dissect_current_state = LOAD_FRAME) then
+			saved_headers(23 downto 16) <= checksum(15 downto 8);
+			saved_headers(31 downto 24) <= checksum(7 downto 0);
 		end if;
 	end if;
-end process RESP_BYTES_CTR_PROC;
+end process SAVE_VALUES_PROC;
+
+CS_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			checksum(7 downto 0)  <= x"00";
+			checksum(15 downto 8) <= x"08";
+		elsif (dissect_current_state = READ_FRAME and data_ctr > 4) then
+			if (std_logic_vector(to_unsigned(data_ctr, 1)) = "0") then
+				checksum(7 downto 0) <= checksum(7 downto 0) + PS_DATA_IN(7 downto 0);
+			else
+				checksum(15 downto 8) <= checksum(15 downto 8) + PS_DATA_IN(7 downto 0);
+			end if;
+		end if;
+	end if;
+end process CS_PROC;
+
+TC_DATA_PROC : process(dissect_current_state, data_ctr, saved_headers, saved_data, data_length)
+begin
+	tc_data(8) <= '0';
+	
+	if (dissect_current_state = LOAD_FRAME) then
+		if (data_ctr = 2) then
+			tc_data(7 downto 0) <= x"00";  -- reply code
+		elsif (data_ctr < 9) then  -- headers
+			for i in 0 to 7 loop
+				tc_data(i) <= saved_headers((data_ctr - 1) * 8 + i);
+			end loop;
+		else  -- data
+			for i in 0 to 7 loop
+				tc_data(i) <= saved_data((data_ctr - 9) * 8 + i);
+			end loop;
+		
+			-- mark the last byte
+			if (data_ctr = data_length - 1) then
+				tc_data(8) <= '1';
+			end if;
+		end if;
+	else
+		tc_data(7 downto 0) <= (others => '0');	
+	end if;
+	
+end process TC_DATA_PROC;
+
+TC_DATA_SYNC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		TC_DATA_OUT <= tc_data;
+	end if;
+end process TC_DATA_SYNC;
+
+
+PS_BUSY_OUT <= '0' when (dissect_current_state = IDLE) else '1';
+
+PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD or dissect_current_state = LOAD_FRAME or dissect_current_state = CLEANUP) else '0';
+
+TC_FRAME_SIZE_OUT <= std_logic_vector(to_unsigned(data_length - 2, 16));
+
+TC_FRAME_TYPE_OUT <= x"0008";
+--TC_DEST_MAC_OUT   <= x"9a680f201300";
+--TC_DEST_IP_OUT    <= x"00000000";
+TC_DEST_UDP_OUT   <= x"0000";  -- not used
+TC_SRC_MAC_OUT    <= x"efbeefbe0000";
+TC_SRC_IP_OUT     <= x"6500a8c0";  -- temporary
+TC_SRC_UDP_OUT    <= x"0000";  -- not used
+
+ADDR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (dissect_current_state = READ_FRAME) then
+			TC_DEST_MAC_OUT <= PS_SRC_MAC_ADDRESS_IN;
+			TC_DEST_IP_OUT  <= PS_SRC_IP_ADDRESS_IN;
+		end if;
+	end if;
+end process ADDR_PROC;
+
+-- statistics
 
 REC_FRAMES_PROC : process(CLK)
 begin
@@ -211,7 +276,7 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			sent_frames <= (others => '0');
-		elsif (dissect_current_state = WAIT_FOR_LOAD and TC_BUSY_IN = '0') then
+		elsif (dissect_current_state = CLEANUP) then
 			sent_frames <= sent_frames + x"1";
 		end if;
 	end if;
@@ -222,9 +287,9 @@ SENT_FRAMES_OUT     <= sent_frames;
 
 -- **** debug
 DEBUG_OUT(3 downto 0)   <= state;
-DEBUG_OUT(4)            <= ff_empty;
+DEBUG_OUT(4)            <= '0';
 DEBUG_OUT(7 downto 5)   <= "000";
-DEBUG_OUT(8)            <= ff_full;
+DEBUG_OUT(8)            <= '0';
 DEBUG_OUT(11 downto 9)  <= "000";
 DEBUG_OUT(31 downto 12) <= (others => '0');
 -- ****
