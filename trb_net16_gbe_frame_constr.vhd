@@ -127,9 +127,9 @@ ready         <= '1' when (constructCurrentState = IDLE)
 headers_ready <= '1' when (constructCurrentState = SAVE_DATA)
 					 else '0';
 
-sizeProc: process( put_udp_headers, IP_F_SIZE_IN, UDP_P_SIZE_IN )
+sizeProc: process( put_udp_headers, IP_F_SIZE_IN, UDP_P_SIZE_IN, DEST_UDP_PORT_IN)
 begin
-	if( put_udp_headers = '1' ) then
+	if( put_udp_headers = '1' ) and (DEST_UDP_PORT_IN /= x"0000") then
 		ip_size  <= IP_F_SIZE_IN + x"14" + x"8";
 		udp_size <= UDP_P_SIZE_IN + x"8";
 	else
@@ -231,7 +231,7 @@ begin
 end process constructMachineProc;
 
 --find next state of construct machine
-constructMachine: process( constructCurrentState, delay_ctr, FRAME_DELAY_IN, START_OF_DATA_IN, END_OF_DATA_IN, headers_int_counter, put_udp_headers, CUR_MAX, FRAME_TYPE_IN, SRC_IP_ADDRESS_IN, SRC_UDP_PORT_IN)
+constructMachine: process( constructCurrentState, delay_ctr, FRAME_DELAY_IN, START_OF_DATA_IN, END_OF_DATA_IN, headers_int_counter, put_udp_headers, CUR_MAX, FRAME_TYPE_IN, DEST_IP_ADDRESS_IN, DEST_UDP_PORT_IN)
 begin
 	constructNextState <= constructCurrentState;
 	if( headers_int_counter = cur_max ) then    --can be checked everytime - if not in use, counter and cur_max are 0
@@ -245,7 +245,7 @@ begin
 			when SRC_MAC_ADDR =>
 				constructNextState <= FRAME_TYPE_S;
 			when FRAME_TYPE_S =>
-				if (SRC_IP_ADDRESS_IN /= x"0000_0000") then -- in case of ip frame continue with ip/udp headers 
+				if (DEST_IP_ADDRESS_IN /= x"0000_0000") then -- in case of ip frame continue with ip/udp headers 
 					constructNextState <= VERSION;
 				else  -- otherwise transmit data as pure ethernet frame
 					constructNextState <= SAVE_DATA;
@@ -269,7 +269,7 @@ begin
 			when SRC_IP_ADDR =>
 				constructNextState <= DEST_IP_ADDR;
 			when DEST_IP_ADDR =>
-				if (put_udp_headers = '1') and (SRC_UDP_PORT_IN /= x"0000") then
+				if (put_udp_headers = '1') and (DEST_UDP_PORT_IN /= x"0000") then
 					constructNextState <= SRC_PORT;
 				else
 					constructNextState <= SAVE_DATA;
@@ -318,34 +318,34 @@ begin
 end process delayCtrProc;
 
 
-bsmConstrProc : process(constructCurrentState)
-begin
+--bsmConstrProc : process(constructCurrentState)
+--begin
 --find maximum time in each state & set state bits
-	case constructCurrentState is
-		when IDLE =>            cur_max    <= 0;     bsm_constr <= x"01";
-		when DEST_MAC_ADDR =>   cur_max    <= 5;     bsm_constr <= x"02";
-		when SRC_MAC_ADDR =>    cur_max    <= 5;     bsm_constr <= x"03";
-		when FRAME_TYPE_S =>    cur_max    <= 1;     bsm_constr <= x"04";
-		when VERSION =>         cur_max    <= 0;     bsm_constr <= x"05";
-		when TOS_S =>           cur_max    <= 0;     bsm_constr <= x"06";
-		when IP_LENGTH =>       cur_max    <= 1;     bsm_constr <= x"07";
-		when IDENT =>           cur_max    <= 1;     bsm_constr <= x"08";
-		when FLAGS =>           cur_max    <= 1;     bsm_constr <= x"09";
-		when TTL_S =>           cur_max    <= 0;     bsm_constr <= x"0a";
-		when PROTO =>           cur_max    <= 0;     bsm_constr <= x"0b";
-		when HEADER_CS =>       cur_max    <= 1;     bsm_constr <= x"0c";
-		when SRC_IP_ADDR =>     cur_max    <= 3;     bsm_constr <= x"0d";
-		when DEST_IP_ADDR =>    cur_max    <= 3;     bsm_constr <= x"0e";
-		when SRC_PORT =>        cur_max    <= 1;     bsm_constr <= x"0f";
-		when DEST_PORT =>       cur_max    <= 1;     bsm_constr <= x"10";
-		when UDP_LENGTH =>      cur_max    <= 1;     bsm_constr <= x"11";
-		when UDP_CS =>          cur_max    <= 1;     bsm_constr <= x"12";
-		when SAVE_DATA =>       cur_max    <= 0;     bsm_constr <= x"13";
-		when CLEANUP =>         cur_max    <= 0;     bsm_constr <= x"14";
-		when DELAY =>           cur_max    <= 0;     bsm_constr <= x"15";
-		when others =>          cur_max    <= 0;     bsm_constr <= x"1f";
-	end case;
-end process;
+--	case constructCurrentState is
+--		when IDLE =>            cur_max    <= 0;     bsm_constr <= x"01";
+--		when DEST_MAC_ADDR =>   cur_max    <= 5;     bsm_constr <= x"02";
+--		when SRC_MAC_ADDR =>    cur_max    <= 5;     bsm_constr <= x"03";
+--		when FRAME_TYPE_S =>    cur_max    <= 1;     bsm_constr <= x"04";
+--		when VERSION =>         cur_max    <= 0;     bsm_constr <= x"05";
+--		when TOS_S =>           cur_max    <= 0;     bsm_constr <= x"06";
+--		when IP_LENGTH =>       cur_max    <= 1;     bsm_constr <= x"07";
+--		when IDENT =>           cur_max    <= 1;     bsm_constr <= x"08";
+--		when FLAGS =>           cur_max    <= 1;     bsm_constr <= x"09";
+--		when TTL_S =>           cur_max    <= 0;     bsm_constr <= x"0a";
+--		when PROTO =>           cur_max    <= 0;     bsm_constr <= x"0b";
+--		when HEADER_CS =>       cur_max    <= 1;     bsm_constr <= x"0c";
+--		when SRC_IP_ADDR =>     cur_max    <= 3;     bsm_constr <= x"0d";
+--		when DEST_IP_ADDR =>    cur_max    <= 3;     bsm_constr <= x"0e";
+--		when SRC_PORT =>        cur_max    <= 1;     bsm_constr <= x"0f";
+--		when DEST_PORT =>       cur_max    <= 1;     bsm_constr <= x"10";
+--		when UDP_LENGTH =>      cur_max    <= 1;     bsm_constr <= x"11";
+--		when UDP_CS =>          cur_max    <= 1;     bsm_constr <= x"12";
+--		when SAVE_DATA =>       cur_max    <= 0;     bsm_constr <= x"13";
+--		when CLEANUP =>         cur_max    <= 0;     bsm_constr <= x"14";
+--		when DELAY =>           cur_max    <= 0;     bsm_constr <= x"15";
+--		when others =>          cur_max    <= 0;     bsm_constr <= x"1f";
+--	end case;
+--end process;
 
 
 headersIntProc : process(CLK)

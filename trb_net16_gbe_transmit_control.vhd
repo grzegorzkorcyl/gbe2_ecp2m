@@ -53,6 +53,8 @@ port (
 	MC_SRC_IP_IN		: in	std_logic_vector(31 downto 0);
 	MC_SRC_UDP_IN		: in	std_logic_vector(15 downto 0);
 	
+	MC_IP_PROTOCOL_IN	: in	std_logic_vector(7 downto 0);
+	
 	MC_BUSY_OUT		: out	std_logic;
 	MC_TRANSMIT_DONE_OUT	: out	std_logic;
 
@@ -68,6 +70,7 @@ port (
 	FC_FLAGS_OFFSET_OUT	: out	std_logic_vector(15 downto 0);
 	FC_SOD_OUT		: out	std_logic;
 	FC_EOD_OUT		: out	std_logic;
+	FC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 
 	DEST_MAC_ADDRESS_OUT    : out    std_logic_vector(47 downto 0);
 	DEST_IP_ADDRESS_OUT     : out    std_logic_vector(31 downto 0);
@@ -129,7 +132,6 @@ begin
   end if;
 end process TX_MACHINE_PROC;
 
---TX_MACHINE : process(tx_current_state, PC_SOD_IN, FC_READY_IN, MC_CTRL_FRAME_REQ_IN, PC_EOD_IN, PC_TRANSMIT_ON_IN, ctrl_construct_current_state)
 TX_MACHINE : process(tx_current_state, MC_TRANSMIT_CTRL_IN, MC_TRANSMIT_DATA_IN, FC_READY_IN, PC_EOD_IN, ctrl_construct_current_state)
 begin
   case tx_current_state is
@@ -137,10 +139,8 @@ begin
     when IDLE =>
       state <= x"1";
       if (FC_READY_IN = '1') then
-	--if (MC_CTRL_FRAME_REQ_IN = '1') and (PC_TRANSMIT_ON_IN = '0') then
 	if (MC_TRANSMIT_DATA_IN = '1') then
 	  tx_next_state <= TRANSMIT_DATA;
-	--elsif (PC_SOD_IN = '1') then
 	elsif (MC_TRANSMIT_CTRL_IN = '1') then
 	  tx_next_state <= TRANSMIT_CTRL;
 	else
@@ -196,9 +196,12 @@ begin
 	SRC_MAC_ADDRESS_OUT  <= IC_SRC_MAC_ADDRESS_IN;
 	SRC_IP_ADDRESS_OUT   <= IC_SRC_IP_ADDRESS_IN;
 	SRC_UDP_PORT_OUT     <= IC_SRC_UDP_PORT_IN;
+	
+	FC_IP_PROTOCOL_OUT   <= x"11"; -- udp
 
       when TRANSMIT_CTRL =>
 	FC_DATA_OUT         <= MC_DATA_IN(7 downto 0);
+	FC_IP_PROTOCOL_OUT  <= MC_IP_PROTOCOL_IN; 
 
 	if (ctrl_construct_current_state = WAIT_FOR_FC) and (FC_READY_IN = '1') then
 	  FC_SOD_OUT        <= '1';

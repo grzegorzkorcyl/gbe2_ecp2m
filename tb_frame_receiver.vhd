@@ -98,7 +98,8 @@ signal fr_allowed_udp            : std_logic_vector(31 downto 0);
 signal my_mac                    : std_logic_vector(47 downto 0);
 signal allow_brdcst_eth          : std_logic;
 signal allow_brdcst_ip           : std_logic;
-signal fr_ip_proto                   : std_logic_vector(7 downto 0);
+signal fr_ip_proto               : std_logic_vector(7 downto 0);
+signal mc_ip_proto               : std_logic_vector(7 downto 0);
 
 begin
 
@@ -218,6 +219,7 @@ port map (
 	TC_RD_EN_IN		=> MC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> MC_FRAME_SIZE_OUT,
 	TC_FRAME_TYPE_OUT	=> mc_type,
+	TC_IP_PROTOCOL_OUT	=> mc_ip_proto,
 	
 	TC_DEST_MAC_OUT		=> mc_dest_mac,
 	TC_DEST_IP_OUT		=> mc_dest_ip,
@@ -284,6 +286,7 @@ port map(
 	MC_RD_EN_OUT		=> MC_RD_EN_IN,
 	MC_FRAME_SIZE_IN	=> MC_FRAME_SIZE_OUT,
 	MC_FRAME_TYPE_IN	=> mc_type,
+	MC_IP_PROTOCOL_IN	=> mc_ip_proto,
 	
 	MC_DEST_MAC_IN		=> mc_dest_mac,
 	MC_DEST_IP_IN		=> mc_dest_ip,
@@ -307,6 +310,7 @@ port map(
 	FC_FLAGS_OFFSET_OUT	=> fc_flags,
 	FC_SOD_OUT		=> fc_sod,
 	FC_EOD_OUT		=> fc_eod,
+	FC_IP_PROTOCOL_OUT	=> fc_proto,
 
 	DEST_MAC_ADDRESS_OUT    => fc_dest_mac,
 	DEST_IP_ADDRESS_OUT     => fc_dest_ip,

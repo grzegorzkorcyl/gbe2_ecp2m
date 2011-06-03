@@ -36,7 +36,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
-	
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);	
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
@@ -114,6 +114,7 @@ TC_DEST_UDP_OUT <= x"4300";
 TC_SRC_MAC_OUT  <= my_mac_addr;
 TC_SRC_IP_OUT   <= x"00000000" when (main_current_state = BOOTING or main_current_state = SENDING_DISCOVER) else saved_proposed_ip;
 TC_SRC_UDP_OUT  <= x"4400";
+TC_IP_PROTOCOL_OUT <= x"11"; -- udp
 bootp_hdr(7 downto 0)   <= x"01";  -- message type(request)
 bootp_hdr(15 downto 8)  <= x"01";  -- hardware type (eth)
 bootp_hdr(23 downto 16) <= x"06";  -- hardware address length

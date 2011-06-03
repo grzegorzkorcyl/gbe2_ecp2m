@@ -67,6 +67,7 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
@@ -149,7 +150,9 @@ port (
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
 	TC_SRC_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_SRC_IP_OUT		: out	std_logic_vector(31 downto 0);
-	TC_SRC_UDP_OUT		: out	std_logic_vector(15 downto 0);	
+	TC_SRC_UDP_OUT		: out	std_logic_vector(15 downto 0);
+
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);	
 	
 	TC_BUSY_IN		: in	std_logic;
 	TC_TRANSMIT_DONE_IN	: in	std_logic;
@@ -223,6 +226,8 @@ port (
 	MC_SRC_IP_IN		: in	std_logic_vector(31 downto 0);
 	MC_SRC_UDP_IN		: in	std_logic_vector(15 downto 0);
 	
+	MC_IP_PROTOCOL_IN	: in	std_logic_vector(7 downto 0);
+	
 	MC_BUSY_OUT		: out	std_logic;
 	MC_TRANSMIT_DONE_OUT	: out	std_logic;
 
@@ -238,6 +243,7 @@ port (
 	FC_FLAGS_OFFSET_OUT	: out	std_logic_vector(15 downto 0);
 	FC_SOD_OUT		: out	std_logic;
 	FC_EOD_OUT		: out	std_logic;
+	FC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 
 	DEST_MAC_ADDRESS_OUT    : out    std_logic_vector(47 downto 0);
 	DEST_IP_ADDRESS_OUT     : out    std_logic_vector(31 downto 0);

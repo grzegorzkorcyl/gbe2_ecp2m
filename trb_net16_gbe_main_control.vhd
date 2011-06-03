@@ -57,6 +57,8 @@ port (
 	TC_SRC_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_SRC_UDP_OUT		: out	std_logic_vector(15 downto 0);
 	
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
+	
 	TC_BUSY_IN		: in	std_logic;
 	TC_TRANSMIT_DONE_IN	: in	std_logic;
 
@@ -165,6 +167,7 @@ port map(
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
 	TC_FRAME_TYPE_OUT	=> TC_FRAME_TYPE_OUT,
+	TC_IP_PROTOCOL_OUT	=> TC_IP_PROTOCOL_OUT,
 	
 	TC_DEST_MAC_OUT		=> TC_DEST_MAC_OUT,
 	TC_DEST_IP_OUT		=> TC_DEST_IP_OUT,

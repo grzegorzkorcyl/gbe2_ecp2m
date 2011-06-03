@@ -42,6 +42,7 @@ port (
 	TC_RD_EN_IN		: in	std_logic;
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
@@ -80,6 +81,7 @@ signal tc_udp                   : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 down
 signal tc_src_mac               : std_logic_vector(c_MAX_PROTOCOLS * 48 - 1 downto 0);
 signal tc_src_ip                : std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
 signal tc_src_udp               : std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
+signal tc_ip_proto              : std_logic_vector(c_MAX_PROTOCOLS * 8 - 1 downto 0); 
 
 begin
 
@@ -108,6 +110,7 @@ port map (
 	TC_DATA_OUT		=> tc_data(1 * 9 - 1 downto 0 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(1 * 16 - 1 downto 0 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(1 * 16 - 1 downto 0 * 16),
+	TC_IP_PROTOCOL_OUT	=> tc_ip_proto(1 * 8 - 1 downto 0 * 8),
 	
 	TC_DEST_MAC_OUT		=> tc_mac(1 * 48 - 1 downto 0 * 48),
 	TC_DEST_IP_OUT		=> tc_ip(1 * 32 - 1 downto 0 * 32),
@@ -149,6 +152,7 @@ port map (
 	TC_DATA_OUT		=> tc_data(2 * 9 - 1 downto 1 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(2 * 16 - 1 downto 1 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(2 * 16 - 1 downto 1 * 16),
+	TC_IP_PROTOCOL_OUT	=> tc_ip_proto(2 * 8 - 1 downto 1 * 8),
 	
 	TC_DEST_MAC_OUT		=> tc_mac(2 * 48 - 1 downto 1 * 48),
 	TC_DEST_IP_OUT		=> tc_ip(2 * 32 - 1 downto 1 * 32),
@@ -190,6 +194,7 @@ port map (
 	TC_DATA_OUT		=> tc_data(3 * 9 - 1 downto 2 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(3 * 16 - 1 downto 2 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(3 * 16 - 1 downto 2 * 16),
+	TC_IP_PROTOCOL_OUT	=> tc_ip_proto(3 * 8 - 1 downto 2 * 8),
 	
 	TC_DEST_MAC_OUT		=> tc_mac(3 * 48 - 1 downto 2 * 48),
 	TC_DEST_IP_OUT		=> tc_ip(3 * 32 - 1 downto 2 * 32),
@@ -231,6 +236,7 @@ port map (
 	TC_DATA_OUT		=> tc_data(4 * 9 - 1 downto 3 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(4 * 16 - 1 downto 3 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(4 * 16 - 1 downto 3 * 16),
+	TC_IP_PROTOCOL_OUT	=> tc_ip_proto(4 * 8 - 1 downto 3 * 8),
 	
 	TC_DEST_MAC_OUT		=> tc_mac(4 * 48 - 1 downto 3 * 48),
 	TC_DEST_IP_OUT		=> tc_ip(4 * 32 - 1 downto 3 * 32),
@@ -272,6 +278,7 @@ port map (
 	TC_DATA_OUT		=> tc_data(5 * 9 - 1 downto 4 * 9),
 	TC_FRAME_SIZE_OUT	=> tc_size(5 * 16 - 1 downto 4 * 16),
 	TC_FRAME_TYPE_OUT	=> tc_type(5 * 16 - 1 downto 4 * 16),
+	TC_IP_PROTOCOL_OUT	=> tc_ip_proto(5 * 8 - 1 downto 4 * 8),
 	
 	TC_DEST_MAC_OUT		=> tc_mac(5 * 48 - 1 downto 4 * 48),
 	TC_DEST_IP_OUT		=> tc_ip(5 * 32 - 1 downto 4 * 32),
@@ -341,9 +348,10 @@ begin
 			TC_DEST_MAC_OUT       <= (others => '0');
 			TC_DEST_IP_OUT        <= (others => '0');
 			TC_DEST_UDP_OUT       <= (others => '0');
-			TC_SRC_MAC_OUT       <= (others => '0');
-			TC_SRC_IP_OUT        <= (others => '0');
+			TC_SRC_MAC_OUT        <= (others => '0');
+			TC_SRC_IP_OUT         <= (others => '0');
 			TC_SRC_UDP_OUT        <= (others => '0');
+			TC_IP_PROTOCOL_OUT    <= (others => '0');
 			PS_RESPONSE_READY_OUT <= '0';
 			selected              <= (others => '0');
 			found := false;
@@ -360,6 +368,7 @@ begin
 						TC_SRC_MAC_OUT        <= tc_src_mac((i + 1) * 48 - 1 downto i * 48);
 						TC_SRC_IP_OUT         <= tc_src_ip((i + 1) * 32 - 1 downto i * 32);
 						TC_SRC_UDP_OUT        <= tc_src_udp((i + 1) * 16 - 1 downto i * 16);
+						TC_IP_PROTOCOL_OUT    <= tc_ip_proto((i + 1) * 8 - 1 downto i * 8);
 						PS_RESPONSE_READY_OUT <= '1';
 						selected(i)           <= '1';
 						found := true;
@@ -375,9 +384,10 @@ begin
 				TC_DEST_MAC_OUT       <= (others => '0');
 				TC_DEST_IP_OUT        <= (others => '0');
 				TC_DEST_UDP_OUT       <= (others => '0');
-				TC_SRC_MAC_OUT       <= (others => '0');
-				TC_SRC_IP_OUT        <= (others => '0');
+				TC_SRC_MAC_OUT        <= (others => '0');
+				TC_SRC_IP_OUT         <= (others => '0');
 				TC_SRC_UDP_OUT        <= (others => '0');
+				TC_IP_PROTOCOL_OUT    <= (others => '0');
 				PS_RESPONSE_READY_OUT <= '0';
 				found := false;
 			end if;

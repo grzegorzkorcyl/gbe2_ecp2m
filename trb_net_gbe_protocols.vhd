@@ -49,6 +49,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);	
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
@@ -89,6 +90,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
@@ -129,6 +131,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
@@ -169,6 +172,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
@@ -209,6 +213,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
@@ -249,7 +254,7 @@ port (
 	TC_DATA_OUT		: out	std_logic_vector(8 downto 0);
 	TC_FRAME_SIZE_OUT	: out	std_logic_vector(15 downto 0);
 	TC_FRAME_TYPE_OUT	: out	std_logic_vector(15 downto 0);
-	
+	TC_IP_PROTOCOL_OUT	: out	std_logic_vector(7 downto 0);	
 	TC_DEST_MAC_OUT		: out	std_logic_vector(47 downto 0);
 	TC_DEST_IP_OUT		: out	std_logic_vector(31 downto 0);
 	TC_DEST_UDP_OUT		: out	std_logic_vector(15 downto 0);
