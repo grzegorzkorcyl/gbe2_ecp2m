@@ -406,7 +406,7 @@ begin
 	
 	wait for 1000 ns;
 	
-	
+	for i in 0 to 10 loop
 	-- FIRST FRAME IP - ICMP Ping request
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <= '1';
@@ -533,10 +533,13 @@ begin
 	MAC_RXD_IN		<= x"0f";
 	wait until rising_edge(RX_MAC_CLK);
 		MAC_RX_EOF_IN <= '1';
+			MAC_RXD_IN		<= x"aa";
 	
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <='0';
 	MAC_RX_EOF_IN <= '0';
+	
+	end loop;
 	
 	wait for 1500 ns;
 	

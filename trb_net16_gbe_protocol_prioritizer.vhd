@@ -60,7 +60,7 @@ begin
 					elsif (PROTOCOL_CODE_IN = x"01") then -- ICMP
 						CODE_OUT(4) <= '1';
 					else
-						CODE_OUT <= (others => '1');  -- vector full of 1 means invalid protocol
+						CODE_OUT <= (others => '0');  -- vector full of 1 means invalid protocol
 					end if;
 				
 				-- No. 2 = ARP
@@ -73,7 +73,7 @@ begin
 				
 				-- last slot is reserved for Trash
 				when others =>
-					CODE_OUT <= (others => '1');  -- vector full of 1 means invalid protocol
+					CODE_OUT <= (others => '0');
 			
 			end case;
 			
