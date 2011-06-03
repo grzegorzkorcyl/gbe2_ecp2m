@@ -125,7 +125,7 @@ begin
 		
 		when LOAD_FRAME =>
 			state <= x"4";
-			if (data_ctr = data_length - 1) then
+			if (data_ctr = data_length) then
 				dissect_next_state <= CLEANUP;
 			else
 				dissect_next_state <= LOAD_FRAME;
@@ -214,7 +214,7 @@ begin
 			end loop;
 		
 			-- mark the last byte
-			if (data_ctr = data_length - 1) then
+			if (data_ctr = data_length) then
 				tc_data(8) <= '1';
 			end if;
 		end if;
@@ -236,7 +236,7 @@ PS_BUSY_OUT <= '0' when (dissect_current_state = IDLE) else '1';
 
 PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD or dissect_current_state = LOAD_FRAME or dissect_current_state = CLEANUP) else '0';
 
-TC_FRAME_SIZE_OUT <= std_logic_vector(to_unsigned(data_length - 2, 16));
+TC_FRAME_SIZE_OUT <= std_logic_vector(to_unsigned(data_length - 1, 16));
 
 TC_FRAME_TYPE_OUT <= x"0008";
 --TC_DEST_MAC_OUT   <= x"9a680f201300";

@@ -436,20 +436,20 @@ end process SAVED_VID_PROC;
 
 type_validator : trb_net16_gbe_type_validator
 port map(
-	FRAME_TYPE_IN		=> saved_frame_type,
-	SAVED_VLAN_ID_IN	=> saved_vid,	
-	ALLOWED_TYPES_IN	=> FR_ALLOWED_TYPES_IN,
-	VLAN_ID_IN		=> FR_VLAN_ID_IN,
+	FRAME_TYPE_IN		 => saved_frame_type,
+	SAVED_VLAN_ID_IN	 => saved_vid,	
+	ALLOWED_TYPES_IN	 => FR_ALLOWED_TYPES_IN,
+	VLAN_ID_IN		 => FR_VLAN_ID_IN,
 	
 	-- IP level
-	IP_PROTOCOLS_IN		=> saved_proto,
-	ALLOWED_IP_PROTOCOLS_IN	=> FR_ALLOWED_IP_IN,
+	IP_PROTOCOLS_IN		 => saved_proto,
+	ALLOWED_IP_PROTOCOLS_IN	 => FR_ALLOWED_IP_IN,
 	
 	-- UDP level
 	UDP_PROTOCOL_IN		 => saved_dest_udp,
 	ALLOWED_UDP_PROTOCOLS_IN => FR_ALLOWED_UDP_IN,
 	
-	VALID_OUT		=> frame_type_valid
+	VALID_OUT		 => frame_type_valid
 );
 
 --TODO put here a larger fifo maybe (for sure!)
