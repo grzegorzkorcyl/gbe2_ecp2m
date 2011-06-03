@@ -59,8 +59,8 @@ end trb_net16_gbe_response_constructor_Ping;
 
 architecture trb_net16_gbe_response_constructor_Ping of trb_net16_gbe_response_constructor_Ping is
 
-attribute HGROUP : string;
-attribute HGROUP of trb_net16_gbe_response_constructor_Ping : architecture is "GBE_MAIN_group";
+--attribute HGROUP : string;
+--attribute HGROUP of trb_net16_gbe_response_constructor_Ping : architecture is "GBE_MAIN_group";
 
 attribute syn_encoding	: string;
 

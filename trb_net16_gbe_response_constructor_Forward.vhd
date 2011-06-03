@@ -59,8 +59,8 @@ end trb_net16_gbe_response_constructor_Forward;
 
 architecture trb_net16_gbe_response_constructor_Forward of trb_net16_gbe_response_constructor_Forward is
 
-attribute HGROUP : string;
-attribute HGROUP of trb_net16_gbe_response_constructor_Forward : architecture is "GBE_MAIN_group";
+--attribute HGROUP : string;
+--attribute HGROUP of trb_net16_gbe_response_constructor_Forward : architecture is "GBE_MAIN_group";
 
 attribute syn_encoding	: string;
 

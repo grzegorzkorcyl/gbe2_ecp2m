@@ -58,8 +58,8 @@ end trb_net16_gbe_response_constructor_ARP;
 
 architecture trb_net16_gbe_response_constructor_ARP of trb_net16_gbe_response_constructor_ARP is
 
-attribute HGROUP : string;
-attribute HGROUP of trb_net16_gbe_response_constructor_ARP : architecture is "GBE_MAIN_group";
+--attribute HGROUP : string;
+--attribute HGROUP of trb_net16_gbe_response_constructor_ARP : architecture is "GBE_MAIN_group";
 
 attribute syn_encoding	: string;
 

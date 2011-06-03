@@ -30,8 +30,8 @@ end trb_net16_gbe_protocol_prioritizer;
 
 architecture trb_net16_gbe_protocol_prioritizer of trb_net16_gbe_protocol_prioritizer is
 
-attribute HGROUP : string;
-attribute HGROUP of trb_net16_gbe_protocol_prioritizer : architecture is "GBE_MAIN_group";
+--attribute HGROUP : string;
+--attribute HGROUP of trb_net16_gbe_protocol_prioritizer : architecture is "GBE_MAIN_group";
 
 begin
 

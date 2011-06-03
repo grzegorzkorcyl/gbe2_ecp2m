@@ -58,8 +58,8 @@ end trb_net16_gbe_response_constructor_DHCP;
 
 architecture trb_net16_gbe_response_constructor_DHCP of trb_net16_gbe_response_constructor_DHCP is
 
-attribute HGROUP : string;
-attribute HGROUP of trb_net16_gbe_response_constructor_DHCP : architecture is "GBE_MAIN_group";
+--attribute HGROUP : string;
+--attribute HGROUP of trb_net16_gbe_response_constructor_DHCP : architecture is "GBE_MAIN_group";
 
 attribute syn_encoding	: string;
 

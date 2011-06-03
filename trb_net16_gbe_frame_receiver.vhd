@@ -63,8 +63,8 @@ end trb_net16_gbe_frame_receiver;
 
 architecture trb_net16_gbe_frame_receiver of trb_net16_gbe_frame_receiver is
 
-attribute HGROUP : string;
-attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_LINK_group";
+--attribute HGROUP : string;
+--attribute HGROUP of trb_net16_gbe_frame_receiver : architecture is "GBE_LINK_group";
 
 attribute syn_encoding	: string;
 type filter_states is (IDLE, REMOVE_DEST, REMOVE_SRC, REMOVE_TYPE, SAVE_FRAME, DROP_FRAME, REMOVE_VID, REMOVE_VTYPE, REMOVE_IP, REMOVE_UDP, DECIDE, CLEANUP);

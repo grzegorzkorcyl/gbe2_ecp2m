@@ -88,8 +88,8 @@ end trb_net16_gbe_transmit_control;
 
 architecture trb_net16_gbe_transmit_control of trb_net16_gbe_transmit_control is
 
-attribute HGROUP : string;
-attribute HGROUP of trb_net16_gbe_transmit_control : architecture is "GBE_BUF_group";
+--attribute HGROUP : string;
+--attribute HGROUP of trb_net16_gbe_transmit_control : architecture is "GBE_BUF_group";
 
 attribute syn_encoding	: string;
 
