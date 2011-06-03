@@ -177,6 +177,7 @@ begin
 				saved_data((data_ctr - 8) * 8 - 1 downto (data_ctr - 9) * 8) <= PS_DATA_IN(7 downto 0);
 			end if;
 		elsif (dissect_current_state = LOAD_FRAME) then
+			saved_headers(7 downto 0)   <= x"00";
 			saved_headers(23 downto 16) <= checksum(15 downto 8);
 			saved_headers(31 downto 24) <= checksum(7 downto 0);
 		end if;
@@ -203,15 +204,13 @@ begin
 	tc_data(8) <= '0';
 	
 	if (dissect_current_state = LOAD_FRAME) then
-		if (data_ctr = 2) then
-			tc_data(7 downto 0) <= x"00";  -- reply code
-		elsif (data_ctr < 9) then  -- headers
+		if (data_ctr < 10) then  -- headers
 			for i in 0 to 7 loop
-				tc_data(i) <= saved_headers((data_ctr - 1) * 8 + i);
+				tc_data(i) <= saved_headers((data_ctr - 2) * 8 + i);
 			end loop;
 		else  -- data
 			for i in 0 to 7 loop
-				tc_data(i) <= saved_data((data_ctr - 9) * 8 + i);
+				tc_data(i) <= saved_data((data_ctr - 10) * 8 + i);
 			end loop;
 		
 			-- mark the last byte
