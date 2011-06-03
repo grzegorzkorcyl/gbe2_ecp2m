@@ -99,9 +99,9 @@ end entity trb_net16_gbe_buf;
 architecture trb_net16_gbe_buf of trb_net16_gbe_buf is
 
 -- Placer Directives
-attribute HGROUP : string;
+--attribute HGROUP : string;
 -- for whole architecture
-attribute HGROUP of trb_net16_gbe_buf : architecture is "GBE_BUF_group";
+--attribute HGROUP of trb_net16_gbe_buf : architecture is "GBE_BUF_group";
 
 
 component tsmac3
@@ -591,8 +591,7 @@ fc_ttl            <= x"ff";
 --fc_protocol       <= x"11";
 
 
-MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
-  MAIN_CONTROL : trb_net16_gbe_main_control
+MAIN_CONTROL : trb_net16_gbe_main_control
   port map(
 	  CLK			=> CLK,
 	  CLK_125		=> serdes_clk_125,
@@ -661,84 +660,6 @@ MC_IMPL_GEN : if (DO_SIMULATION = 0) generate
 
 	  DEBUG_OUT		=> dbg_mc
   );
-
-end generate MC_IMPL_GEN;
-
-MC_SIM_GEN : if (DO_SIMULATION = 1) generate
-
-  MAIN_CONTROL : trb_net16_gbe_main_control
-  port map(
-	  CLK			=> CLK,
-	  CLK_125		=> serdes_clk_125,
-	  RESET			=> RESET,
-
-	  MC_LINK_OK_OUT	=> open,
-	  MC_RESET_LINK_IN	=> MR_RESTART_IN,
-
-  -- signals to/from receive controller
-	  RC_FRAME_WAITING_IN	=> rc_frame_ready,
-	  RC_LOADING_DONE_OUT	=> rc_loading_done,
-	  RC_DATA_IN		=> rc_q,
-	  RC_RD_EN_OUT		=> rc_rd_en,
-	  RC_FRAME_SIZE_IN	=> rc_frame_size,
-	  RC_FRAME_PROTO_IN	=> rc_frame_proto,
-
-	  RC_SRC_MAC_ADDRESS_IN	=> rc_src_mac,
-	  RC_DEST_MAC_ADDRESS_IN  => rc_dest_mac,
-	  RC_SRC_IP_ADDRESS_IN	=> rc_src_ip,
-	  RC_DEST_IP_ADDRESS_IN	=> rc_dest_ip,
-	  RC_SRC_UDP_PORT_IN	=> rc_src_udp,
-	  RC_DEST_UDP_PORT_IN	=> rc_dest_udp,
-
-  -- signals to/from transmit controller
-	  TC_TRANSMIT_CTRL_OUT	=> mc_transmit_ctrl,
-	  TC_TRANSMIT_DATA_OUT  => mc_transmit_data,
-	  TC_DATA_OUT		=> mc_data,
-	  TC_RD_EN_IN		=> mc_rd_en,
-	  TC_FRAME_SIZE_OUT	=> mc_frame_size,
-	  TC_FRAME_TYPE_OUT	=> mc_type,
-	  TC_IP_PROTOCOL_OUT	=> mc_ip_proto,
-	  
-	  TC_DEST_MAC_OUT	=> mc_dest_mac,
-	  TC_DEST_IP_OUT	=> mc_dest_ip,
-	  TC_DEST_UDP_OUT	=> mc_dest_udp,
-	  TC_SRC_MAC_OUT	=> mc_src_mac,
-	  TC_SRC_IP_OUT		=> mc_src_ip,
-	  TC_SRC_UDP_OUT	=> mc_src_udp,
-	
-	  TC_BUSY_IN		=> mc_busy,
-	  TC_TRANSMIT_DONE_IN   => mc_transmit_done,
-
-  -- signals to/from packet constructor
-	  PC_READY_IN		=> pc_ready,
-	  PC_TRANSMIT_ON_IN	=> pc_transmit_on,
-	  PC_SOD_IN		=> tc_sod,
-
-  -- signals to/from sgmii/gbe pcs_an_complete
-	  PCS_AN_COMPLETE_IN	=> pcs_an_complete,
-
-  -- signals to/from hub
-
-
-  -- signal to/from Host interface of TriSpeed MAC
-	  TSM_HADDR_OUT		=> mac_haddr,
-	  TSM_HDATA_OUT		=> mac_hdataout,
-	  TSM_HCS_N_OUT		=> mac_hcs,
-	  TSM_HWRITE_N_OUT	=> mac_hwrite,
-	  TSM_HREAD_N_OUT	=> mac_hread,
-	  TSM_HREADY_N_IN	=> mac_hready,
-	  TSM_HDATA_EN_N_IN	=> mac_hdata_en,
-
-	  SELECT_REC_FRAMES_OUT		=> dbg_select_rec,
-	  SELECT_SENT_FRAMES_OUT	=> dbg_select_sent,
-	  SELECT_PROTOS_DEBUG_OUT	=> dbg_select_protos,
-	  
-	    DEBUG_OUT => open
-  );
-
-  link_ok <= '1';
-
-end generate MC_SIM_GEN;
 
 
 TRANSMIT_CONTROLLER : trb_net16_gbe_transmit_control
@@ -1277,7 +1198,6 @@ port map(
 );  
       
 
-frame_rec_gen : if (DO_SIMULATION = 0) generate
   FRAME_RECEIVER : trb_net16_gbe_frame_receiver
   port map(
 	  CLK			=> CLK,
@@ -1320,52 +1240,6 @@ frame_rec_gen : if (DO_SIMULATION = 0) generate
 
 	  DEBUG_OUT		=> dbg_fr
   );
-end generate frame_rec_gen;
-
-frame_rec_sim_gen : if (DO_SIMULATION = 1) generate
-  FRAME_RECEIVER : trb_net16_gbe_frame_receiver
-  port map(
-	  CLK			=> CLK,
-	  RESET			=> RESET,
-	  LINK_OK_IN		=> '1',
-	  ALLOW_RX_IN		=> '1',
-	  ALLOW_BRDCST_ETH_IN	=> allow_brdcst_eth,
-	  ALLOW_BRDCST_IP_IN	=> allow_brdcst_ip,
-	  MY_MAC_IN		=> my_mac,
-	  RX_MAC_CLK		=> serdes_clk_125,
-
-  -- input signals from TS_MAC
-	  MAC_RX_EOF_IN		=> MAC_RX_EOF_IN,
-	  MAC_RX_ER_IN		=> mac_rx_er,
-	  MAC_RXD_IN		=> MAC_RXD_IN,
-	  MAC_RX_EN_IN		=> MAC_RX_EN_IN,
-	  MAC_RX_FIFO_ERR_IN	=> mac_rx_fifo_err,
-	  MAC_RX_FIFO_FULL_OUT	=> mac_rx_fifo_full,
-	  MAC_RX_STAT_EN_IN	=> mac_rx_stat_en,
-	  MAC_RX_STAT_VEC_IN	=> mac_rx_stat_vec,
-	  
-  -- output signal to control logic
-	  FR_Q_OUT		=> fr_q,
-	  FR_RD_EN_IN		=> fr_rd_en,
-	  FR_FRAME_VALID_OUT	=> fr_frame_valid,
-	  FR_GET_FRAME_IN	=> fr_get_frame,
-	  FR_FRAME_SIZE_OUT	=> fr_frame_size,
-	  FR_FRAME_PROTO_OUT	=> fr_frame_proto,
-	  FR_IP_PROTOCOL_OUT	=> fr_ip_proto,
-	  FR_ALLOWED_TYPES_IN   => fr_allowed_types,
-	  FR_ALLOWED_IP_IN      => fr_allowed_ip,
-	  FR_ALLOWED_UDP_IN     => fr_allowed_udp,
-	  FR_VLAN_ID_IN		=> vlan_id,
-	FR_SRC_MAC_ADDRESS_OUT	=> fr_src_mac,
-	FR_DEST_MAC_ADDRESS_OUT => fr_dest_mac,
-	FR_SRC_IP_ADDRESS_OUT	=> fr_src_ip,
-	FR_DEST_IP_ADDRESS_OUT	=> fr_dest_ip,
-	FR_SRC_UDP_PORT_OUT	=> fr_src_udp,
-	FR_DEST_UDP_PORT_OUT	=> fr_dest_udp,
-
-	  DEBUG_OUT		=> open
-  );
-end generate frame_rec_sim_gen;
 
 
 -- in case of real hardware, we use the IP cores for MAC and PHY, and also put a SerDes in
