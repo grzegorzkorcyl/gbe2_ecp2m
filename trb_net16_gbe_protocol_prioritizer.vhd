@@ -30,6 +30,9 @@ end trb_net16_gbe_protocol_prioritizer;
 
 architecture trb_net16_gbe_protocol_prioritizer of trb_net16_gbe_protocol_prioritizer is
 
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_protocol_prioritizer : architecture is "GBE_MAIN_group";
+
 begin
 
 PRIORITIZE : process(CLK, FRAME_TYPE_IN, PROTOCOL_CODE_IN)

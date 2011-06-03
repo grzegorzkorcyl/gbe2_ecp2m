@@ -40,6 +40,9 @@ end trb_net16_gbe_type_validator;
 
 architecture trb_net16_gbe_type_validator of trb_net16_gbe_type_validator is
 
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_type_validator : architecture is "GBE_MAIN_group";
+
 signal result                  : std_logic_vector(c_MAX_FRAME_TYPES - 1 downto 0);
 signal ip_result               : std_logic_vector(c_MAX_IP_PROTOCOLS - 1 downto 0);
 signal udp_result              : std_logic_vector(c_MAX_UDP_PROTOCOLS - 1 downto 0);

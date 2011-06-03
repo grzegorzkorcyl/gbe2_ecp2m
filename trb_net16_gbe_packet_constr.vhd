@@ -47,8 +47,8 @@ end trb_net16_gbe_packet_constr;
 
 architecture trb_net16_gbe_packet_constr of trb_net16_gbe_packet_constr is
 
--- attribute HGROUP : string;
--- attribute HGROUP of trb_net16_gbe_packet_constr : architecture  is "GBE_packet_constr";
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_packet_constr : architecture  is "GBE_GBE_group";
 
 component fifo_64kx9
 port (

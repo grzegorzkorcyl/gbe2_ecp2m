@@ -38,8 +38,8 @@ end trb_net16_gbe_frame_trans;
 
 architecture trb_net16_gbe_frame_trans of trb_net16_gbe_frame_trans is
 
--- attribute HGROUP : string;
--- attribute HGROUP of trb_net16_gbe_frame_trans : architecture  is "GBE_frame_trans";
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_frame_trans : architecture  is "GBE_BUF_group";
 
 component mac_init_mem is
 port (

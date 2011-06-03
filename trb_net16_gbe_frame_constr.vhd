@@ -54,8 +54,8 @@ end trb_net16_gbe_frame_constr;
 
 architecture trb_net16_gbe_frame_constr of trb_net16_gbe_frame_constr is
 
--- attribute HGROUP : string;
--- attribute HGROUP of trb_net16_gbe_frame_constr : architecture  is "GBE_frame_constr";
+attribute HGROUP : string;
+attribute HGROUP of trb_net16_gbe_frame_constr : architecture  is "GBE_BUF_group";
 
 component fifo_4096x9 is
 port( 
