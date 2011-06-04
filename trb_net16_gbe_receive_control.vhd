@@ -80,7 +80,7 @@ signal proto_code                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0
 signal reset_prioritizer         : std_logic;
 
 -- debug only
-signal saved_proto               : std_logic_vector(4 downto 0);
+signal saved_proto               : std_logic_vector(2 downto 0);
 
 begin
 
@@ -166,8 +166,8 @@ begin
     FRAMES_RECEIVED_OUT              <= frames_received_ctr;
     --BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
     BYTES_RECEIVED_OUT(15 downto 0)  <= bytes_rec_ctr(15 downto 0);
-    BYTES_RECEIVED_OUT(20 downto 16) <= saved_proto;
-    BYTES_RECEIVED_OUT(31 downto 21) <= (others => '0');
+    BYTES_RECEIVED_OUT(18 downto 16) <= saved_proto;
+    BYTES_RECEIVED_OUT(31 downto 19) <= (others => '0');
   end if;
 end process SYNC_PROC;
 

@@ -54,25 +54,25 @@ begin
 					if (PROTOCOL_CODE_IN = x"11") then -- UDP
 						-- No. 4 = DHCP
 						if (UDP_PROTOCOL_IN = x"0044") then  -- DHCP Client
-							CODE_OUT(3) <= '1';
+							CODE_OUT(1) <= '1';
 						else
 							-- branch for pure IPv4
-							CODE_OUT(0) <= '1';
+							CODE_OUT <= (others => '0');
 						end if;
 					-- No. 5 = ICMP 
 					elsif (PROTOCOL_CODE_IN = x"01") then -- ICMP
-						CODE_OUT(4) <= '1';
+						CODE_OUT(2) <= '1';
 					else
 						CODE_OUT <= (others => '0');  -- vector full of 1 means invalid protocol
 					end if;
 				
-				-- No. 2 = ARP
+				-- No. 1 = ARP
 				when x"0806" =>
-					CODE_OUT(1) <= '1'; 
+					CODE_OUT(0) <= '1'; 
 				
 				-- No. 3 = Test
-				when x"08AA" =>
-					CODE_OUT(2) <= '1';
+				--when x"08AA" =>
+				--	CODE_OUT(2) <= '1';
 				
 				-- last slot is reserved for Trash
 				when others =>
