@@ -154,7 +154,7 @@ port map (
 	TC_FRAME_TYPE_OUT	=> tc_type(1 * 16 - 1 downto 0 * 16),
 	TC_IP_PROTOCOL_OUT	=> tc_ip_proto(1 * 8 - 1 downto 0 * 8),
 	
-	TC_DEST_MAC_OUT		=> tc_mac(2 * 48 - 1 downto 0 * 48),
+	TC_DEST_MAC_OUT		=> tc_mac(1 * 48 - 1 downto 0 * 48),
 	TC_DEST_IP_OUT		=> tc_ip(1 * 32 - 1 downto 0 * 32),
 	TC_DEST_UDP_OUT		=> tc_udp(1 * 16 - 1 downto 0 * 16),
 	TC_SRC_MAC_OUT		=> tc_src_mac(1 * 48 - 1 downto 0 * 48),
@@ -249,7 +249,7 @@ port map (
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
 	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
-	DEBUG_OUT		=> PROTOS_DEBUG_OUT(4 * 32 - 1 downto 1 * 32)
+	DEBUG_OUT		=> PROTOS_DEBUG_OUT(2 * 32 - 1 downto 1 * 32)
 -- END OF INTERFACE
 );
 
