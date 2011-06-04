@@ -60,9 +60,9 @@ end entity;
 architecture trb_net16_med_ecp_sfp_gbe_8b of trb_net16_med_ecp_sfp_gbe_8b is
 
 -- Placer Directives
-attribute HGROUP : string;
+--attribute HGROUP : string;
 -- for whole architecture
-attribute HGROUP of trb_net16_med_ecp_sfp_gbe_8b : architecture  is "media_interface_group";
+--attribute HGROUP of trb_net16_med_ecp_sfp_gbe_8b : architecture  is "media_interface_group";
 attribute syn_sharing : string;
 attribute syn_sharing of trb_net16_med_ecp_sfp_gbe_8b : architecture is "off";
 
