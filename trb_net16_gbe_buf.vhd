@@ -99,9 +99,9 @@ end entity trb_net16_gbe_buf;
 architecture trb_net16_gbe_buf of trb_net16_gbe_buf is
 
 -- Placer Directives
-attribute HGROUP : string;
+--attribute HGROUP : string;
 -- for whole architecture
-attribute HGROUP of trb_net16_gbe_buf : architecture is "GBE_BUF_group";
+--attribute HGROUP of trb_net16_gbe_buf : architecture is "GBE_BUF_group";
 
 
 component tsmac3
