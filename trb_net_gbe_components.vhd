@@ -25,6 +25,7 @@ end component;
 
 component trb_net16_gbe_type_validator is
 port (
+	CLK			: in	std_logic;
 	FRAME_TYPE_IN		: in	std_logic_vector(15 downto 0);  -- recovered frame type	
 	SAVED_VLAN_ID_IN	: in	std_logic_vector(15 downto 0);  -- recovered vlan id
 	ALLOWED_TYPES_IN	: in	std_logic_vector(31 downto 0);  -- signal from gbe_setup
