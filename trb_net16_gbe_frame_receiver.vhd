@@ -470,9 +470,9 @@ port map(
 );
 
 fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or 
-			( ((filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100" and saved_frame_type /= x"0800") or
+			( (filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100" and saved_frame_type /= x"0800") or
 				(filter_current_state = REMOVE_VTYPE and remove_ctr = x"f") or
-				(filter_current_state = DECIDE)) and frame_type_valid = '1'))
+				(filter_current_state = DECIDE and frame_type_valid = '1')))
 	      else '0';
 
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;

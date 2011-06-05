@@ -2,6 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 USE IEEE.std_logic_UNSIGNED.ALL;
+USE ieee.math_real.all;
 
 use work.trb_net_gbe_components.all;
 use work.trb_net_gbe_protocols.all;
@@ -100,6 +101,7 @@ signal allow_brdcst_eth          : std_logic;
 signal allow_brdcst_ip           : std_logic;
 signal fr_ip_proto               : std_logic_vector(7 downto 0);
 signal mc_ip_proto               : std_logic_vector(7 downto 0);
+
 
 begin
 
@@ -380,6 +382,12 @@ begin
 end process CLOCK2_GEN_PROC;
 
 TESTBENCH_PROC : process
+
+variable seed1 : positive; -- seed for random generator
+variable seed2 : positive; -- seed for random generator
+variable rand : real; -- random value (0.0 ... 1.0)
+variable int_rand : integer; -- random value, scaled to your needs
+
 begin
 
 	wait for 50 ns;
@@ -538,6 +546,11 @@ begin
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <='0';
 	MAC_RX_EOF_IN <= '0';
+	
+--	UNIFORM(seed1, seed2, rand);
+--	int_rand := INTEGER(TRUNC(rand*256.0));
+	
+	--wait for 2 ns;
 	
 	end loop;
 	
