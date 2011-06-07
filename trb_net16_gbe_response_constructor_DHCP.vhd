@@ -235,7 +235,7 @@ begin
 	end if;
 end process WAIT_CTR_PROC;
 
-GOT_ADDRESS_OUT <= '1' when main_current_state = ESTBLISHED else '0';
+GOT_ADDRESS_OUT <= '1' when main_current_state = ESTABLISHED else '0';
 g_MY_IP <= saved_true_ip when main_current_state = ESTABLISHED else (others => '0');
 
 
