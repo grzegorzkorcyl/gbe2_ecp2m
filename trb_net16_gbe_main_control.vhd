@@ -107,7 +107,7 @@ signal tsm_hcs_n                            : std_logic;
 signal tsm_hwrite_n                         : std_logic;
 signal tsm_hread_n                          : std_logic;
 
-type link_states is (ACTIVE, INACTIVE, ENABLE_MAC, TIMEOUT, FINALIZE);
+type link_states is (ACTIVE, INACTIVE, ENABLE_MAC, TIMEOUT, GET_ADDRESSES, FINALIZE);
 signal link_current_state, link_next_state : link_states;
 
 signal link_down_ctr                 : std_logic_vector(15 downto 0);
@@ -133,6 +133,9 @@ signal first_byte_q                 : std_logic;
 signal first_byte_qq                : std_logic;
 signal proto_select                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
+
+signal dhcp_start                   : std_logic;
+signal dhcp_done                    : std_logic;
 
 -- debug
 signal frame_waiting_ctr            : std_logic_vector(15 downto 0);
@@ -181,6 +184,11 @@ port map(
 	RECEIVED_FRAMES_OUT	=> SELECT_REC_FRAMES_OUT,
 	SENT_FRAMES_OUT		=> SELECT_SENT_FRAMES_OUT,
 	PROTOS_DEBUG_OUT	=> SELECT_PROTOS_DEBUG_OUT,
+	
+		
+	-- misc ports from protocols
+	DHCP_START_IN		=> dhcp_start,
+	DHCP_DONE_OUT		=> dhcp_done,
 	
 	DEBUG_OUT		=> open
 );
@@ -391,7 +399,7 @@ begin
 	end if;
 end process;
 
-LINK_STATE_MACHINE : process(link_current_state, PCS_AN_COMPLETE_IN, tsm_ready, link_ok_timeout_ctr, PC_READY_IN)
+LINK_STATE_MACHINE : process(link_current_state, dhcp_done, PCS_AN_COMPLETE_IN, tsm_ready, link_ok_timeout_ctr, PC_READY_IN)
 begin
 	case link_current_state is
 
@@ -439,9 +447,21 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (PC_READY_IN = '1') then
-					link_next_state <= ACTIVE;
+					link_next_state <= GET_ADDRESSES;-- ACTIVE;
 				else
 					link_next_state <= FINALIZE;
+				end if;
+			end if;
+			
+		when GET_ADDRESSES =>
+			link_state <= x"6";
+			if (PCS_AN_COMPLETE_IN = '0') then
+				link_next_state <= INACTIVE;
+			else
+				if (dhcp_done = '1') then
+					link_next_state <= ACTIVE;
+				else
+					link_next_state <= GET_ADDRESSES;
 				end if;
 			end if;
 
@@ -478,6 +498,8 @@ begin
 end process LINK_DOWN_CTR_PROC;
 
 MC_LINK_OK_OUT <= link_ok;
+
+dhcp_start <= '1' when (link_current_state = FINALIZE and PC_READY_IN = '1') else '0';
 
 -- END OF LINK STATE CONTROL
 --*************

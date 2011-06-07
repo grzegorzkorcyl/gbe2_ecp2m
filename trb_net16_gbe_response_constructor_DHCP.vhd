@@ -9,6 +9,7 @@ use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
 
 use work.trb_net_gbe_components.all;
+use work.trb_net_gbe_protocols.all;
 
 --********
 -- 
@@ -49,6 +50,10 @@ port (
 	RECEIVED_FRAMES_OUT	: out	std_logic_vector(15 downto 0);
 	SENT_FRAMES_OUT		: out	std_logic_vector(15 downto 0);
 -- END OF INTERFACE
+
+-- MISC ports
+	START_PROCEDURE_IN	: in	std_logic;
+	GOT_ADDRESS_OUT		: out	std_logic;
 
 -- debug
 	DEBUG_OUT		: out	std_logic_vector(31 downto 0)
@@ -167,7 +172,8 @@ begin
 	
 		when BOOTING =>
 			state2 <= x"1";
-			if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
+			if (START_PROCEDURE_IN = '1') then
+			--if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
 			--if (wait_ctr = x"0000_0010") then  -- for sim only
 				main_next_state <= SENDING_DISCOVER;
 			else
@@ -228,6 +234,9 @@ begin
 		end if;
 	end if;
 end process WAIT_CTR_PROC;
+
+GOT_ADDRESS_OUT <= '1' when main_current_state = ESTBLISHED else '0';
+g_MY_IP <= saved_true_ip when main_current_state = ESTABLISHED else (others => '0');
 
 
 -- **** MESSAGES RECEIVEING PART
