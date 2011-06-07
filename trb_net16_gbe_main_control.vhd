@@ -461,7 +461,7 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
-					link_next_state <= GET_ADDRESSES =>
+					link_next_state <= GET_ADDRESSES;
 				else
 					link_next_state <= WAIT_A_BIT;
 				end if;
@@ -524,7 +524,7 @@ begin
 	end if;
 end process WAIT_CTR_PROC;
 
-dhcp_start <= '1' when (link_current_state = FINALIZE and PC_READY_IN = '1') else '0';
+dhcp_start <= '1' when (link_current_state = WAIT_A_BIT and wait_ctr = x"3baa_ca00") else '0';
 
 -- END OF LINK STATE CONTROL
 --*************
