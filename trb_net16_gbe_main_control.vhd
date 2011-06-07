@@ -516,7 +516,7 @@ MC_LINK_OK_OUT <= link_ok;
 WAIT_CTR_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
-		if (RESET = '1') or (main_current_state = ESTABLISHED) then
+		if (RESET = '1') or (link_current_state = INACTIVE) then
 			wait_ctr <= (others => '0');
 		elsif (link_current_state = WAIT_A_BIT) then
 			wait_ctr <= wait_ctr + x"1";
