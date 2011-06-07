@@ -107,7 +107,7 @@ signal tsm_hcs_n                            : std_logic;
 signal tsm_hwrite_n                         : std_logic;
 signal tsm_hread_n                          : std_logic;
 
-type link_states is (ACTIVE, INACTIVE, ENABLE_MAC, TIMEOUT, GET_ADDRESSES, FINALIZE);
+type link_states is (ACTIVE, INACTIVE, ENABLE_MAC, TIMEOUT, GET_ADDRESSES, FINALIZE, WAIT_A_BIT);
 signal link_current_state, link_next_state : link_states;
 
 signal link_down_ctr                 : std_logic_vector(15 downto 0);
@@ -136,6 +136,8 @@ signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
 
 signal dhcp_start                   : std_logic;
 signal dhcp_done                    : std_logic;
+
+signal wait_ctr                     : std_logic_vector(31 downto 0);
 
 -- debug
 signal frame_waiting_ctr            : std_logic_vector(15 downto 0);
@@ -399,7 +401,7 @@ begin
 	end if;
 end process;
 
-LINK_STATE_MACHINE : process(link_current_state, dhcp_done, PCS_AN_COMPLETE_IN, tsm_ready, link_ok_timeout_ctr, PC_READY_IN)
+LINK_STATE_MACHINE : process(link_current_state, dhcp_done, PCS_AN_COMPLETE_IN, tsm_ready, link_ok_timeout_ctr, PC_READY_IN, wait_ctr)
 begin
 	case link_current_state is
 
@@ -447,9 +449,21 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (PC_READY_IN = '1') then
-					link_next_state <= GET_ADDRESSES;-- ACTIVE;
+					link_next_state <= WAIT_A_BIT;-- ACTIVE;
 				else
 					link_next_state <= FINALIZE;
+				end if;
+			end if;
+			
+		when WAIT_A_BIT =>
+			link_state <= x"7";
+			if (PCS_AN_COMPLETE_IN = '0') then
+				link_next_state <= INACTIVE;
+			else
+				if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
+					link_next_state <= GET_ADDRESSES =>
+				else
+					link_next_state <= WAIT_A_BIT;
 				end if;
 			end if;
 			
@@ -498,6 +512,17 @@ begin
 end process LINK_DOWN_CTR_PROC;
 
 MC_LINK_OK_OUT <= link_ok;
+
+WAIT_CTR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (RESET = '1') or (main_current_state = ESTABLISHED) then
+			wait_ctr <= (others => '0');
+		elsif (link_current_state = WAIT_A_BIT) then
+			wait_ctr <= wait_ctr + x"1";
+		end if;
+	end if;
+end process WAIT_CTR_PROC;
 
 dhcp_start <= '1' when (link_current_state = FINALIZE and PC_READY_IN = '1') else '0';
 
