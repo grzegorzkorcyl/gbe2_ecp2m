@@ -427,7 +427,7 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (link_ok_timeout_ctr = x"ffff") then
-					link_next_state <= ENABLE_MAC; --FINALIZE;
+					link_next_state <= ENABLE_MAC;
 				else
 					link_next_state <= TIMEOUT;
 				end if;
@@ -461,6 +461,7 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
+				--if (wait_ctr = x"0000_0010") then
 					link_next_state <= GET_ADDRESSES;
 				else
 					link_next_state <= WAIT_A_BIT;
@@ -524,7 +525,7 @@ begin
 	end if;
 end process WAIT_CTR_PROC;
 
-dhcp_start <= '1' when (link_current_state = WAIT_A_BIT and wait_ctr = x"3baa_ca00") else '0';
+dhcp_start <= '1' when (link_current_state = GET_ADDRESSES) else '0';
 
 -- END OF LINK STATE CONTROL
 --*************
@@ -544,7 +545,7 @@ port map(
 	MC_GBE_EN_IN		=> '1',
 	MC_RX_DISCARD_FCS	=> '0',
 	MC_PROMISC_IN		=> '1',
-	MC_MAC_ADDR_IN		=> x"001122334455",
+	MC_MAC_ADDR_IN		=> g_MY_MAC,
 
 -- signal to/from Host interface of TriSpeed MAC
 	TSM_HADDR_OUT		=> tsm_haddr,

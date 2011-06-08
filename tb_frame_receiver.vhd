@@ -412,7 +412,7 @@ begin
 	RESET <= '0';
 	wait for 50 ns;
 	
-	wait for 1000 ns;
+	wait for 100000 ns;
 	
 	for i in 0 to 10 loop
 	-- FIRST FRAME IP - ICMP Ping request

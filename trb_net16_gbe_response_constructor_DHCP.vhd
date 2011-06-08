@@ -84,7 +84,6 @@ signal state                    : std_logic_vector(3 downto 0);
 signal rec_frames               : std_logic_vector(15 downto 0);
 signal sent_frames              : std_logic_vector(15 downto 0);
 
-signal wait_ctr                 : std_logic_vector(31 downto 0);  -- wait for 5 sec before sending request
 signal load_ctr                 : integer range 0 to 600 := 0;
 
 signal bootp_hdr                : std_logic_vector(95 downto 0);
@@ -165,7 +164,7 @@ begin
 	end if;
 end process MAIN_MACHINE_PROC;
 
-MAIN_MACHINE : process(main_current_state, construct_current_state, wait_ctr, receive_current_state, PS_DATA_IN)
+MAIN_MACHINE : process(main_current_state, START_PROCEDURE_IN, construct_current_state, receive_current_state, PS_DATA_IN)
 begin
 
 	case (main_current_state) is
@@ -173,8 +172,6 @@ begin
 		when BOOTING =>
 			state2 <= x"1";
 			if (START_PROCEDURE_IN = '1') then
-			--if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
-			--if (wait_ctr = x"0000_0010") then  -- for sim only
 				main_next_state <= SENDING_DISCOVER;
 			else
 				main_next_state <= BOOTING;
@@ -223,17 +220,6 @@ begin
 	end case;
 
 end process MAIN_MACHINE;
-
-WAIT_CTR_PROC : process(CLK)
-begin
-	if rising_edge(CLK) then
-		if (RESET = '1') or (main_current_state = ESTABLISHED) then
-			wait_ctr <= (others => '0');
-		elsif (main_current_state = BOOTING) then
-			wait_ctr <= wait_ctr + x"1";
-		end if;
-	end if;
-end process WAIT_CTR_PROC;
 
 GOT_ADDRESS_OUT <= '1' when main_current_state = ESTABLISHED else '0';
 g_MY_IP <= saved_true_ip when main_current_state = ESTABLISHED else (others => '0');
