@@ -51,6 +51,9 @@ port (
 	SENT_FRAMES_OUT		: out	std_logic_vector(15 downto 0);
 -- END OF INTERFACE
 
+	DHCP_START_IN		: in	std_logic;
+	DHCP_DONE_OUT		: out	std_logic;
+
 -- debug
 	DEBUG_OUT		: out	std_logic_vector(31 downto 0)
 );
@@ -131,6 +134,11 @@ vendor_values(175 downto 144) <= x"33425254";  -- client name (TRB3)
 vendor_values2(15 downto 0)   <= x"0436";  -- server identifier
 vendor_values2(47 downto 16)  <= saved_server_ip;
 
+--*****************
+-- setting of global variable for IP address
+g_MY_IP <= saved_true_ip when main_current_state = ESTABLISHED else (others => '0'); 
+--
+--*****************
 
 SAVE_SERVER_ADDR_PROC : process(CLK)
 begin
@@ -159,14 +167,15 @@ begin
 	end if;
 end process MAIN_MACHINE_PROC;
 
-MAIN_MACHINE : process(main_current_state, construct_current_state, wait_ctr, receive_current_state, PS_DATA_IN)
+MAIN_MACHINE : process(main_current_state, DHCP_START_IN, construct_current_state, wait_ctr, receive_current_state, PS_DATA_IN)
 begin
 
 	case (main_current_state) is
 	
 		when BOOTING =>
 			state2 <= x"1";
-			if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
+			if (DHCP_START_IN = '1') then
+			--if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
 			--if (wait_ctr = x"0000_0010") then  -- for sim only
 				main_next_state <= SENDING_DISCOVER;
 			else
@@ -227,6 +236,8 @@ begin
 		end if;
 	end if;
 end process WAIT_CTR_PROC;
+
+DHCP_DONE_OUT <= '1' when main_current_state = ESTABLISHED else '0';
 
 
 -- **** MESSAGES RECEIVEING PART

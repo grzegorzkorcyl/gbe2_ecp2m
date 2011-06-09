@@ -57,6 +57,10 @@ port (
 	RECEIVED_FRAMES_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 	SENT_FRAMES_OUT		: out	std_logic_vector(c_MAX_PROTOCOLS * 16 - 1 downto 0);
 	PROTOS_DEBUG_OUT	: out	std_logic_vector(c_MAX_PROTOCOLS * 32 - 1 downto 0);
+	
+	-- misc signals for response constructors
+	DHCP_START_IN		: in	std_logic;
+	DHCP_DONE_OUT		: out	std_logic;
 
 	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
 );
@@ -249,8 +253,12 @@ port map (
 	
 	RECEIVED_FRAMES_OUT	=> RECEIVED_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
 	SENT_FRAMES_OUT		=> SENT_FRAMES_OUT(2 * 16 - 1 downto 1 * 16),
-	DEBUG_OUT		=> PROTOS_DEBUG_OUT(2 * 32 - 1 downto 1 * 32)
 -- END OF INTERFACE
+
+	DHCP_START_IN		=> DHCP_START_IN,
+	DHCP_DONE_OUT		=> DHCP_DONE_OUT,
+	
+	DEBUG_OUT		=> PROTOS_DEBUG_OUT(2 * 32 - 1 downto 1 * 32)
 );
 
 -- protocol No. 3 Ping

@@ -8,9 +8,9 @@ use work.trb_net_std.all;
 package trb_net_gbe_protocols is
 
 -- g_MY_IP is being set by DHCP Response Constructor
-signal g_MY_IP                : std_logic_vector(31 downto 0) := x"00000000";
+signal g_MY_IP                : std_logic_vector(31 downto 0);
 -- g_MY_MAC is being set by Main Controller
-signal g_MY_MAC               : std_logic_vector(47 downto 0) := x"efbeefbe0000";
+signal g_MY_MAC               : std_logic_vector(47 downto 0);
 
 constant c_MAX_FRAME_TYPES    : integer range 1 to 16 := 3;
 constant c_MAX_PROTOCOLS      : integer range 1 to 16 := 3;
@@ -231,6 +231,8 @@ port (
 	SENT_FRAMES_OUT		: out	std_logic_vector(15 downto 0);
 -- END OF INTERFACE
 
+	DHCP_START_IN		: in	std_logic;
+	DHCP_DONE_OUT		: out	std_logic;
 -- debug
 	DEBUG_OUT		: out	std_logic_vector(31 downto 0)
 );
