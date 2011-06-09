@@ -437,6 +437,7 @@ end process SAVED_VID_PROC;
 
 type_validator : trb_net16_gbe_type_validator
 port map(
+	CLK			 => RX_MAC_CLK,	
 	FRAME_TYPE_IN		 => saved_frame_type,
 	SAVED_VLAN_ID_IN	 => saved_vid,	
 	ALLOWED_TYPES_IN	 => FR_ALLOWED_TYPES_IN,
