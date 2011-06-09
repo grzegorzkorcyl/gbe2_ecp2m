@@ -312,7 +312,6 @@ port (
 	ALLOW_RX_IN		: in	std_logic;
 	ALLOW_BRDCST_ETH_IN	: in	std_logic;
 	ALLOW_BRDCST_IP_IN	: in	std_logic;
-	MY_MAC_IN		: in	std_logic_vector(47 downto 0);
 	RX_MAC_CLK		: in	std_logic;  -- receiver serdes clock
 
 -- input signals from TS_MAC

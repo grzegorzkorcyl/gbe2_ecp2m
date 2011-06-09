@@ -567,7 +567,7 @@ signal mc_src_udp			: std_logic_vector(15 downto 0);
 
 signal dbg_ft                        : std_logic_vector(63 downto 0);
 
-signal my_mac                        : std_logic_vector(47 downto 0);
+--signal my_mac                        : std_logic_vector(47 downto 0);
 signal allow_brdcst_eth              : std_logic;
 signal allow_brdcst_ip               : std_logic;
 signal fr_ip_proto                   : std_logic_vector(7 downto 0);
@@ -575,7 +575,7 @@ signal mc_ip_proto                   : std_logic_vector(7 downto 0);
 
 begin
 
-my_mac <= x"efbeefbe0000";  -- temporary
+--my_mac <= x"efbeefbe0000";  -- temporary
 
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
 
@@ -1206,7 +1206,6 @@ port map(
 	  ALLOW_RX_IN		=> allow_rx,
 	  ALLOW_BRDCST_ETH_IN	=> allow_brdcst_eth,
 	  ALLOW_BRDCST_IP_IN	=> allow_brdcst_ip,
-	  MY_MAC_IN		=> my_mac,
 	  RX_MAC_CLK		=> serdes_clk_125,
 
   -- input signals from TS_MAC

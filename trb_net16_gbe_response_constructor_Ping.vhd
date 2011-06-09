@@ -9,6 +9,7 @@ use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
 
 use work.trb_net_gbe_components.all;
+use work.trb_net_gbe_protocols.all;
 
 --********
 -- Response Constructor which responds to Ping messages
@@ -242,8 +243,8 @@ TC_FRAME_TYPE_OUT <= x"0008";
 --TC_DEST_MAC_OUT   <= x"9a680f201300";
 --TC_DEST_IP_OUT    <= x"00000000";
 TC_DEST_UDP_OUT   <= x"0000";  -- not used
-TC_SRC_MAC_OUT    <= x"efbeefbe0000";
-TC_SRC_IP_OUT     <= x"6500a8c0";  -- temporary
+TC_SRC_MAC_OUT    <= g_MY_MAC;
+TC_SRC_IP_OUT     <= x"6500a8c0";  -- temporary  TODO: change to global ip
 TC_SRC_UDP_OUT    <= x"0000";  -- not used
 TC_IP_PROTOCOL_OUT <= X"01"; -- ICMP
 
