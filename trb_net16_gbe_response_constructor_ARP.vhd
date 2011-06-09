@@ -9,6 +9,7 @@ use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
 
 use work.trb_net_gbe_components.all;
+use work.trb_net_gbe_protocols.all;
 
 --********
 -- creates a reply for an incoming ARP request
