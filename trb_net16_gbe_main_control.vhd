@@ -482,6 +482,10 @@ MC_LINK_OK_OUT <= link_ok;
 -- END OF LINK STATE CONTROL
 --*************
 
+--*************
+-- GENERATE MAC_ADDRESS
+g_MY_MAC <= x"efbeefbe0000";
+
 
 --****************
 -- TRI SPEED MAC CONTROLLER
