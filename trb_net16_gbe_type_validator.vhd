@@ -83,7 +83,7 @@ end generate RESULT_GEN;
 
 VALID_OUT_PROC : process(CLK, result, SAVED_VLAN_ID_IN, VLAN_ID_IN, IP_PROTOCOLS_IN, FRAME_TYPE_IN, udp_result)
 begin
-	if rising_edge(CLK) then
+	--if rising_edge(CLK) then
 		if (SAVED_VLAN_ID_IN = x"0000") then  -- frame without vlan tag
 			if (FRAME_TYPE_IN = x"0800") then  -- in case of ip frame
 				if (IP_PROTOCOLS_IN = x"11") then -- in case of udp inside ip
@@ -127,7 +127,7 @@ begin
 		else
 			VALID_OUT <= '0';
 		end if;
-	end if;
+	--end if;
 end process VALID_OUT_PROC;
 
 end trb_net16_gbe_type_validator;
