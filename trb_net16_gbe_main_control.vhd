@@ -107,7 +107,7 @@ signal tsm_hcs_n                            : std_logic;
 signal tsm_hwrite_n                         : std_logic;
 signal tsm_hread_n                          : std_logic;
 
-type link_states is (ACTIVE, INACTIVE, ENABLE_MAC, TIMEOUT, GET_ADDRESSES, FINALIZE, WAIT_A_BIT);
+type link_states is (ACTIVE, INACTIVE, ENABLE_MAC, TIMEOUT, FINALIZE);
 signal link_current_state, link_next_state : link_states;
 
 signal link_down_ctr                 : std_logic_vector(15 downto 0);
@@ -133,11 +133,6 @@ signal first_byte_q                 : std_logic;
 signal first_byte_qq                : std_logic;
 signal proto_select                 : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
 signal loaded_bytes_ctr             : std_Logic_vector(15 downto 0);
-
-signal dhcp_start                   : std_logic;
-signal dhcp_done                    : std_logic;
-
-signal wait_ctr                     : std_logic_vector(31 downto 0);
 
 -- debug
 signal frame_waiting_ctr            : std_logic_vector(15 downto 0);
@@ -186,11 +181,6 @@ port map(
 	RECEIVED_FRAMES_OUT	=> SELECT_REC_FRAMES_OUT,
 	SENT_FRAMES_OUT		=> SELECT_SENT_FRAMES_OUT,
 	PROTOS_DEBUG_OUT	=> SELECT_PROTOS_DEBUG_OUT,
-	
-		
-	-- misc ports from protocols
-	DHCP_START_IN		=> dhcp_start,
-	DHCP_DONE_OUT		=> dhcp_done,
 	
 	DEBUG_OUT		=> open
 );
@@ -401,14 +391,14 @@ begin
 	end if;
 end process;
 
-LINK_STATE_MACHINE : process(link_current_state, dhcp_done, PCS_AN_COMPLETE_IN, tsm_ready, link_ok_timeout_ctr, PC_READY_IN, wait_ctr)
+LINK_STATE_MACHINE : process(link_current_state, PCS_AN_COMPLETE_IN, tsm_ready, link_ok_timeout_ctr, PC_READY_IN)
 begin
 	case link_current_state is
 
 		when ACTIVE =>
 			link_state <= x"1";
 			if (PCS_AN_COMPLETE_IN = '0') then
-				link_next_state <= INACTIVE;
+				link_next_state <= INACTIVE; --ENABLE_MAC;
 			else
 				link_next_state <= ACTIVE;
 			end if;
@@ -427,7 +417,7 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (link_ok_timeout_ctr = x"ffff") then
-					link_next_state <= ENABLE_MAC;
+					link_next_state <= ENABLE_MAC; --FINALIZE;
 				else
 					link_next_state <= TIMEOUT;
 				end if;
@@ -438,7 +428,7 @@ begin
 			if (PCS_AN_COMPLETE_IN = '0') then
 			  link_next_state <= INACTIVE;
 			elsif (tsm_ready = '1') then
-			  link_next_state <= FINALIZE;
+			  link_next_state <= FINALIZE; --INACTIVE;
 			else
 			  link_next_state <= ENABLE_MAC;
 			end if;
@@ -449,34 +439,9 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (PC_READY_IN = '1') then
-					link_next_state <= ACTIVE;  -- WAIT_A_BIT
-				else
-					link_next_state <= FINALIZE;
-				end if;
-			end if;
-			
-		when WAIT_A_BIT =>
-			link_state <= x"7";
-			if (PCS_AN_COMPLETE_IN = '0') then
-				link_next_state <= INACTIVE;
-			else
-				if (wait_ctr = x"3baa_ca00") then  -- wait for 10 sec
-				--if (wait_ctr = x"0000_0010") then
-					link_next_state <= GET_ADDRESSES;
-				else
-					link_next_state <= WAIT_A_BIT;
-				end if;
-			end if;
-			
-		when GET_ADDRESSES =>
-			link_state <= x"6";
-			if (PCS_AN_COMPLETE_IN = '0') then
-				link_next_state <= INACTIVE;
-			else
-				if (dhcp_done = '1') then
 					link_next_state <= ACTIVE;
 				else
-					link_next_state <= GET_ADDRESSES;
+					link_next_state <= FINALIZE;
 				end if;
 			end if;
 
@@ -514,19 +479,6 @@ end process LINK_DOWN_CTR_PROC;
 
 MC_LINK_OK_OUT <= link_ok;
 
-WAIT_CTR_PROC : process(CLK)
-begin
-	if rising_edge(CLK) then
-		if (RESET = '1') or (link_current_state = INACTIVE) then
-			wait_ctr <= (others => '0');
-		elsif (link_current_state = WAIT_A_BIT) then
-			wait_ctr <= wait_ctr + x"1";
-		end if;
-	end if;
-end process WAIT_CTR_PROC;
-
-dhcp_start <= '1' when (link_current_state = GET_ADDRESSES) else '0';
-
 -- END OF LINK STATE CONTROL
 --*************
 
@@ -545,7 +497,7 @@ port map(
 	MC_GBE_EN_IN		=> '1',
 	MC_RX_DISCARD_FCS	=> '0',
 	MC_PROMISC_IN		=> '1',
-	MC_MAC_ADDR_IN		=> g_MY_MAC,
+	MC_MAC_ADDR_IN		=> x"001122334455",
 
 -- signal to/from Host interface of TriSpeed MAC
 	TSM_HADDR_OUT		=> tsm_haddr,

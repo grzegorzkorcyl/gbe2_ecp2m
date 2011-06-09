@@ -8,7 +8,6 @@ use work.trb_net_std.all;
 use work.trb_net_components.all;
 use work.trb_net16_hub_func.all;
 use work.trb_net_gbe_components.all;
-use work.trb_net_gbe_protocols.all;
 
 --********
 -- here all frame checking has to be done, if the frame fits into protocol standards
@@ -147,7 +146,7 @@ begin
 	end if;
 end process FILTER_MACHINE_PROC;
 
-FILTER_MACHINE : process(filter_current_state, saved_dest_mac, g_MY_MAC, ALLOW_BRDCST_ETH_IN, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid, ALLOW_RX_IN)
+FILTER_MACHINE : process(filter_current_state, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid, ALLOW_RX_IN)
 begin
 
 	case filter_current_state is
@@ -165,7 +164,7 @@ begin
 			state <= x"3";
 			if (remove_ctr = x"03") then  -- counter starts with a delay that's why only 3
 				-- destination MAC address filtering here 
-				if (saved_dest_mac = g_MY_MAC) then
+				if (saved_dest_mac = MY_MAC_IN) then
 					filter_next_state <= REMOVE_SRC;
 				elsif (ALLOW_BRDCST_ETH_IN = '1') and (saved_dest_mac = x"ffffffffffff") then
 					filter_next_state <= REMOVE_SRC;
@@ -438,7 +437,6 @@ end process SAVED_VID_PROC;
 
 type_validator : trb_net16_gbe_type_validator
 port map(
-	CLK			 => RX_MAC_CLK,	
 	FRAME_TYPE_IN		 => saved_frame_type,
 	SAVED_VLAN_ID_IN	 => saved_vid,	
 	ALLOWED_TYPES_IN	 => FR_ALLOWED_TYPES_IN,
