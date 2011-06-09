@@ -85,8 +85,8 @@ values(31 downto 16)   <= x"0008";  -- protocol type
 values(39 downto 32)   <= x"06";  -- hardware size
 values(47 downto 40)   <= x"04";  -- protocol size
 values(63 downto 48)   <= x"0200"; --opcode (reply)
-values(111 downto 64)  <= x"efbeefbe0000";  -- sender (my) mac
-values(143 downto 112) <= x"6500a8c0";  -- sender (my) ip
+values(111 downto 64)  <= g_MY_MAC;  -- sender (my) mac
+values(143 downto 112) <= x"6500a8c0";  -- sender (my) ip  TODO: change to global
 values(191 downto 144) <= PS_SRC_MAC_ADDRESS_IN;  -- target mac
 values(223 downto 192) <= saved_sender_ip;  -- target ip
 
@@ -124,7 +124,7 @@ begin
 		when DECIDE =>
 			state <= x"3";
 			-- in case the request is not for me, drop it
-			if (saved_target_ip /= x"6500a8c0") then
+			if (saved_target_ip /= x"6500a8c0") then --TODO: change to global
 				dissect_next_state <= IDLE;
 			else
 				dissect_next_state <= WAIT_FOR_LOAD;
@@ -239,13 +239,21 @@ PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD or diss
 TC_FRAME_SIZE_OUT <= x"001c";  -- fixed frame size
 
 TC_FRAME_TYPE_OUT <= x"0608";
-TC_DEST_MAC_OUT   <= PS_SRC_MAC_ADDRESS_IN;
 TC_DEST_IP_OUT    <= x"00000000";  -- doesnt matter
 TC_DEST_UDP_OUT   <= x"0000";  -- doesnt matter
-TC_SRC_MAC_OUT    <= x"efbeefbe0000";
+TC_SRC_MAC_OUT    <= g_MY_MAC;
 TC_SRC_IP_OUT     <= x"00000000";  -- doesnt matter
 TC_SRC_UDP_OUT    <= x"0000";  -- doesnt matter
 TC_IP_PROTOCOL_OUT <= x"00"; -- doesnt matter
+
+ADDR_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		if (dissect_current_state = READ_FRAME) then
+			TC_DEST_MAC_OUT <= PS_SRC_MAC_ADDRESS_IN;
+		end if;
+	end if;
+end process ADDR_PROC;
 
 -- **** statistice
 REC_FRAMES_PROC : process(CLK)
