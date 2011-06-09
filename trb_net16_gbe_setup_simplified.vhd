@@ -551,19 +551,19 @@ begin
 					
 					-- *** debug of response constructors
 					
-				-- ARP
-				when x"b0" =>
-					data_out(15 downto 0)  <= DBG_SELECT_REC_IN(1 * 16 - 1 downto 0 * 16);
-					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(1 * 16 - 1 downto 0 * 16);
-				when x"b1" =>
-					data_out <= DBG_SELECT_PROTOS_IN(1 * 32 - 1 downto 0 * 32);
-					
 				-- DHCP
-				when x"b2" =>
+				when x"b0" =>
 					data_out(15 downto 0)  <= DBG_SELECT_REC_IN(2 * 16 - 1 downto 1 * 16);
 					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(2 * 16 - 1 downto 1 * 16);
-				when x"b3" =>
+				when x"b1" =>
 					data_out <= DBG_SELECT_PROTOS_IN(2 * 32 - 1 downto 1 * 32);
+										
+				-- ARP
+				when x"b2" =>
+					data_out(15 downto 0)  <= DBG_SELECT_REC_IN(1 * 16 - 1 downto 0 * 16);
+					data_out(31 downto 16) <= DBG_SELECT_SENT_IN(1 * 16 - 1 downto 0 * 16);
+				when x"b3" =>
+					data_out <= DBG_SELECT_PROTOS_IN(1 * 32 - 1 downto 0 * 32);
 					
 				-- PING
 				when x"b4" =>
