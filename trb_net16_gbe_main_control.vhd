@@ -408,7 +408,7 @@ begin
 		when ACTIVE =>
 			link_state <= x"1";
 			if (PCS_AN_COMPLETE_IN = '0') then
-				link_next_state <= INACTIVE; --ENABLE_MAC;
+				link_next_state <= INACTIVE;
 			else
 				link_next_state <= ACTIVE;
 			end if;
@@ -438,7 +438,7 @@ begin
 			if (PCS_AN_COMPLETE_IN = '0') then
 			  link_next_state <= INACTIVE;
 			elsif (tsm_ready = '1') then
-			  link_next_state <= FINALIZE; --INACTIVE;
+			  link_next_state <= FINALIZE;
 			else
 			  link_next_state <= ENABLE_MAC;
 			end if;
@@ -449,7 +449,7 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (PC_READY_IN = '1') then
-					link_next_state <= WAIT_A_BIT;-- ACTIVE;
+					link_next_state <= ACTIVE;  -- WAIT_A_BIT
 				else
 					link_next_state <= FINALIZE;
 				end if;
