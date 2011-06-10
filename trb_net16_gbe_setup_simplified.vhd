@@ -548,6 +548,9 @@ begin
 				when x"a5" =>
 					data_out <= DBG_MC_IN(31 downto 0);
 					
+				when x"a6" =>
+					data_out <= g_MY_IP;
+					
 					
 					-- *** debug of response constructors
 					
