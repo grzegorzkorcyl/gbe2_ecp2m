@@ -457,7 +457,8 @@ begin
 			if (PCS_AN_COMPLETE_IN = '0') then
 				link_next_state <= INACTIVE;
 			else
-				if (wait_ctr = x"3baa_ca00") then
+				--if (wait_ctr = x"3baa_ca00") then
+				if (wait_ctr = x"0000_0010") then
 					link_next_state <= GET_ADDRESS;
 				else
 					link_next_state <= WAIT_FOR_BOOT;
@@ -490,7 +491,7 @@ begin
 	end if;
 end process LINK_OK_CTR_PROC;
 
-link_ok <= '1' when (link_current_state = ACTIVE) else '0';
+link_ok <= '1' when (link_current_state = ACTIVE) or (link_current_state = GET_ADDRESS) else '0';
 
 WAIT_CTR_PROC : process(CLK)
 begin
