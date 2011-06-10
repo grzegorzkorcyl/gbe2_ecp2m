@@ -503,6 +503,7 @@ begin
 	end if;
 end process WAIT_CTR_PROC;
 
+dhcp_start <= '1' when link_current_state = GET_ADDRESS else '0';
 
 LINK_DOWN_CTR_PROC : process(CLK)
 begin
