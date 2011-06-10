@@ -87,7 +87,7 @@ values(39 downto 32)   <= x"06";  -- hardware size
 values(47 downto 40)   <= x"04";  -- protocol size
 values(63 downto 48)   <= x"0200"; --opcode (reply)
 values(111 downto 64)  <= g_MY_MAC;  -- sender (my) mac
-values(143 downto 112) <= x"6500a8c0";  -- sender (my) ip  TODO: change to global ip
+values(143 downto 112) <= g_MY_IP;
 values(191 downto 144) <= PS_SRC_MAC_ADDRESS_IN;  -- target mac
 values(223 downto 192) <= saved_sender_ip;  -- target ip
 
@@ -102,7 +102,7 @@ begin
 	end if;
 end process DISSECT_MACHINE_PROC;
 
-DISSECT_MACHINE : process(dissect_current_state, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, TC_BUSY_IN, data_ctr, PS_SELECTED_IN, saved_target_ip)
+DISSECT_MACHINE : process(dissect_current_state, g_MY_IP, PS_WR_EN_IN, PS_ACTIVATE_IN, PS_DATA_IN, TC_BUSY_IN, data_ctr, PS_SELECTED_IN, saved_target_ip)
 begin
 	case dissect_current_state is
 	
@@ -124,8 +124,8 @@ begin
 			
 		when DECIDE =>
 			state <= x"3";
-			-- in case the request is not for me, drop it  TODO: change to global ip
-			if (saved_target_ip /= x"6500a8c0") then
+			-- in case the request is not for me, drop it
+			if (saved_target_ip /= g_MY_IP) then
 				dissect_next_state <= IDLE;
 			else
 				dissect_next_state <= WAIT_FOR_LOAD;
