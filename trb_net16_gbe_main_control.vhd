@@ -457,8 +457,8 @@ begin
 			if (PCS_AN_COMPLETE_IN = '0') then
 				link_next_state <= INACTIVE;
 			else
-				--if (wait_ctr = x"3baa_ca00") then
-				if (wait_ctr = x"0000_0010") then
+				if (wait_ctr = x"3baa_ca00") then
+				--if (wait_ctr = x"0000_0010") then
 					link_next_state <= GET_ADDRESS;
 				else
 					link_next_state <= WAIT_FOR_BOOT;
@@ -491,7 +491,7 @@ begin
 	end if;
 end process LINK_OK_CTR_PROC;
 
-link_ok <= '1' when (link_current_state = ACTIVE) or (link_current_state = GET_ADDRESS) else '0';
+link_ok <= '1' when (link_current_state = ACTIVE) or (link_current_state = GET_ADDRESS) or (link_current_state = WAIT_FOR_BOOT) else '0';
 
 WAIT_CTR_PROC : process(CLK)
 begin
@@ -547,7 +547,7 @@ port map(
 	MC_GBE_EN_IN		=> '1',
 	MC_RX_DISCARD_FCS	=> '0',
 	MC_PROMISC_IN		=> '1',
-	MC_MAC_ADDR_IN		=> x"001122334455",
+	MC_MAC_ADDR_IN		=> g_MY_MAC, --x"001122334455",
 
 -- signal to/from Host interface of TriSpeed MAC
 	TSM_HADDR_OUT		=> tsm_haddr,
@@ -563,7 +563,7 @@ port map(
 
 --DEBUG_OUT <= mac_control_debug;
 
-tsm_reconf <= '1' when (link_current_state = INACTIVE) and (link_current_state = TIMEOUT) else '0';
+tsm_reconf <= '1' when (link_current_state = INACTIVE) and (PCS_AN_COMPLETE_IN = '1') else '0';
 
 TSM_HADDR_OUT     <= tsm_haddr;
 TSM_HCS_N_OUT     <= tsm_hcs_n;

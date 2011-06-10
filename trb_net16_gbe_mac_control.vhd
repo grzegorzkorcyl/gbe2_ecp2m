@@ -97,12 +97,13 @@ reg_max_pkt_size(15 downto 0) <= x"05EE";  -- 1518 default value
 reg_ipg(15 downto 5) <= (others => '0');
 reg_ipg(4 downto 0)  <= "01100"; -- default value inter-packet-gap in byte time
 
-reg_mac0(15 downto 8) <= MC_MAC_ADDR_IN(47 downto 40);
-reg_mac0(7 downto 0)  <= MC_MAC_ADDR_IN(39 downto 32);
-reg_mac1(15 downto 8) <= MC_MAC_ADDR_IN(31 downto 24);
+reg_mac0(7 downto 0)  <= MC_MAC_ADDR_IN(7 downto 0);
+reg_mac0(15 downto 8) <= MC_MAC_ADDR_IN(15 downto 8);
 reg_mac1(7 downto 0)  <= MC_MAC_ADDR_IN(23 downto 16);
-reg_mac2(15 downto 8) <= MC_MAC_ADDR_IN(15 downto 8);
-reg_mac2(7 downto 0)  <= MC_MAC_ADDR_IN(7 downto 0);
+reg_mac1(15 downto 8) <= MC_MAC_ADDR_IN(31 downto 24);
+reg_mac2(7 downto 0)  <= MC_MAC_ADDR_IN(39 downto 32);
+reg_mac2(15 downto 8) <= MC_MAC_ADDR_IN(47 downto 40);
+
 
 MAC_CONF_MACHINE_PROC : process(CLK)
 begin
