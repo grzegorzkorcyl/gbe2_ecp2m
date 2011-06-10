@@ -244,7 +244,7 @@ TC_FRAME_TYPE_OUT <= x"0008";
 --TC_DEST_IP_OUT    <= x"00000000";
 TC_DEST_UDP_OUT   <= x"0000";  -- not used
 TC_SRC_MAC_OUT    <= g_MY_MAC;
-TC_SRC_IP_OUT     <= x"6500a8c0";  -- temporary  TODO: change to global ip
+TC_SRC_IP_OUT     <= g_MY_IP;
 TC_SRC_UDP_OUT    <= x"0000";  -- not used
 TC_IP_PROTOCOL_OUT <= X"01"; -- ICMP
 
