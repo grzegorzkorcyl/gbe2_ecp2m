@@ -102,12 +102,12 @@ begin
 	end if;
 end process PARTIALLY_VALID_PROC;
 
-VALID_OUT_PROC : process(CLK)
+VALID_OUT_PROC : process(partially_valid, SAVED_VLAN_ID_IN, VLAN_ID_IN)
 begin
-	if rising_edge(CLK) then
-		if (RESET = '1') then
-			VALID_OUT <= '0';
-		elsif (partially_valid = '1') then
+	--if rising_edge(CLK) then
+	--	if (RESET = '1') then
+	--		VALID_OUT <= '0';
+		if (partially_valid = '1') then
 			if (SAVED_VLAN_ID_IN = x"0000") then
 				VALID_OUT <= '1';
 			elsif (VLAN_ID_IN = x"0000_0000") then
@@ -120,7 +120,7 @@ begin
 		else
 			VALID_OUT <= '0';
 		end if;
-	end if;
+	--end if;
 end process VALID_OUT_PROC;
 
 	--if rising_edge(CLK) then

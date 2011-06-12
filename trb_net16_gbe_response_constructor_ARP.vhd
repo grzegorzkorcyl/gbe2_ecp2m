@@ -132,8 +132,7 @@ begin
 			end if;
 			
 		when WAIT_FOR_LOAD =>
-			state <= x"3";
-			
+			state <= x"4";
 			if (TC_BUSY_IN = '0' and PS_SELECTED_IN = '1') then
 				dissect_next_state <= LOAD_FRAME;
 			else
@@ -141,7 +140,7 @@ begin
 			end if;
 		
 		when LOAD_FRAME =>
-			state <= x"4";
+			state <= x"5";
 			if (data_ctr = 28) then
 				dissect_next_state <= CLEANUP;
 			else
