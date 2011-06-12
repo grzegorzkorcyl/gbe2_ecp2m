@@ -117,6 +117,8 @@ begin
 			else
 				VALID_OUT <= '0';
 			end if;
+		else
+			VALID_OUT <= '0';
 		end if;
 	end if;
 end process VALID_OUT_PROC;
