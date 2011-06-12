@@ -75,8 +75,8 @@ attribute syn_encoding of filter_current_state : signal is "safe,gray";
 signal fifo_wr_en                           : std_logic;
 signal rx_bytes_ctr                         : std_logic_vector(15 downto 0);
 signal frame_valid_q                        : std_logic;
-signal delayed_frame_valid                  : std_logic;
-signal delayed_frame_valid_q                : std_logic;
+--signal delayed_frame_valid                  : std_logic;
+--signal delayed_frame_valid_q                : std_logic;
 
 signal rec_fifo_empty                       : std_logic;
 signal rec_fifo_full                        : std_logic;
@@ -561,11 +561,11 @@ begin
 	end if;
 end process FRAME_VALID_PROC;
 
--- received bytes counter is valid only after FR_FRAME_VALID_OUT is asserted for few clock cycles
 RX_BYTES_CTR_PROC : process(RX_MAC_CLK)
 begin
   if rising_edge(RX_MAC_CLK) then
-    if (RESET = '1') or (delayed_frame_valid_q = '1') then
+    --if (RESET = '1') or (delayed_frame_valid_q = '1') then
+    if (RESET = '1') or (frame_valid_q = '1') then
       rx_bytes_ctr <= (others => '0');
     elsif (fifo_wr_en = '1') then
       rx_bytes_ctr <= rx_bytes_ctr + x"1";
@@ -574,13 +574,13 @@ begin
 end process;
 
 
-SYNC_PROC : process(RX_MAC_CLK)
-begin
-  if rising_edge(RX_MAC_CLK) then
-    delayed_frame_valid   <= MAC_RX_EOF_IN;
-    delayed_frame_valid_q <= delayed_frame_valid;
-  end if;
-end process SYNC_PROC;
+--SYNC_PROC : process(RX_MAC_CLK)
+--begin
+--  if rising_edge(RX_MAC_CLK) then
+--    delayed_frame_valid   <= MAC_RX_EOF_IN;
+--    delayed_frame_valid_q <= delayed_frame_valid;
+--  end if;
+--end process SYNC_PROC;
 
 --*****************
 -- synchronization between 125MHz receive clock and 100MHz system clock
