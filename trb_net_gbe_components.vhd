@@ -315,8 +315,6 @@ port (
 	RESET			: in	std_logic;
 	LINK_OK_IN              : in    std_logic;
 	ALLOW_RX_IN		: in	std_logic;
-	ALLOW_BRDCST_ETH_IN	: in	std_logic;
-	ALLOW_BRDCST_IP_IN	: in	std_logic;
 	RX_MAC_CLK		: in	std_logic;  -- receiver serdes clock
 
 -- input signals from TS_MAC

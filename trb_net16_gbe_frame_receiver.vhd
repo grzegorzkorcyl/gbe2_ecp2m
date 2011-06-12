@@ -22,9 +22,6 @@ port (
 	RESET			: in	std_logic;
 	LINK_OK_IN              : in    std_logic;
 	ALLOW_RX_IN		: in	std_logic;
-	ALLOW_BRDCST_ETH_IN	: in	std_logic;
-	ALLOW_BRDCST_IP_IN	: in	std_logic;
-	--MY_MAC_IN		: in	std_logic_vector(47 downto 0);
 	RX_MAC_CLK		: in	std_logic;  -- receiver serdes clock
 
 -- input signals from TS_MAC
@@ -147,7 +144,7 @@ begin
 	end if;
 end process FILTER_MACHINE_PROC;
 
-FILTER_MACHINE : process(filter_current_state, saved_frame_type, saved_proto, g_MY_MAC, saved_dest_mac, ALLOW_BRDCST_ETH_IN, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid, ALLOW_RX_IN)
+FILTER_MACHINE : process(filter_current_state, saved_frame_type, saved_proto, g_MY_MAC, saved_dest_mac, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid, ALLOW_RX_IN)
 begin
 
 	case filter_current_state is
@@ -165,9 +162,7 @@ begin
 			state <= x"3";
 			if (remove_ctr = x"03") then  -- counter starts with a delay that's why only 3
 				-- destination MAC address filtering here 
-				if (saved_dest_mac = g_MY_MAC) then
-					filter_next_state <= REMOVE_SRC;
-				elsif (ALLOW_BRDCST_ETH_IN = '1') and (saved_dest_mac = x"ffffffffffff") then
+				if (saved_dest_mac = g_MY_MAC) or (saved_dest_mac = x"ffffffffffff") then
 					filter_next_state <= REMOVE_SRC;
 				else
 					filter_next_state <= DECIDE;

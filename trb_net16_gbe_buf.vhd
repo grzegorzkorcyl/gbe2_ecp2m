@@ -567,9 +567,6 @@ signal mc_src_udp			: std_logic_vector(15 downto 0);
 
 signal dbg_ft                        : std_logic_vector(63 downto 0);
 
---signal my_mac                        : std_logic_vector(47 downto 0);
-signal allow_brdcst_eth              : std_logic;
-signal allow_brdcst_ip               : std_logic;
 signal fr_ip_proto                   : std_logic_vector(7 downto 0);
 signal mc_ip_proto                   : std_logic_vector(7 downto 0);
 
@@ -767,8 +764,6 @@ port map(
 	GBE_DELAY_OUT             => pc_delay,
 	GBE_ALLOW_LARGE_OUT       => allow_large,  -- gk 21.07.10
 	GBE_ALLOW_RX_OUT          => allow_rx,
-	GBE_ALLOW_BRDCST_ETH_OUT  => allow_brdcst_eth,
-	GBE_ALLOW_BRDCST_IP_OUT   => allow_brdcst_ip,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
 	GBE_ALLOWED_IP_OUT	  => fr_allowed_ip,
@@ -860,8 +855,6 @@ port map(
 	GBE_DELAY_OUT             => pc_delay,
 	GBE_ALLOW_LARGE_OUT       => open,
 	GBE_ALLOW_RX_OUT          => open,
-	GBE_ALLOW_BRDCST_ETH_OUT  => allow_brdcst_eth,
-	GBE_ALLOW_BRDCST_IP_OUT   => allow_brdcst_ip,
 	GBE_FRAME_DELAY_OUT       => frame_delay, -- gk 09.12.10
 	GBE_ALLOWED_TYPES_OUT     => fr_allowed_types,
 	GBE_ALLOWED_IP_OUT	  => fr_allowed_ip,
@@ -1204,8 +1197,6 @@ port map(
 	  RESET			=> RESET,
 	  LINK_OK_IN		=> link_ok,
 	  ALLOW_RX_IN		=> allow_rx,
-	  ALLOW_BRDCST_ETH_IN	=> allow_brdcst_eth,
-	  ALLOW_BRDCST_IP_IN	=> allow_brdcst_ip,
 	  RX_MAC_CLK		=> serdes_clk_125,
 
   -- input signals from TS_MAC
