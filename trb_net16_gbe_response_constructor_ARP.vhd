@@ -124,11 +124,11 @@ begin
 			
 		when DECIDE =>
 			state <= x"3";
-			-- in case the request is not for me, drop it
-			if (saved_target_ip /= g_MY_IP) then
-				dissect_next_state <= IDLE;
-			else
+			if (saved_target_ip = g_MY_IP) then
 				dissect_next_state <= WAIT_FOR_LOAD;
+			-- in case the request is not for me, drop it
+			else
+				dissect_next_state <= IDLE;
 			end if;
 			
 		when WAIT_FOR_LOAD =>

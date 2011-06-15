@@ -99,6 +99,8 @@ signal fr_allowed_udp            : std_logic_vector(31 downto 0);
 signal fr_ip_proto               : std_logic_vector(7 downto 0);
 signal mc_ip_proto               : std_logic_vector(7 downto 0);
 
+signal additional_rand_pause     : std_logic;
+
 
 begin
 
@@ -375,6 +377,13 @@ begin
 	RX_MAC_CLK <= '0'; wait for 4.0 ns;
 end process CLOCK2_GEN_PROC;
 
+CHECK_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		assert DEBUG_OUT(1) = '0' and DEBUG_OUT(3) = '0' report "FIFO FULL" severity error;
+	end if;
+end process CHECK_PROC;
+
 TESTBENCH_PROC : process
 
 variable seed1 : positive; -- seed for random generator
@@ -398,6 +407,7 @@ begin
 	FR_ALLOWED_TYPES_IN     <= x"0000_000f";
 	fr_allowed_ip           <= x"0000_000f";
 	fr_allowed_udp          <= x"0000_000f";
+	additional_rand_pause   <= '0';
 	
 	wait for 10 ns;
 	RESET <= '0';
@@ -405,7 +415,19 @@ begin
 	
 	wait for 1000 ns;
 	
-	for i in 0 to 10 loop
+	for i in 0 to 1000 loop
+	
+	wait for 700 ns;
+	
+		additional_rand_pause <= '1';
+		UNIFORM(seed1, seed2, rand);
+		int_rand := INTEGER(TRUNC(rand*15.0));
+		for j in 0 to int_rand loop
+			wait for 1 ns;
+		end loop;
+		additional_rand_pause <= '0';
+	
+	
 	-- FIRST FRAME IP - ICMP Ping request
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <= '1';
@@ -537,11 +559,6 @@ begin
 	wait until rising_edge(RX_MAC_CLK);
 	MAC_RX_EN_IN <='0';
 	MAC_RX_EOF_IN <= '0';
-	
---	UNIFORM(seed1, seed2, rand);
---	int_rand := INTEGER(TRUNC(rand*256.0));
-	
-	--wait for 2 ns;
 	
 	end loop;
 	
