@@ -97,6 +97,9 @@ signal saved_dest_udp                       : std_logic_vector(15 downto 0);
 signal dump                                 : std_logic_vector(7 downto 0);
 signal dump2                                : std_logic_vector(7 downto 0);
 
+signal fifo_data                            : std_logic_vector(7 downto 0);
+signal fifo_eof                             : std_logic;
+
 -- debug signals
 signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
 signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
@@ -457,8 +460,8 @@ port map(
 --TODO put here a larger fifo maybe (for sure!)
 receive_fifo : fifo_4096x9
 port map( 
-	Data(7 downto 0)    => MAC_RXD_IN,
-	Data(8)             => MAC_RX_EOF_IN,
+	Data(7 downto 0)    => fifo_data, --MAC_RXD_IN,
+	Data(8)             => fifo_eof, --MAC_RX_EOF_IN,
 	WrClock             => RX_MAC_CLK,
 	RdClock             => CLK,
 	WrEn                => fifo_wr_en,
@@ -470,12 +473,44 @@ port map(
 	Full                => rec_fifo_full
 );
 
-fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or 
-			( (filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100" and saved_frame_type /= x"0800") or
-				(filter_current_state = REMOVE_VTYPE and remove_ctr = x"f") or
-				(filter_current_state = DECIDE and frame_type_valid = '1')))
-	      else '0';
+--fifo_wr_en <= '1' when (MAC_RX_EN_IN = '1') and ((filter_current_state = SAVE_FRAME) or 
+--			( (filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100" and saved_frame_type /= x"0800") or
+--				(filter_current_state = REMOVE_VTYPE and remove_ctr = x"f") or
+--				(filter_current_state = DECIDE and frame_type_valid = '1')))
+--	      else '0';
 
+FIFO_WR_EN_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			fifo_wr_en <= '0';
+		elsif (MAC_RX_EN_IN = '1' and frame_type_valid = '1') then
+			if (filter_current_state = SAVE_FRAME) then
+				fifo_wr_en <= '1';
+			elsif (filter_current_state = REMOVE_TYPE and remove_ctr = x"b" and saved_frame_type /= x"8100" and saved_frame_type /= x"0800") then
+				fifo_wr_en <= '1';
+			elsif (filter_current_state = REMOVE_VTYPE and remove_ctr = x"f") then
+				fifo_wr_en <= '1';
+			elsif (filter_current_state = DECIDE) then
+				fifo_wr_en <= '1';
+			else
+				fifo_wr_en <= '0';
+			end if;
+		else
+			fifo_wr_en <= '0';
+		end if;
+	end if;
+end process FIFO_WR_EN_PROC;
+
+FIFO_DATA_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		fifo_data <= MAC_RXD_IN;
+		fifo_eof  <= MAC_RX_EOF_IN;
+	end if;
+end process FIFO_DATA_PROC;
+	      
+	      
 MAC_RX_FIFO_FULL_OUT <= rec_fifo_full;
 
 sizes_fifo : fifo_512x32
