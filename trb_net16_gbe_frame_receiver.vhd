@@ -112,8 +112,8 @@ DEBUG_OUT(1)            <= rec_fifo_full;
 DEBUG_OUT(2)            <= sizes_fifo_empty;
 DEBUG_OUT(3)            <= sizes_fifo_full;
 DEBUG_OUT(7 downto 4)   <= state;
-DEBUG_OUT(23 downto 8)  <= dbg_rec_frames(11 downto 0);
-DEBUG_OUT(31 downto 24) <= parsed_frames_ctr(11 downto 0);
+DEBUG_OUT(19 downto 8)  <= dbg_rec_frames(11 downto 0);
+DEBUG_OUT(31 downto 20) <= parsed_frames_ctr(11 downto 0);
 
 DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
 DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
@@ -587,7 +587,7 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			parsed_frames_ctr <= (others => '0');
-		elsif (filter_current_state = IDLE and new_frame = '1' and ALOW_RX_IN = '1') then
+		elsif (filter_current_state = IDLE and new_frame = '1' and ALLOW_RX_IN = '1') then
 			parsed_frames_ctr <= parsed_frames_ctr + x"1";
 		end if;
 	end if;
