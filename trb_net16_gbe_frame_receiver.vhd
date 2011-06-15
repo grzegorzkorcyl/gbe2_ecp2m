@@ -565,7 +565,7 @@ begin
   if rising_edge(RX_MAC_CLK) then
     if (RESET = '1') or (delayed_frame_valid_q = '1') then
     --if (RESET = '1') or (frame_valid_q = '1') then
-      rx_bytes_ctr <= x"0001";
+      rx_bytes_ctr <= (others => '0');
     elsif (fifo_wr_en = '1') then
       rx_bytes_ctr <= rx_bytes_ctr + x"1";
     end if;
