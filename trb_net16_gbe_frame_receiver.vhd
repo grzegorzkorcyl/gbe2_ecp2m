@@ -150,7 +150,7 @@ begin
 	end if;
 end process FILTER_MACHINE_PROC;
 
-FILTER_MACHINE : process(filter_current_state, saved_frame_type, saved_proto, g_MY_MAC, saved_dest_mac, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid, ALLOW_RX_IN)
+FILTER_MACHINE : process(fifo_eof, filter_current_state, saved_frame_type, saved_proto, g_MY_MAC, saved_dest_mac, remove_ctr, new_frame, MAC_RX_EOF_IN, frame_type_valid, ALLOW_RX_IN)
 begin
 
 	case filter_current_state is
@@ -251,7 +251,7 @@ begin
 			
 		when SAVE_FRAME =>
 			state <= x"7";
-			if (MAC_RX_EOF_IN = '1') then
+			if (fifo_eof = '1') then --if (MAC_RX_EOF_IN = '1') then
 				filter_next_state <= CLEANUP;
 			else
 				filter_next_state <= SAVE_FRAME;
@@ -259,7 +259,7 @@ begin
 			
 		when DROP_FRAME =>
 			state <= x"8";
-			if (MAC_RX_EOF_IN = '1') then
+			if (fifo_eof = '1') then --if (MAC_RX_EOF_IN = '1') then
 				filter_next_state <= CLEANUP;
 			else
 				filter_next_state <= DROP_FRAME;
@@ -599,7 +599,7 @@ begin
   if rising_edge(RX_MAC_CLK) then
     if (RESET = '1') or (delayed_frame_valid_q = '1') then
     --if (RESET = '1') or (frame_valid_q = '1') then
-      rx_bytes_ctr <= (others => '0');
+      rx_bytes_ctr <= x"0001";
     elsif (fifo_wr_en = '1') then
       rx_bytes_ctr <= rx_bytes_ctr + x"1";
     end if;
