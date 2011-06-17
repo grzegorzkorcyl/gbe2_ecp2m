@@ -179,7 +179,11 @@ port( rst_n                  : in	std_logic;
 	  mr_main_reset          : in	std_logic; 
 	  mr_an_enable           : in	std_logic; 
 	  mr_restart_an          : in	std_logic; 
-	  mr_adv_ability         : in	std_logic_vector(15 downto 0)  
+	  mr_adv_ability         : in	std_logic_vector(15 downto 0);
+	  xmit_autoneg           : in	std_logic;
+	  force_isolate		 : in	std_logic;
+	  force_loopback	 : in	std_logic;
+	  force_unidir		 : in	std_logic
 	);
 end component;
 
