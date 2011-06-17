@@ -604,9 +604,11 @@ end process PARSED_FRAMES_CTR_PROC;
 SOME_ERROR_FRAME_CTR_PROC : process(RX_MAC_CLK)
 begin
 	if rising_edge(RX_MAC_CLK) then
-		some_error_frames_ctr <= (others => '0');
-	elsif (MAC_RX_STAT_EN_IN = '1' and MAC_RX_STAT_VEC_IN(26 downto 24) /= "000") then
-		some_error_frames_ctr <= some_error_frames_ctr + x"1";	
+		if (RESET = '1') then
+			some_error_frames_ctr <= (others => '0');
+		elsif (MAC_RX_STAT_EN_IN = '1' and MAC_RX_STAT_VEC_IN(26 downto 24) /= "000") then
+			some_error_frames_ctr <= some_error_frames_ctr + x"1";
+		end if;
 	end if;
 end process SOME_ERROR_FRAME_CTR_PROC;
 
