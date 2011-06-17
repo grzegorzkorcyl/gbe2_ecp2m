@@ -588,7 +588,9 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			parsed_frames_ctr <= (others => '0');
-		elsif (filter_current_state = IDLE and new_frame = '1' and ALLOW_RX_IN = '1') then
+		--elsif (filter_current_state = IDLE and new_frame = '1' and ALLOW_RX_IN = '1') then
+		--	parsed_frames_ctr <= parsed_frames_ctr + x"1";
+		elsif (MAC_RX_STAT_EN_IN = '1' and MAC_RX_STAT_VEC_IN(23) = '1') then
 			parsed_frames_ctr <= parsed_frames_ctr + x"1";
 		end if;
 	end if;
