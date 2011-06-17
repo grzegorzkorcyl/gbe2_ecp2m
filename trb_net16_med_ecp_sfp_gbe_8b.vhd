@@ -439,7 +439,11 @@ port map(
 	mr_main_reset			=> pcs_mr_reset,
 	mr_an_enable			=> MR_AN_ENABLE_IN,
 	mr_restart_an			=> MR_RESTART_AN_IN,
-	mr_adv_ability			=> MR_ADV_ABILITY_IN
+	mr_adv_ability			=> MR_ADV_ABILITY_IN,
+	
+	force_isolate			=> '0',
+	force_loopback			=> '0',
+	force_unidir			=> '0'
 );
 
 SYNC_RX_PROC : process(sd_rx_clk)
