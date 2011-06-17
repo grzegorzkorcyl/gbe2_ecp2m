@@ -97,6 +97,8 @@ signal saved_dest_udp                       : std_logic_vector(15 downto 0);
 signal dump                                 : std_logic_vector(7 downto 0);
 signal dump2                                : std_logic_vector(7 downto 0);
 
+signal error_frames_ctr                     : std_logic_vector(15 downto 0);
+
 -- debug signals
 signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
 signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
@@ -595,6 +597,17 @@ begin
 		end if;
 	end if;
 end process PARSED_FRAMES_CTR_PROC;
+
+ERROR_FRAMES_CTR_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			error_frames_ctr <= (others => '0');
+		elsif (MAC_RX_ER_IN = '1') then
+			error_frames_ctr <= error_frames_ctr + x"1";
+		end if;
+	end if;
+end process ERROR_FRAMES_CTR_PROC;
 
 
 SYNC_PROC : process(RX_MAC_CLK)
