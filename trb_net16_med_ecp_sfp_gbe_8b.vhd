@@ -300,7 +300,7 @@ clk_int : if (USE_125MHZ_EXTCLK = 0) generate
 		ff_tx_k_cntrl_ch0        => sd_tx_kcntl,
 		ff_rx_k_cntrl_ch0        => sd_rx_kcntl,
 			ff_rxfullclk_ch0         => sd_rx_clk,
-		ff_xmit_ch0              => pcs_xmit, --'0',
+		ff_xmit_ch0              => '0',
 		ff_correct_disp_ch0      => sd_tx_correct_disp,
 		ff_disp_err_ch0          => sd_rx_disp_error,
 		ff_cv_ch0                => sd_rx_cv_error,
@@ -348,7 +348,7 @@ clk_ext : if (USE_125MHZ_EXTCLK = 1) generate
 			ff_txhalfclk				=> open,
 			ff_txdata_ch0				=> sd_tx_data, -- TX data input
 			ff_tx_k_cntrl_ch0			=> sd_tx_kcntl, -- TX komma input
-			ff_xmit_ch0				=> pcs_xmit, --'0', -- for autonegotiation (input)
+			ff_xmit_ch0				=> '0', -- for autonegotiation (input)
 			ff_correct_disp_ch0		=> sd_tx_correct_disp, -- controls disparity at IPG start (input)
 			-- Resets and power down
 			ffc_quad_rst				=> quad_rst, -- async reset for whole QUAD (active high)
@@ -447,7 +447,7 @@ port map(
 	mr_restart_an			=> MR_RESTART_AN_IN,
 	mr_adv_ability			=> MR_ADV_ABILITY_IN,
 	
-	xmit_autoneg			=> pcs_xmit,
+	xmit_autoneg			=> open, --pcs_xmit,
 	
 	force_isolate			=> '0',
 	force_loopback			=> '0',
