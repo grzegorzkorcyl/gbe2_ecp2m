@@ -451,7 +451,11 @@ port map(
 	
 	force_isolate			=> '0',
 	force_loopback			=> '0',
-	force_unidir			=> '0'
+	force_unidir			=> '0',
+	
+	ctc_drop_flag			=> open,
+	ctc_add_flag			=> open,
+	an_link_ok			=> open
 );
 
 SYNC_RX_PROC : process(sd_rx_clk)
