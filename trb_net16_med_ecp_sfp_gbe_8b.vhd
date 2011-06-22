@@ -183,7 +183,9 @@ port( rst_n                  : in	std_logic;
 	  xmit_autoneg           : in	std_logic;
 	  force_isolate		 : in	std_logic;
 	  force_loopback	 : in	std_logic;
-	  force_unidir		 : in	std_logic
+	  force_unidir		 : in	std_logic;
+	  ctc_drop_flag          : in   std_logic;
+	  ctc_add_flag           : in   std_logic
 	);
 end component;
 
