@@ -179,14 +179,7 @@ port( rst_n                  : in	std_logic;
 	  mr_main_reset          : in	std_logic; 
 	  mr_an_enable           : in	std_logic; 
 	  mr_restart_an          : in	std_logic; 
-	  mr_adv_ability         : in	std_logic_vector(15 downto 0);
-	  xmit_autoneg           : in	std_logic;
-	  force_isolate		 : in	std_logic;
-	  force_loopback	 : in	std_logic;
-	  force_unidir		 : in	std_logic;
-	  ctc_drop_flag          : in   std_logic;
-	  ctc_add_flag           : in   std_logic;
-	  an_link_ok             : in   std_logic
+	  mr_adv_ability         : in	std_logic_vector(15 downto 0)  
 	);
 end component;
 
@@ -253,8 +246,6 @@ signal user_rst				: std_logic;
 
 signal reset_bsm			: std_logic_vector(3 downto 0);
 signal reset_debug			: std_logic_vector(31 downto 0);
-
-signal pcs_xmit                         : std_logic;
 
 begin
 
@@ -448,17 +439,7 @@ port map(
 	mr_main_reset			=> pcs_mr_reset,
 	mr_an_enable			=> MR_AN_ENABLE_IN,
 	mr_restart_an			=> MR_RESTART_AN_IN,
-	mr_adv_ability			=> MR_ADV_ABILITY_IN,
-	
-	xmit_autoneg			=> open, --pcs_xmit,
-	
-	force_isolate			=> '0',
-	force_loopback			=> '0',
-	force_unidir			=> '0',
-	
-	ctc_drop_flag			=> open,
-	ctc_add_flag			=> open,
-	an_link_ok			=> open
+	mr_adv_ability			=> MR_ADV_ABILITY_IN
 );
 
 SYNC_RX_PROC : process(sd_rx_clk)

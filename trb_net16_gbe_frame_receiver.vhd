@@ -98,7 +98,6 @@ signal dump                                 : std_logic_vector(7 downto 0);
 signal dump2                                : std_logic_vector(7 downto 0);
 
 signal error_frames_ctr                     : std_logic_vector(15 downto 0);
-signal some_error_frames_ctr                : std_logic_vector(15 downto 0);
 
 -- debug signals
 signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
@@ -118,10 +117,8 @@ DEBUG_OUT(7 downto 4)   <= state;
 DEBUG_OUT(19 downto 8)  <= dbg_rec_frames(11 downto 0);
 DEBUG_OUT(31 downto 20) <= parsed_frames_ctr(11 downto 0);
 
---DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
---DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
-DEBUG_OUT(47 downto 32) <= some_error_frames_ctr;
-DEBUG_OUT(63 downto 48) <= error_frames_ctr;
+DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
+DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
 
 
 -- new_frame is asserted when first byte of the frame arrives
@@ -600,17 +597,6 @@ begin
 		end if;
 	end if;
 end process PARSED_FRAMES_CTR_PROC;
-
-SOME_ERROR_FRAME_CTR_PROC : process(RX_MAC_CLK)
-begin
-	if rising_edge(RX_MAC_CLK) then
-		if (RESET = '1') then
-			some_error_frames_ctr <= (others => '0');
-		elsif (MAC_RX_STAT_EN_IN = '1' and MAC_RX_STAT_VEC_IN(26 downto 24) /= "000") then
-			some_error_frames_ctr <= some_error_frames_ctr + x"1";
-		end if;
-	end if;
-end process SOME_ERROR_FRAME_CTR_PROC;
 
 ERROR_FRAMES_CTR_PROC : process(RX_MAC_CLK)
 begin
