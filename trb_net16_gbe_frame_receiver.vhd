@@ -104,7 +104,6 @@ signal dbg_rec_frames                       : std_logic_vector(15 downto 0);
 signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
 signal dbg_drp_frames                       : std_logic_vector(15 downto 0);
 signal state                                : std_logic_vector(3 downto 0);
-signal rd_bytes_ctr                         : std_logic_vector(15 downto 0);
 signal parsed_frames_ctr                    : std_logic_vector(15 downto 0);
 
 begin
@@ -573,17 +572,6 @@ begin
     end if;
   end if;
 end process;
-
---RD_BYTES_CTR_PROC : process(CLK)
---begin
---	if rising_edge(CLK) then
---		if (RESET = '1') then
---			rd_bytes_ctr <= (others => '0');
---		elsif (FR_RD_EN_IN = '1') then
---			rd_bytes_ctr <= rd_bytes_ctr + x"1";		
---		end if;
---	end if;
---end process RD_BYTES_CTR_PROC;
 
 PARSED_FRAMES_CTR_PROC : process(RX_MAC_CLK)
 begin

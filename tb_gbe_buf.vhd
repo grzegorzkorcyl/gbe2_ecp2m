@@ -252,7 +252,6 @@ variable cts_random_number : std_logic_vector(7 downto 0);
 
 variable stim : std_logic_vector(15 downto 0);
 
-
 -- RND test
 --UNIFORM(seed1, seed2, rand);
 --int_rand := INTEGER(TRUNC(rand*65536.0));
