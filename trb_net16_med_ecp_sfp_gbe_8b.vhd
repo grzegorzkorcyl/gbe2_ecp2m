@@ -397,7 +397,7 @@ buf_stat_debug(21 downto 12) <= sd_tx_debug(9 downto 0);
 buf_stat_debug(11 downto 0)  <= sd_rx_debug(11 downto 0);
 
 
-SGMII_GBE_PCS : sgmii_gbe_pcs34
+SGMII_GBE_PCS : sgmii_gbe_pcs32
 port map(
 	rst_n				=> GSR_N,
 	signal_detect			=> sd_link_ok,

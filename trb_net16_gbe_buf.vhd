@@ -1241,7 +1241,7 @@ imp_gen: if (DO_SIMULATION = 0) generate
 	--------------------------------------------------------------------------------------------
 	
 	-- MAC part
-	MAC: tsmac34
+	MAC: tsmac3
 	port map(
 	----------------- clock and reset port declarations ------------------
 		hclk				=> CLK,
