@@ -141,7 +141,7 @@ component serdes_gbe_0_intclock_8b is
 
 end component;
 
-component sgmii_gbe_pcs34
+component sgmii_gbe_pcs32
 port( rst_n                  : in	std_logic;
 	  signal_detect          : in	std_logic;
 	  gbe_mode               : in	std_logic;

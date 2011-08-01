@@ -104,7 +104,7 @@ architecture trb_net16_gbe_buf of trb_net16_gbe_buf is
 --attribute HGROUP of trb_net16_gbe_buf : architecture is "GBE_BUF_group";
 
 
-component tsmac34
+component tsmac3
 port(
 	--------------- clock and reset port declarations ------------------
 	hclk					: in	std_logic;
