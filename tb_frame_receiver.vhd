@@ -101,8 +101,46 @@ signal mc_ip_proto               : std_logic_vector(7 downto 0);
 
 signal additional_rand_pause     : std_logic;
 
+signal pc_ready, pc_sos, pc_transmit_on, pc_wr_en, pc_sod, pc_eod, pc_fc_h_ready, pc_fc_ready : std_logic;
+signal pc_data : std_logic_vector(7 downto 0);
+signal pc_ip_size, pc_udp_size : std_logic_vector(15 downto 0);
 
 begin
+
+packet_constr : trb_net16_gbe_packet_constr
+port map(
+	RESET                   => RESET,
+	CLK                     => CLK,
+	MULT_EVT_ENABLE_IN      => '0',
+	-- ports for user logic
+	PC_WR_EN_IN             => '0',
+	PC_DATA_IN              => (others => '0'),
+	PC_READY_OUT            => pc_ready,
+	PC_START_OF_SUB_IN      => pc_sos,
+	PC_END_OF_SUB_IN        => '0',
+	PC_END_OF_DATA_IN       => '0',
+	PC_TRANSMIT_ON_OUT	=> pc_transmit_on,
+	-- queue and subevent layer headers
+	PC_SUB_SIZE_IN          => (others => '0'),
+	PC_PADDING_IN           => '0',
+	PC_DECODING_IN          => (others => '0'),
+	PC_EVENT_ID_IN          => (others => '0'),
+	PC_TRIG_NR_IN           => (others => '0'),
+	PC_QUEUE_DEC_IN         => (others => '0'),
+	PC_MAX_FRAME_SIZE_IN    => (others => '0'),
+	PC_DELAY_IN             => (others => '0'),
+	-- FrameConstructor ports
+	TC_WR_EN_OUT            => pc_wr_en,
+	TC_DATA_OUT             => pc_data,
+	TC_H_READY_IN           => pc_fc_ready,
+	TC_READY_IN             => pc_fc_h_ready,
+	TC_IP_SIZE_OUT          => pc_ip_size,
+	TC_UDP_SIZE_OUT         => pc_udp_size,
+	TC_FLAGS_OFFSET_OUT     => open,
+	TC_SOD_OUT              => pc_sod,
+	TC_EOD_OUT              => pc_eod,
+	DEBUG_OUT               => open
+);
 
 receiver : trb_net16_gbe_frame_receiver
 port map (
@@ -230,9 +268,9 @@ port map (
 	TC_TRANSMIT_DONE_IN	=> MC_TRANSMIT_DONE_IN,
 
 -- signals to/from packet constructor
-	PC_READY_IN		=> '1',
-	PC_TRANSMIT_ON_IN	=> '0',
-	PC_SOD_IN		=> '0',
+	PC_READY_IN		=> pc_ready,
+	PC_TRANSMIT_ON_IN	=> pc_transmit_on,
+	PC_SOD_IN		=> pc_sod,
 
 -- signals to/from sgmii/gbe pcs_an_complete
 	PCS_AN_COMPLETE_IN	=> '1',
@@ -257,16 +295,16 @@ port map(
 	RESET			=> RESET,
 
 -- signals to/from packet constructor
-	PC_READY_IN		=> '1',
-	PC_DATA_IN		=> (others => '0'),
-	PC_WR_EN_IN		=> '0',
+	PC_READY_IN		=> pc_ready, --'1',
+	PC_DATA_IN		=> pc_data, --(others => '0'),
+	PC_WR_EN_IN		=> pc_wr_en, --'0',
 	PC_IP_SIZE_IN		=> (others => '0'),
 	PC_UDP_SIZE_IN		=> (others => '0'),
 	PC_FLAGS_OFFSET_IN	=> (others => '0'),
-	PC_SOD_IN		=> '0',
-	PC_EOD_IN		=> '0',
-	PC_FC_READY_OUT		=> open,
-	PC_FC_H_READY_OUT	=> open,
+	PC_SOD_IN		=> pc_sod,
+	PC_EOD_IN		=> pc_eod,
+	PC_FC_READY_OUT		=> pc_fc_ready,
+	PC_FC_H_READY_OUT	=> pc_fc_h_ready,
 	PC_TRANSMIT_ON_IN	=> '0',
 
       -- signals from ip_configurator used by packet constructor
@@ -408,6 +446,7 @@ begin
 	fr_allowed_ip           <= x"0000_000f";
 	fr_allowed_udp          <= x"0000_000f";
 	additional_rand_pause   <= '0';
+	pc_sos                  <= '0';
 	
 	wait for 10 ns;
 	RESET <= '0';
@@ -418,6 +457,15 @@ begin
 	for i in 0 to 1000 loop
 	
 	wait for 700 ns;
+	
+	pc_sos <= '1';
+	wait for 100 ns;
+	pc_sos <= '0';
+	
+	
+	
+	wait;
+	--THE REST IS NOT BEEING EXECUTED RIGHT NOW
 	
 		additional_rand_pause <= '1';
 		UNIFORM(seed1, seed2, rand);

@@ -160,7 +160,7 @@ signal disable_prep         : std_logic;
 type constructSimpleFrameStates is (IDLE, WAIT_FOR_HEADERS, PUT_DATA, FINISH);
 signal constrSimpleFrameCurrentState, constrSimpleFrameNextState : constructSimpleFrameStates;
 
-signal gen_data_ctr : std_logic_vector(7 downto 0);
+signal gen_data_ctr : std_logic_vector(15 downto 0);
 
 
 begin
@@ -195,7 +195,7 @@ begin
 			end if;
 		
 		when PUT_DATA =>
-			if (gen_data_ctr = x"100") then
+			if (gen_data_ctr = x"0100") then
 				constrSimpleFrameNextState <= FINISH;
 			else
 				constrSimpleFrameNextState <= PUT_DATA;
@@ -222,10 +222,10 @@ begin
 	end if;
 end process;
 
-TC_DATA_OUT <= gen_data_ctr;
+TC_DATA_OUT <= gen_data_ctr(7 downto 0);
 TC_WR_EN_OUT <= '1' when constrSimpleFrameCurrentState = PUT_DATA else '0';
 TC_SOD_OUT <= '1' when constrSimpleFrameCurrentState = IDLE and PC_START_OF_SUB_IN = '1' else '0';
-TC_EOD_OUT <= '1' when constrSimpleFrameCurrentState = PUT_DATA and gen_data_ctr = x"100" else '0';
+TC_EOD_OUT <= '1' when constrSimpleFrameCurrentState = PUT_DATA and gen_data_ctr = x"0100" else '0';
 PC_READY_OUT <= '1' when constrSimpleFrameCurrentState = IDLE else '0';
 PC_TRANSMIT_ON_OUT <= '0' when constrSimpleFrameCurrentState = IDLE and PC_START_OF_SUB_IN = '0' else '1';
 TC_IP_SIZE_OUT <= x"0100";
