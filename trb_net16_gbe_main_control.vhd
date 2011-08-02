@@ -146,6 +146,8 @@ signal rc_frame_proto_q             : std_Logic_vector(c_MAX_PROTOCOLS - 1 downt
 type redirect_states is (IDLE, CHECK_BUSY, LOAD, BUSY, FINISH, CLEANUP);
 signal redirect_current_state, redirect_next_state : redirect_states;
 
+signal frame_type                   : std_logic_vector(15 downto 0);
+
 begin
 
 protocol_selector : trb_net16_gbe_protocol_selector
@@ -170,7 +172,7 @@ port map(
 	TC_DATA_OUT		=> TC_DATA_OUT,
 	TC_RD_EN_IN		=> TC_RD_EN_IN,
 	TC_FRAME_SIZE_OUT	=> TC_FRAME_SIZE_OUT,
-	TC_FRAME_TYPE_OUT	=> TC_FRAME_TYPE_OUT,
+	TC_FRAME_TYPE_OUT	=> frame_type, --TC_FRAME_TYPE_OUT,
 	TC_IP_PROTOCOL_OUT	=> TC_IP_PROTOCOL_OUT,
 	
 	TC_DEST_MAC_OUT		=> TC_DEST_MAC_OUT,
@@ -191,6 +193,8 @@ port map(
 	
 	DEBUG_OUT		=> open
 );
+
+TC_FRAME_TYPE_OUT <= frame_type when flow_current_state = TRANSMIT_CTRL else x"0008";
 
 proto_select <= RC_FRAME_PROTO_IN;
 --proto_select <= (others => '0') when (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '0')

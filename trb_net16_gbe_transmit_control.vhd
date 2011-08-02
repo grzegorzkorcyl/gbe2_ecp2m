@@ -199,6 +199,7 @@ begin
 	SRC_UDP_PORT_OUT     <= (others => '0'); --IC_SRC_UDP_PORT_IN;
 	
 	FC_IP_PROTOCOL_OUT   <= x"dd"; --x"11"; -- udp
+	
 
       when TRANSMIT_CTRL =>
 	FC_DATA_OUT         <= MC_DATA_IN(7 downto 0);
