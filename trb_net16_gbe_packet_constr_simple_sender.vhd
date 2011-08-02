@@ -228,8 +228,8 @@ TC_SOD_OUT <= '1' when constrSimpleFrameCurrentState = IDLE and PC_START_OF_SUB_
 TC_EOD_OUT <= '1' when constrSimpleFrameCurrentState = PUT_DATA and gen_data_ctr = x"100" else '0';
 PC_READY_OUT <= '1' when constrSimpleFrameCurrentState = IDLE else '0';
 PC_TRANSMIT_ON_OUT <= '0' when constrSimpleFrameCurrentState = IDLE and PC_START_OF_SUB_IN = '0' else '1';
-TC_IP_SIZE_OUT <= x"100";
-TC_UDP_SIZE_OUT <= x"100";
+TC_IP_SIZE_OUT <= x"0100";
+TC_UDP_SIZE_OUT <= x"0100";
 
 --PC_TRANSMIT_ON_OUT <= '1' when constructCurrentState = WAIT_FOR_LOAD else '0';
 --PC_TRANSMIT_ON_OUT <= '0';
