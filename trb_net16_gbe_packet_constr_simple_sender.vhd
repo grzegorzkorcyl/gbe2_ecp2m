@@ -158,7 +158,7 @@ signal disable_prep         : std_logic;
 
 -- gk 02.08.11
 type constructSimpleFrameStates is (IDLE, WAIT_FOR_HEADERS, PUT_DATA, FINISH);
-signal constrSimpleFrameCurrentState, constrSimpleFrameNextState i constructSimpleFrameStates;
+signal constrSimpleFrameCurrentState, constrSimpleFrameNextState : constructSimpleFrameStates;
 
 signal genDataCtrProc : std_logic_vector(7 downto 0);
 
