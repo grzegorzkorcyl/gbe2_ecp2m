@@ -174,7 +174,7 @@ begin
 			constrSimpleFrameCurrentState <= constrSimpleFrameNextState;
 		end if;
 	end if;
-end process constrSimpleFrameMachineProc;
+end process costrSimpleFrameMachineProc;
 
 constrSimpleFrameMachine : process(constrSimpleFrameCurrentState, PC_START_OF_SUB_IN, TC_H_READY_IN, gen_data_ctr, TC_READY_IN)
 begin
