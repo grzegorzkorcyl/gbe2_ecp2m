@@ -195,7 +195,7 @@ begin
 			end if;
 		
 		when PUT_DATA =>
-			if (gen_data_ctr = x"100" then
+			if (gen_data_ctr = x"100") then
 				constrSimpleFrameNextState <= FINISH;
 			else
 				constrSimpleFrameNextState <= PUT_DATA;
@@ -228,7 +228,8 @@ TC_SOD_OUT <= '1' when constrSimpleFrameCurrentState = IDLE and PC_START_OF_SUB_
 TC_EOD_OUT <= '1' when constrSimpleFrameCurrentState = PUT_DATA and gen_data_ctr = x"100" else '0';
 PC_READY_OUT <= '1' when constrSimpleFrameCurrentState = IDLE else '0';
 PC_TRANSMIT_ON_OUT <= '0' when constrSimpleFrameCurrentState = IDLE and PC_START_OF_SUB_IN = '0' else '1';
-
+TC_IP_SIZE_OUT <= x"100";
+TC_UDP_SIZE_OUT <= x"100";
 
 --PC_TRANSMIT_ON_OUT <= '1' when constructCurrentState = WAIT_FOR_LOAD else '0';
 --PC_TRANSMIT_ON_OUT <= '0';
@@ -1156,9 +1157,9 @@ pc_ready <= '0';
 -- TC_SOD_OUT                    <= fc_sod;
 -- TC_EOD_OUT                    <= fc_eod;
 
-PC_READY_OUT                  <= '1';
-TC_IP_SIZE_OUT                <= (others => '0');
-TC_UDP_SIZE_OUT               <= (others => '0');
+--PC_READY_OUT                  <= '1';
+--TC_IP_SIZE_OUT                <= (others => '0');
+--TC_UDP_SIZE_OUT               <= (others => '0');
 -- FC_IDENT_OUT(15 downto 8)     <= fc_ident(7 downto 0);
 -- FC_IDENT_OUT(7 downto 0)      <= fc_ident(15 downto 8);
 -- TC_FLAGS_OFFSET_OUT           <= fc_flags_offset;
