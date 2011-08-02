@@ -182,6 +182,7 @@ begin
     case tx_current_state is
       
       when TRANSMIT_DATA =>
+      -- CHANGED FOR SIMPLE FRAME SENDER
 	FC_DATA_OUT          <= PC_DATA_IN;
 	FC_SOD_OUT           <= PC_SOD_IN;
 	FC_EOD_OUT           <= PC_EOD_IN;
@@ -190,14 +191,14 @@ begin
 	FC_FLAGS_OFFSET_OUT  <= PC_FLAGS_OFFSET_IN;
 	FC_IDENT_OUT         <= sent_packets_ctr;
 
-	DEST_MAC_ADDRESS_OUT <= IC_DEST_MAC_ADDRESS_IN;
-	DEST_IP_ADDRESS_OUT  <= IC_DEST_IP_ADDRESS_IN;
-	DEST_UDP_PORT_OUT    <= IC_DEST_UDP_PORT_IN;
-	SRC_MAC_ADDRESS_OUT  <= IC_SRC_MAC_ADDRESS_IN;
-	SRC_IP_ADDRESS_OUT   <= IC_SRC_IP_ADDRESS_IN;
-	SRC_UDP_PORT_OUT     <= IC_SRC_UDP_PORT_IN;
+	DEST_MAC_ADDRESS_OUT <= x"9a680f201300"; --IC_DEST_MAC_ADDRESS_IN;
+	DEST_IP_ADDRESS_OUT  <= x"0100a8c0";     --IC_DEST_IP_ADDRESS_IN;
+	DEST_UDP_PORT_OUT    <= (others => '0'); --IC_DEST_UDP_PORT_IN;
+	SRC_MAC_ADDRESS_OUT  <= x"beefbeef0000"; --IC_SRC_MAC_ADDRESS_IN;
+	SRC_IP_ADDRESS_OUT   <= x"0b00a8c0";     --IC_SRC_IP_ADDRESS_IN;
+	SRC_UDP_PORT_OUT     <= (others => '0'); --IC_SRC_UDP_PORT_IN;
 	
-	FC_IP_PROTOCOL_OUT   <= x"11"; -- udp
+	FC_IP_PROTOCOL_OUT   <= x"dd"; --x"11"; -- udp
 
       when TRANSMIT_CTRL =>
 	FC_DATA_OUT         <= MC_DATA_IN(7 downto 0);

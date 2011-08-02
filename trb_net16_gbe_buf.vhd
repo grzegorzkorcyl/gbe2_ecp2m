@@ -1041,7 +1041,7 @@ port map(
 	PC_WR_EN_IN			=> pc_wr_en,
 	PC_DATA_IN			=> pc_data,
 	PC_READY_OUT			=> pc_ready,
-	PC_START_OF_SUB_IN		=> pc_sos,
+	PC_START_OF_SUB_IN		=> dbg_rd_en, -- pc_sos, CHANGED TO SLOW CONTROL PULSE
 	PC_END_OF_SUB_IN		=> pc_eos, -- gk 07.10.10
 	PC_END_OF_DATA_IN		=> pc_eod,
 	PC_TRANSMIT_ON_OUT		=> pc_transmit_on,
