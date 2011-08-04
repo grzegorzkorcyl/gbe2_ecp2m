@@ -198,7 +198,7 @@ begin
 	SRC_IP_ADDRESS_OUT   <= x"0b00a8c0";     --IC_SRC_IP_ADDRESS_IN;
 	SRC_UDP_PORT_OUT     <= (others => '0'); --IC_SRC_UDP_PORT_IN;
 	
-	FC_IP_PROTOCOL_OUT   <= x"dd" when sent_packets_ctr (0) = '0' else x"ee"; --x"11"; -- udp
+	FC_IP_PROTOCOL_OUT   <= x"dd" when sent_packets_ctr(0) = '0' else x"ee"; --x"11"; -- udp
 	
 
       when TRANSMIT_CTRL =>
