@@ -49,19 +49,25 @@ begin
 			-- less significant bit has the higher priority
 			case FRAME_TYPE_IN is
 			
-				-- No. 1 = IPv4 
+				-- No. 2 = IPv4 
 				when x"0800" =>
 					if (PROTOCOL_CODE_IN = x"11") then -- UDP
-						-- No. 4 = DHCP
+						-- No. 2 = DHCP
 						if (UDP_PROTOCOL_IN = x"0044") then  -- DHCP Client
 							CODE_OUT(1) <= '1';
 						else
 							-- branch for pure IPv4
 							CODE_OUT <= (others => '0');
 						end if;
-					-- No. 5 = ICMP 
+					-- No. 3 = ICMP 
 					elsif (PROTOCOL_CODE_IN = x"01") then -- ICMP
 						CODE_OUT(2) <= '1';
+					-- No. 4 = ICMP 
+					elsif (PROTOCOL_CODE_IN = x"dd") then -- Test1 b
+						CODE_OUT(3) <= '1';
+					-- No. 5 = ICMP 
+					elsif (PROTOCOL_CODE_IN = x"ee") then -- Test1 a
+						CODE_OUT(4) <= '1';
 					else
 						CODE_OUT <= (others => '0');  -- vector full of 1 means invalid protocol
 					end if;
