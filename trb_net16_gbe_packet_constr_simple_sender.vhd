@@ -160,8 +160,7 @@ signal disable_prep         : std_logic;
 type constructSimpleFrameStates is (IDLE, WAIT_FOR_HEADERS, PUT_DATA, FINISH);
 signal constrSimpleFrameCurrentState, constrSimpleFrameNextState : constructSimpleFrameStates;
 
-signal gen_data_ctr : std_logic_vector(15 downto 0);
-
+signal gen_data_ctr         : std_logic_vector(15 downto 0);
 
 begin
 
