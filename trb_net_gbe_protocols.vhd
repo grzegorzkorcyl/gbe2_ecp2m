@@ -23,7 +23,7 @@ constant FRAME_TYPES : frame_types_a := (x"0800", x"0806", x"08AA");
 
 type ip_protos_a is array(c_MAX_IP_PROTOCOLS - 1 downto 0) of std_logic_vector(7 downto 0);
 constant IP_PROTOCOLS : ip_protos_a := (x"11", x"01", x"dd", x"ee");
--- UDP, ICMP
+-- UDP, ICMP, test1, test2
 
 -- this are the destination ports of the incoming packet
 type udp_protos_a is array(c_MAX_UDP_PROTOCOLS - 1 downto 0) of std_logic_vector(15 downto 0);

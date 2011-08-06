@@ -173,7 +173,8 @@ begin
   end case;
 end process TX_MACHINE;
 
-FC_FRAME_TYPE_OUT <= MC_FRAME_TYPE_IN;
+-- in case of data from packet constructor use always IP
+FC_FRAME_TYPE_OUT <= MC_FRAME_TYPE_IN when tx_current_state = TRANSMIT_CTRL else x"0008";
 
 SELECTOR : process(CLK)
 begin
