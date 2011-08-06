@@ -513,6 +513,11 @@ begin
 
 				--when x"d4" =>
 				--	data_out <= DBG_TC_IN;
+				
+				-- **** transmit section
+				
+				when x"90" =>
+					data_out <= DBG_FT2_IN;
 					
 				-- **** receive debug section
 				
