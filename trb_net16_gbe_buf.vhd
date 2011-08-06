@@ -525,7 +525,7 @@ signal rc_loading_done               : std_logic;
 signal fr_get_frame                  : std_logic;
 signal mc_transmit_done              : std_logic;
 
-signal dbg_fr                        : std_logic_vector(63 downto 0);
+signal dbg_fr                        : std_logic_vector(95 downto 0);
 signal dbg_rc                        : std_logic_vector(63 downto 0);
 signal dbg_mc                        : std_logic_vector(63 downto 0);
 signal dbg_tc                        : std_logic_vector(63 downto 0);
@@ -1176,7 +1176,9 @@ port map(
 	TX_FIFOAVAIL_OUT		=> mac_fifoavail,
 	TX_FIFOEOF_OUT			=> mac_fifoeof,
 	TX_FIFOEMPTY_OUT		=> mac_fifoempty,
-	TX_DONE_IN			=> mac_tx_done,
+	TX_DONE_IN			=> mac_tx_done,	
+	TX_STAT_EN_IN			=> mac_tx_staten,
+	TX_STATVEC_IN			=> mac_tx_statevec,
 	TX_DISCFRM_IN			=> mac_tx_discfrm,
 	-- Debug
 	BSM_INIT_OUT			=> ft_bsm_init,

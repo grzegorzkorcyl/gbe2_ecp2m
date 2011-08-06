@@ -82,7 +82,7 @@ port(
 	DBG_FC2_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT1_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT2_IN               : in std_logic_vector(31 downto 0);
-	DBG_FR_IN                : in std_logic_vector(63 downto 0);
+	DBG_FR_IN                : in std_logic_vector(95 downto 0);
 	DBG_RC_IN                : in std_logic_vector(63 downto 0);
 	DBG_MC_IN                : in std_logic_vector(63 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);
@@ -541,6 +541,9 @@ begin
 					
 				when x"a6" =>
 					data_out <= g_MY_IP;
+					
+				when x"a7" =>
+					data_out <= DBG_FR_IN(95 downto 64); -- ok | error frames
 					
 					
 					-- *** debug of response constructors

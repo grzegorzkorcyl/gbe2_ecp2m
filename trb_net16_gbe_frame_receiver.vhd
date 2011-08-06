@@ -54,7 +54,7 @@ port (
 	FR_SRC_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 	FR_DEST_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 
-	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
+	DEBUG_OUT		: out	std_logic_vector(95 downto 0)
 );
 end trb_net16_gbe_frame_receiver;
 
@@ -105,6 +105,7 @@ signal dbg_ack_frames                       : std_logic_vector(15 downto 0);
 signal dbg_drp_frames                       : std_logic_vector(15 downto 0);
 signal state                                : std_logic_vector(3 downto 0);
 signal parsed_frames_ctr                    : std_logic_vector(15 downto 0);
+signal ok_frames_ctr                        : std_logic_vector(15 downto 0);
 
 begin
 
@@ -118,6 +119,8 @@ DEBUG_OUT(31 downto 20) <= parsed_frames_ctr(11 downto 0);
 
 DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
 DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
+DEBUG_OUT(79 downto 64) <= error_frames_ctr;
+DEBUG_OUT(95 downto 80) <= ok_frames_ctr;
 
 
 -- new_frame is asserted when first byte of the frame arrives
@@ -578,13 +581,22 @@ begin
 	if rising_edge(RX_MAC_CLK) then
 		if (RESET = '1') then
 			parsed_frames_ctr <= (others => '0');
-		--elsif (filter_current_state = IDLE and new_frame = '1' and ALLOW_RX_IN = '1') then
-		--	parsed_frames_ctr <= parsed_frames_ctr + x"1";
-		elsif (MAC_RX_STAT_EN_IN = '1' and MAC_RX_STAT_VEC_IN(23) = '1') then
+		elsif (filter_current_state = IDLE and new_frame = '1' and ALLOW_RX_IN = '1') then
 			parsed_frames_ctr <= parsed_frames_ctr + x"1";
 		end if;
 	end if;
 end process PARSED_FRAMES_CTR_PROC;
+
+FRAMEOK_FRAMES_CTR_PROC : process(RX_MAC_CLK)
+begin
+	if rising_edge(RX_MAC_CLK) then
+		if (RESET = '1') then
+			ok_frames_ctr <= (others => '0');
+		elsif (MAC_RX_STAT_EN_IN = '1' and MAC_RX_STAT_VEC_IN(23) = '1') then
+			ok_frames_ctr <= ok_frames_ctr + x"1";
+		end if;
+	end if;
+end process FRAMEOK_FRAMES_CTR_PROC;
 
 ERROR_FRAMES_CTR_PROC : process(RX_MAC_CLK)
 begin

@@ -346,7 +346,7 @@ port (
 	FR_SRC_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 	FR_DEST_UDP_PORT_OUT	: out	std_logic_vector(15 downto 0);
 
-	DEBUG_OUT		: out	std_logic_vector(63 downto 0)
+	DEBUG_OUT		: out	std_logic_vector(95 downto 0)
 );
 end component;
 
@@ -501,6 +501,8 @@ port (
 	TX_FIFOEOF_OUT		: out	std_logic;
 	TX_FIFOEMPTY_OUT	: out	std_logic;
 	TX_DONE_IN			: in	std_logic;
+	TX_STAT_EN_IN		: in	std_logic;
+	TX_STATVEC_IN		: in	std_logic_vector(31 downto 0);
 	TX_DISCFRM_IN		: in 	std_logic;
 	-- Debug
 	BSM_INIT_OUT		: out	std_logic_vector(3 downto 0);
@@ -632,7 +634,7 @@ port(
 	DBG_FC2_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT1_IN               : in std_logic_vector(31 downto 0);
 	DBG_FT2_IN               : in std_logic_vector(31 downto 0);
-	DBG_FR_IN                : in std_logic_vector(63 downto 0);
+	DBG_FR_IN                : in std_logic_vector(95 downto 0);
 	DBG_RC_IN                : in std_logic_vector(63 downto 0);
 	DBG_MC_IN                : in std_logic_vector(63 downto 0);
 	DBG_TC_IN                : in std_logic_vector(31 downto 0);

@@ -22,6 +22,8 @@ port (
 	TX_FIFOEOF_OUT		: out	std_logic;
 	TX_FIFOEMPTY_OUT	: out	std_logic;
 	TX_DONE_IN			: in	std_logic;
+	TX_STAT_EN_IN		: in	std_logic;
+	TX_STATVEC_IN		: in	std_logic_vector(31 downto 0);
 	TX_DISCFRM_IN		:	in std_logic;
 	-- Debug
 	BSM_INIT_OUT		: out	std_logic_vector(3 downto 0);
@@ -175,7 +177,7 @@ begin
 	if rising_edge(TX_MAC_CLK) then
 		if (RESET = '1') then
 			sent_ctr <= (others => '0');
-		elsif (TX_DONE_IN = '1') then
+		elsif (TX_DONE_IN = '1') and (TX_STAT_EN = '1') and (TX_STATVEC_IN(0) = '1')  then
 			sent_ctr <= sent_ctr + x"1";
 		end if;
 	end if;
