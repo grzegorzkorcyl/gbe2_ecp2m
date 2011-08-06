@@ -177,7 +177,7 @@ begin
 	if rising_edge(TX_MAC_CLK) then
 		if (RESET = '1') then
 			sent_ctr <= (others => '0');
-		elsif (TX_DONE_IN = '1') and (TX_STAT_EN = '1') and (TX_STATVEC_IN(0) = '1')  then
+		elsif (TX_DONE_IN = '1') and (TX_STAT_EN_IN = '1') and (TX_STATVEC_IN(0) = '1')  then
 			sent_ctr <= sent_ctr + x"1";
 		end if;
 	end if;
