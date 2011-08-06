@@ -23,7 +23,7 @@ port (
 	TX_FIFOEMPTY_OUT	: out	std_logic;
 	TX_DONE_IN			: in	std_logic;
 	TX_STAT_EN_IN		: in	std_logic;
-	TX_STATVEC_IN		: in	std_logic_vector(31 downto 0);
+	TX_STATVEC_IN		: in	std_logic_vector(30 downto 0);
 	TX_DISCFRM_IN		:	in std_logic;
 	-- Debug
 	BSM_INIT_OUT		: out	std_logic_vector(3 downto 0);
