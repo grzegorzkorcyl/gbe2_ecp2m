@@ -244,11 +244,11 @@ begin
 			
 		when DECIDE =>
 			state <= x"6";
-			if (frame_type_valid = '1') then
+			--if (frame_type_valid = '1') then
 				filter_next_state <= SAVE_FRAME;
-			else
-				filter_next_state <= DROP_FRAME;
-			end if;	
+			--else
+			--	filter_next_state <= DROP_FRAME;
+			--send if;	
 			
 		when SAVE_FRAME =>
 			state <= x"7";

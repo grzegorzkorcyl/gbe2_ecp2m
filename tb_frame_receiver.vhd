@@ -31,7 +31,7 @@ signal FR_FRAME_VALID_OUT	: std_logic;
 signal FR_GET_FRAME_IN		: std_logic;
 signal FR_FRAME_SIZE_OUT	: std_logic_vector(15 downto 0);
 signal FR_FRAME_PROTO_OUT	: std_logic_vector(15 downto 0);
-signal DEBUG_OUT		: std_logic_vector(63 downto 0);
+signal DEBUG_OUT		: std_logic_vector(95 downto 0);
 signal	FR_ALLOWED_TYPES_IN	: std_logic_vector(31 downto 0);
 
 signal	RC_RD_EN_IN		: std_logic;
@@ -454,17 +454,17 @@ begin
 	
 	wait for 1000 ns;
 	
-	for i in 0 to 1000 loop
+	--for i in 0 to 1000 loop
 	
 	wait for 700 ns;
 	
-	pc_sos <= '1';
-	wait for 100 ns;
-	pc_sos <= '0';
+	--pc_sos <= '1';
+	--wait for 100 ns;
+	--pc_sos <= '0';
 	
 	
 	
-	wait;
+	--wait;
 	--THE REST IS NOT BEEING EXECUTED RIGHT NOW
 	
 		additional_rand_pause <= '1';
@@ -474,6 +474,151 @@ begin
 			wait for 1 ns;
 		end loop;
 		additional_rand_pause <= '0';
+		
+		
+		
+		
+		
+		-- FIRST FRAME IP - ICMP Ping request
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RX_EN_IN <= '1';
+-- dest mac
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"be";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"ef";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"be";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"ef";
+	wait until rising_edge(RX_MAC_CLK);
+-- src mac
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"aa";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"bb";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"cc";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"dd";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"ee";
+	wait until rising_edge(RX_MAC_CLK);
+-- frame type
+	MAC_RXD_IN		<= x"08";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+-- ip headers
+	MAC_RXD_IN		<= x"45";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"10";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"01";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"5a";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"49";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"ff";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"ee";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"cc";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"cc";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"c0";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"a8";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"01";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"c0";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"a8";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"02";
+-- ping headers
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"08";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"47";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"d3";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0d";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"3c";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"01";
+	wait until rising_edge(RX_MAC_CLK);
+-- ping data
+	MAC_RXD_IN		<= x"8c";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"da";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"e7";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"4d";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"36";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"c4";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0d";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"00";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"08";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"09";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0a";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0b";	
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0c";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0d";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0e";
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RXD_IN		<= x"0f";
+	wait until rising_edge(RX_MAC_CLK);
+		MAC_RX_EOF_IN <= '1';
+			MAC_RXD_IN		<= x"aa";
+	
+	wait until rising_edge(RX_MAC_CLK);
+	MAC_RX_EN_IN <='0';
+	MAC_RX_EOF_IN <= '0';
+	
+	wait for 1500 ns;
+		
+		
+		
+	wait;	
+		
+		
+		
 	
 	
 	-- FIRST FRAME IP - ICMP Ping request
@@ -608,7 +753,7 @@ begin
 	MAC_RX_EN_IN <='0';
 	MAC_RX_EOF_IN <= '0';
 	
-	end loop;
+--	end loop;
 	
 	wait for 1500 ns;
 	
