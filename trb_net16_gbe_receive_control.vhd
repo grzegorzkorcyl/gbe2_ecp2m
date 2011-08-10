@@ -166,8 +166,8 @@ begin
     FRAMES_RECEIVED_OUT              <= frames_received_ctr;
     --BYTES_RECEIVED_OUT               <= bytes_rec_ctr;
     BYTES_RECEIVED_OUT(15 downto 0)  <= bytes_rec_ctr(15 downto 0);
-    BYTES_RECEIVED_OUT(20 downto 16) <= saved_proto;
-    BYTES_RECEIVED_OUT(31 downto 21) <= (others => '0');
+    BYTES_RECEIVED_OUT(16 downto 16) <= saved_proto;
+    BYTES_RECEIVED_OUT(31 downto 17) <= (others => '0');
   end if;
 end process SYNC_PROC;
 
