@@ -80,7 +80,7 @@ signal proto_code                : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0
 signal reset_prioritizer         : std_logic;
 
 -- debug only
-signal saved_proto               : std_logic_vector(4 downto 0);
+signal saved_proto               : std_logic_vector(0 downto 0);
 
 begin
 
