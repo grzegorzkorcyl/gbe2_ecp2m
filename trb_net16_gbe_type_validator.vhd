@@ -93,7 +93,7 @@ begin
 				partially_valid <= or_all(udp_result);
 			elsif (IP_PROTOCOLS_IN = x"01" or IP_PROTOCOLS_IN = x"dd" or IP_PROTOCOLS_IN = x"ee") then  -- in case of ICMP
 				partially_valid <= '1';
-			else  -- do not accept other protocols than udp inside ip
+			else  -- do not accept other protocols than udp and icmp inside ip
 				partially_valid <= '0';
 			end if;
 		else -- other frame
@@ -104,9 +104,9 @@ end process PARTIALLY_VALID_PROC;
 
 VALID_OUT_PROC : process(partially_valid, SAVED_VLAN_ID_IN, VLAN_ID_IN)
 begin
-	--if rising_edge(CLK) then
-	--	if (RESET = '1') then
-	--		VALID_OUT <= '0';
+	if rising_edge(CLK) then
+		if (RESET = '1') then
+			VALID_OUT <= '0';
 		if (partially_valid = '1') then
 			if (SAVED_VLAN_ID_IN = x"0000") then
 				VALID_OUT <= '1';
@@ -120,7 +120,7 @@ begin
 		else
 			VALID_OUT <= '0';
 		end if;
-	--end if;
+	end if;
 end process VALID_OUT_PROC;
 
 	--if rising_edge(CLK) then
