@@ -49,36 +49,32 @@ begin
 			-- less significant bit has the higher priority
 			case FRAME_TYPE_IN is
 			
-				-- No. 2 = IPv4 
+				-- IPv4 
 				when x"0800" =>
-					-- if (PROTOCOL_CODE_IN = x"11") then -- UDP
-						-- -- No. 2 = DHCP
-						-- if (UDP_PROTOCOL_IN = x"0044") then  -- DHCP Client
-							-- CODE_OUT(1) <= '1';
-						-- else
-							-- -- branch for pure IPv4
-							-- CODE_OUT <= (others => '0');
-						-- end if;
-					-- -- No. 3 = ICMP 
-					-- elsif (PROTOCOL_CODE_IN = x"01") then -- ICMP
-						-- CODE_OUT(2) <= '1';
-					-- -- No. 4 = ICMP 
-					if (PROTOCOL_CODE_IN = x"dd") then -- Test1 b
-						CODE_OUT(0) <= '1';
-					-- -- No. 5 = ICMP 
-					-- elsif (PROTOCOL_CODE_IN = x"ee") then -- Test1 a
-						-- CODE_OUT(4) <= '1';
+					if (PROTOCOL_CODE_IN = x"11") then -- UDP
+						-- No. 2 = DHCP
+						if (UDP_PROTOCOL_IN = x"0044") then  -- DHCP Client
+							CODE_OUT(1) <= '1';
+						else
+							-- branch for pure IPv4
+							CODE_OUT <= (others => '0');
+						end if;
+					-- No. 3 = ICMP 
+					elsif (PROTOCOL_CODE_IN = x"01") then -- ICMP
+						CODE_OUT(2) <= '1';
+					-- No. 4 = Test1a 
+					elsif (PROTOCOL_CODE_IN = x"dd") then -- Test1 b
+						CODE_OUT(3) <= '1';
+					-- No. 5 = Test1b 
+					elsif (PROTOCOL_CODE_IN = x"ee") then -- Test1 a
+						CODE_OUT(4) <= '1';
 					else
 						CODE_OUT <= (others => '0');  -- vector full of 1 means invalid protocol
 					end if;
 				
 				-- No. 1 = ARP
 				when x"0806" =>
-					CODE_OUT(0) <= '1'; 
-				
-				-- No. 3 = Test
-				--when x"08AA" =>
-				--	CODE_OUT(2) <= '1';
+					CODE_OUT(0) <= '1';
 				
 				-- last slot is reserved for Trash
 				when others =>

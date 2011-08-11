@@ -418,6 +418,7 @@ begin
 			link_state <= x"2";
 			if (PCS_AN_COMPLETE_IN = '1') then
 				link_next_state <= TIMEOUT;
+				--link_next_state <= GET_ADDRESS;  -- for simulation only
 			else
 				link_next_state <= INACTIVE;
 			end if;
@@ -462,7 +463,7 @@ begin
 				link_next_state <= INACTIVE;
 			else
 				if (wait_ctr = x"3baa_ca00") then
-				--if (wait_ctr = x"0000_0010") then
+				--if (wait_ctr = x"0000_0010") then  -- for simulation
 					link_next_state <= GET_ADDRESS;
 				else
 					link_next_state <= WAIT_FOR_BOOT;
