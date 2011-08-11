@@ -13,7 +13,7 @@ signal g_MY_IP                : std_logic_vector(31 downto 0);
 signal g_MY_MAC               : std_logic_vector(47 downto 0);
 
 constant c_MAX_FRAME_TYPES    : integer range 1 to 16 := 3;
-constant c_MAX_PROTOCOLS      : integer range 1 to 16 := 1; --5
+constant c_MAX_PROTOCOLS      : integer range 1 to 16 := 5;
 constant c_MAX_IP_PROTOCOLS   : integer range 1 to 16 := 4;
 constant c_MAX_UDP_PROTOCOLS  : integer range 1 to 16 := 2;
 

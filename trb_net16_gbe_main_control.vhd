@@ -463,7 +463,7 @@ begin
 			else
 				if (wait_ctr = x"3baa_ca00") then
 				--if (wait_ctr = x"0000_0010") then
-					link_next_state <= ACTIVE; --GET_ADDRESS;  --DEACTIVATED JUST FOR TESTS
+					link_next_state <= GET_ADDRESS;
 				else
 					link_next_state <= WAIT_FOR_BOOT;
 				end if;
