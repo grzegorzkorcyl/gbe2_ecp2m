@@ -102,7 +102,7 @@ begin
 	end if;
 end process PARTIALLY_VALID_PROC;
 
-VALID_OUT_PROC : process(partially_valid, SAVED_VLAN_ID_IN, VLAN_ID_IN)
+VALID_OUT_PROC : process(CLK)
 begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
