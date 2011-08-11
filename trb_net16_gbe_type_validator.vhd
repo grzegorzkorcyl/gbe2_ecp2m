@@ -107,7 +107,7 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			VALID_OUT <= '0';
-		if (partially_valid = '1') then
+		elsif (partially_valid = '1') then
 			if (SAVED_VLAN_ID_IN = x"0000") then
 				VALID_OUT <= '1';
 			elsif (VLAN_ID_IN = x"0000_0000") then
