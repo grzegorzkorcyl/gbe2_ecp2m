@@ -114,13 +114,13 @@ DEBUG_OUT(1)            <= rec_fifo_full;
 DEBUG_OUT(2)            <= sizes_fifo_empty;
 DEBUG_OUT(3)            <= sizes_fifo_full;
 DEBUG_OUT(7 downto 4)   <= state;
-DEBUG_OUT(19 downto 8)  <= dbg_rec_frames(11 downto 0);
-DEBUG_OUT(31 downto 20) <= parsed_frames_ctr(11 downto 0);
-
-DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
-DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
-DEBUG_OUT(79 downto 64) <= error_frames_ctr;
-DEBUG_OUT(95 downto 80) <= ok_frames_ctr;
+-- DEBUG_OUT(19 downto 8)  <= dbg_rec_frames(11 downto 0);
+-- DEBUG_OUT(31 downto 20) <= parsed_frames_ctr(11 downto 0);
+-- 
+-- DEBUG_OUT(47 downto 32) <= dbg_ack_frames;
+-- DEBUG_OUT(63 downto 48) <= dbg_drp_frames;
+-- DEBUG_OUT(79 downto 64) <= error_frames_ctr;
+-- DEBUG_OUT(95 downto 80) <= ok_frames_ctr;
 
 
 -- new_frame is asserted when first byte of the frame arrives
@@ -665,6 +665,84 @@ begin
 		end if;
 	end if;
 end process DROPPED_FRAMES_CTR;
+
+sync1 : signal_sync
+generic map (
+	WIDTH => 16,
+	DEPTH => 2
+);
+port map (
+	RESET => RESET,
+	CLK0  => CLK,
+	CLK1  => CLK,
+	D_IN  => dbg_drp_frames,
+	D_OUT => DEBUG_OUT(63 downto 48)
+);
+
+sync2 : signal_sync
+generic map (
+	WIDTH => 16,
+	DEPTH => 2
+);
+port map (
+	RESET => RESET,
+	CLK0  => CLK,
+	CLK1  => CLK,
+	D_IN  => dbg_ack_frames,
+	D_OUT => DEBUG_OUT(47 downto 32)
+);
+
+sync3 : signal_sync
+generic map (
+	WIDTH => 12,
+	DEPTH => 2
+);
+port map (
+	RESET => RESET,
+	CLK0  => CLK,
+	CLK1  => CLK,
+	D_IN  => dbg_rec_frames(11 downto 0),
+	D_OUT => DEBUG_OUT(19 downto 8)
+);
+
+sync4 : signal_sync
+generic map (
+	WIDTH => 12,
+	DEPTH => 2
+);
+port map (
+	RESET => RESET,
+	CLK0  => CLK,
+	CLK1  => CLK,
+	D_IN  => parsed_frames_ctr(11 downto 0),
+	D_OUT => DEBUG_OUT(31 downto 20)
+);
+
+sync5 : signal_sync
+generic map (
+	WIDTH => 16,
+	DEPTH => 2
+);
+port map (
+	RESET => RESET,
+	CLK0  => CLK,
+	CLK1  => CLK,
+	D_IN  => error_frames_ctr,
+	D_OUT => DEBUG_OUT(79 downto 64)
+);
+
+sync6 : signal_sync
+generic map (
+	WIDTH => 16,
+	DEPTH => 2
+);
+port map (
+	RESET => RESET,
+	CLK0  => CLK,
+	CLK1  => CLK,
+	D_IN  => ok_frames_ctr,
+	D_OUT => DEBUG_OUT(95 downto 80)
+);
 
 -- end of debug counters
 -- ****
