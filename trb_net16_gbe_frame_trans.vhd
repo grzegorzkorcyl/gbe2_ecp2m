@@ -96,7 +96,7 @@ begin
 
 -- Fakes
 debug(63 downto 32) <= (others => '0');
-debug(31 downto 0)  <= sent_ctr;
+--debug(31 downto 0)  <= sent_ctr;
 
 
 TransmitStateMachineProc : process (TX_MAC_CLK)
@@ -182,7 +182,19 @@ begin
 		end if;
 	end if;
 end process SENT_CTR_PROC;
-	
+
+sync1 : signal_sync
+generic map(
+	WIDTH => 32,
+	DEPTH => 2
+)
+port map (
+	RESET => RESET,
+	CLK0  => CLK,
+	CLK1  => CLK,
+	D_IN  => sent_ctr,
+	D_OUT => debug(31 downto 0)
+);
 
 TX_FIFOAVAIL_OUT   <= tx_fifoavail_i;
 TX_FIFOEOF_OUT     <= tx_fifoeof_i;
