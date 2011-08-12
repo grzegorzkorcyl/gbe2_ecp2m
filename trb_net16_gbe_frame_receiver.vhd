@@ -670,7 +670,7 @@ sync1 : signal_sync
 generic map (
 	WIDTH => 16,
 	DEPTH => 2
-);
+)
 port map (
 	RESET => RESET,
 	CLK0  => CLK,
@@ -683,7 +683,7 @@ sync2 : signal_sync
 generic map (
 	WIDTH => 16,
 	DEPTH => 2
-);
+)
 port map (
 	RESET => RESET,
 	CLK0  => CLK,
@@ -696,7 +696,7 @@ sync3 : signal_sync
 generic map (
 	WIDTH => 12,
 	DEPTH => 2
-);
+)
 port map (
 	RESET => RESET,
 	CLK0  => CLK,
@@ -709,7 +709,7 @@ sync4 : signal_sync
 generic map (
 	WIDTH => 12,
 	DEPTH => 2
-);
+)
 port map (
 	RESET => RESET,
 	CLK0  => CLK,
@@ -722,7 +722,7 @@ sync5 : signal_sync
 generic map (
 	WIDTH => 16,
 	DEPTH => 2
-);
+)
 port map (
 	RESET => RESET,
 	CLK0  => CLK,
@@ -735,7 +735,7 @@ sync6 : signal_sync
 generic map (
 	WIDTH => 16,
 	DEPTH => 2
-);
+)
 port map (
 	RESET => RESET,
 	CLK0  => CLK,
