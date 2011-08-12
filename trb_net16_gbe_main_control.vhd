@@ -396,6 +396,7 @@ begin
 	if rising_edge(CLK) then
 		if (RESET = '1') then
 			link_current_state <= INACTIVE;
+			--link_current_state <= ACTIVE; -- for simulation only
 		else
 			link_current_state <= link_next_state;
 		end if;
