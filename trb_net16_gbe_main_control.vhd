@@ -138,6 +138,8 @@ signal dhcp_start                   : std_logic;
 signal dhcp_done                    : std_logic;
 signal wait_ctr                     : std_logic_vector(31 downto 0);
 
+signal rc_data_local                : std_logic_vector(8 downto 0);
+
 -- debug
 signal frame_waiting_ctr            : std_logic_vector(15 downto 0);
 signal ps_busy_q                    : std_logic_vector(c_MAX_PROTOCOLS - 1 downto 0);
@@ -155,7 +157,7 @@ port map(
 	CLK			=> CLK,
 	RESET			=> RESET,
 	
-	PS_DATA_IN		=> RC_DATA_IN,
+	PS_DATA_IN		=> rc_data_local, -- RC_DATA_IN,
 	PS_WR_EN_IN		=> ps_wr_en,
 	PS_PROTO_SELECT_IN	=> proto_select,
 	PS_BUSY_OUT		=> ps_busy,
@@ -200,6 +202,12 @@ proto_select <= RC_FRAME_PROTO_IN;
 --proto_select <= (others => '0') when (redirect_current_state = IDLE and RC_FRAME_WAITING_IN = '0')
 --		else RC_FRAME_PROTO_IN;
 
+SYNC_PROC : process(CLK)
+begin
+	if rising_edge(CLK) then
+		rc_data_local <= RC_DATA_IN;
+	end if;
+end process SYNC_PROC;
 
 REDIRECT_MACHINE_PROC : process(CLK)
 begin
@@ -212,13 +220,13 @@ begin
 	end if;
 end process REDIRECT_MACHINE_PROC;
 
-REDIRECT_MACHINE : process(redirect_current_state, RC_FRAME_WAITING_IN, RC_DATA_IN, ps_busy, RC_FRAME_PROTO_IN, ps_wr_en, loaded_bytes_ctr, RC_FRAME_SIZE_IN)
+REDIRECT_MACHINE : process(redirect_current_state, link_current_state, RC_FRAME_WAITING_IN, RC_DATA_IN, ps_busy, RC_FRAME_PROTO_IN, ps_wr_en, loaded_bytes_ctr, RC_FRAME_SIZE_IN)
 begin
 	case redirect_current_state is
 	
 		when IDLE =>
 			redirect_state <= x"1";
-			if (RC_FRAME_WAITING_IN = '1') then
+			if (RC_FRAME_WAITING_IN = '1') and (link_current_state = ACTIVE or link_current_state = GET_ADDRESS) then
 			--	if (or_all(ps_busy and RC_FRAME_PROTO_IN) = '0') then
 			--		redirect_next_state <= LOAD;
 			--	else
