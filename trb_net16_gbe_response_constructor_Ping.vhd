@@ -240,8 +240,6 @@ PS_RESPONSE_READY_OUT <= '1' when (dissect_current_state = WAIT_FOR_LOAD or diss
 TC_FRAME_SIZE_OUT <= std_logic_vector(to_unsigned(data_length, 16));
 
 TC_FRAME_TYPE_OUT <= x"0008";
---TC_DEST_MAC_OUT   <= x"9a680f201300";
---TC_DEST_IP_OUT    <= x"00000000";
 TC_DEST_UDP_OUT   <= x"0000";  -- not used
 TC_SRC_MAC_OUT    <= g_MY_MAC;
 TC_SRC_IP_OUT     <= g_MY_IP;

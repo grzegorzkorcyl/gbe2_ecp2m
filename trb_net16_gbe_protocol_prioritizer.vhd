@@ -69,7 +69,7 @@ begin
 					elsif (PROTOCOL_CODE_IN = x"ee") then -- Test1 a
 						CODE_OUT(4) <= '1';
 					else
-						CODE_OUT <= (others => '0');  -- vector full of 1 means invalid protocol
+						CODE_OUT <= (others => '0');  -- vector full of 0 means invalid protocol
 					end if;
 				
 				-- No. 1 = ARP

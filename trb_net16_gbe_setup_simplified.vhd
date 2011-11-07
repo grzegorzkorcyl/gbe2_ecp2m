@@ -185,7 +185,7 @@ begin
 			max_packet        <= x"0000_0fd0"; --x"0000_fde8"; -- 65k --x"0000_fde8"; -- tester
 			min_packet        <= x"0000_0007"; -- gk 20.07.10
 			max_frame         <= x"0578";
-			use_gbe           <= '0'; --'1';  -- gk 27.08.10  -- blocks the transmission until gbe gets configured
+			use_gbe           <= '1';  -- gk 27.08.10  -- blocks the transmission until gbe gets configured
 			use_trbnet        <= '0';
 			use_multievents   <= '0';
 			reset_values      <= '0';
@@ -197,9 +197,9 @@ begin
 			reset_fifo        <= '0';  -- gk 28.09.10
 			allow_rx          <= '1';
 			frame_delay       <= x"0000_0000"; -- gk 09.12.10
-			allowed_types     <= x"0000_00ff";  -- only test protocol allowed
-			allowed_ip        <= x"0000_00ff";
-			allowed_udp       <= x"0000_00ff";
+			allowed_types     <= x"0000_00ff"; -- all protocols allowed
+			allowed_ip        <= x"0000_00ff"; -- all protocols allowed
+			allowed_udp       <= x"0000_00ff"; -- all protocols allowed
 			vlan_id           <= x"0000_0000";  -- no vlan id by default
 
 		elsif (BUS_WRITE_EN_IN = '1') then

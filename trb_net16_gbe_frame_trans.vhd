@@ -36,8 +36,6 @@ port (
 );
 end trb_net16_gbe_frame_trans;
 
--- FifoRd ?!?
-
 architecture trb_net16_gbe_frame_trans of trb_net16_gbe_frame_trans is
 
 --attribute HGROUP : string;

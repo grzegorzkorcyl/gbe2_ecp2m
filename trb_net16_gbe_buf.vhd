@@ -37,6 +37,7 @@ port(
 	MR_RESET_IN					: in	std_logic;
 	MR_MODE_IN					: in	std_logic;
 	MR_RESTART_IN				: in	std_logic;
+	UNIQUE_ID_IN				: in	std_logic_vector(127 downto 0); -- gk 07.11.11
 	-- gk 29.03.10
 	SLV_ADDR_IN                  : in std_logic_vector(7 downto 0);
 	SLV_READ_IN                  : in std_logic;
@@ -454,9 +455,6 @@ signal fc_rd_en                      : std_logic;
 signal link_ok                       : std_logic;
 signal link_ok_timeout_ctr           : std_logic_vector(15 downto 0);
 
-type linkStates     is  (ACTIVE, INACTIVE, TIMEOUT, FINALIZE);
-signal link_current_state, link_next_state : linkStates;
-
 signal link_down_ctr                 : std_logic_vector(15 downto 0);
 signal link_down_ctr_lock            : std_logic;
 
@@ -572,8 +570,6 @@ signal mc_ip_proto                   : std_logic_vector(7 downto 0);
 
 begin
 
---my_mac <= x"efbeefbe0000";  -- temporary
-
 stage_ctrl_regs <= STAGE_CTRL_REGS_IN;
 
 -- gk 23.04.10
@@ -581,11 +577,9 @@ LED_PACKET_SENT_OUT <= pc_ready;
 LED_AN_DONE_N_OUT <= not link_ok; --not pcs_an_complete;
 
 -- FrameConstructor fixed magic values
---fc_type           <= x"0008";
 fc_ihl_version    <= x"45";
 fc_tos            <= x"10";
 fc_ttl            <= x"ff";
---fc_protocol       <= x"11";
 
 
 MAIN_CONTROL : trb_net16_gbe_main_control
